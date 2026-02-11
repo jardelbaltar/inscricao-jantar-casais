@@ -357,12 +357,15 @@
           return;
         }
 
-        const hasEventLimitData = eventData !== null && eventData !== undefined;
-        const limit = Number(eventData?.max_couples ?? 0);
-        const hasFiniteLimit = hasEventLimitData && limit > 0;
+        const hasEventData = eventData !== null && eventData !== undefined;
+        const rawLimit = eventData?.max_couples;
+        const hasLimitValue = hasEventData && rawLimit !== null && rawLimit !== undefined;
+        const limit = hasLimitValue ? Number(rawLimit) : 0;
+        const hasFiniteLimit = hasLimitValue && Number.isFinite(limit) && limit > 0;
+        const hasUnlimitedCapacity = hasLimitValue && Number.isFinite(limit) && limit <= 0;
         const rows = (registrations ?? []).map((r, idx) => {
-          const isConfirmed = hasFiniteLimit ? idx < limit : hasEventLimitData;
-          const isUnknownStatus = !hasEventLimitData;
+          const isConfirmed = hasFiniteLimit ? idx < limit : hasUnlimitedCapacity;
+          const isUnknownStatus = !hasFiniteLimit && !hasUnlimitedCapacity;
           const statusIcon = isUnknownStatus ? "❔" : isConfirmed ? "✅" : "⏳";
           const statusLabel = isUnknownStatus
             ? "Status indisponível"
