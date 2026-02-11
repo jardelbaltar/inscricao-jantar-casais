@@ -187,10 +187,16 @@
 
     let currentEventId = null;
     let cachedRegsRows = []; // para export CSV
+    let authCheckVersion = 0;
 
     function setMsg(text, kind="") {
       msg.className = kind ? kind : "";
       msg.textContent = text || "";
+    }
+
+    function setLoginLoading(isLoading) {
+      btnLogin.disabled = isLoading;
+      btnLogin.textContent = isLoading ? "Entrando..." : "Entrar";
     }
 
     function escapeHtml(s){
@@ -457,16 +463,51 @@
       await refreshRegistrations();
     }
 
+    async function applySession(session) {
+      const currentCheck = ++authCheckVersion;
+      setMsg("");
+
+      if (!session) {
+        loginCard.style.display = "";
+        app.style.display = "none";
+        setLoginLoading(false);
+        return;
+      }
+
+      setLoginLoading(true);
+      try {
+        await requireAdminOrFail();
+      } catch {
+        // evita efeitos de callbacks antigos quando há corrida de autenticação
+        if (currentCheck !== authCheckVersion) return;
+        await supabase.auth.signOut();
+        setMsg("Seu usuário não está autorizado como admin.", "err");
+        return;
+      }
+
+      if (currentCheck !== authCheckVersion) return;
+      loginCard.style.display = "none";
+      app.style.display = "";
+      await loadAll();
+      setLoginLoading(false);
+    }
+
     // LOGIN handlers
     btnLogin.addEventListener("click", async () => {
       setMsg("");
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
+      setLoginLoading(true);
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
+        setLoginLoading(false);
         setMsg("Falha no login. Verifique e-mail/senha.", "err");
         return;
       }
+
+      // fallback: em alguns ambientes o evento de auth pode demorar/não disparar de imediato
+      const { data: { session } } = await supabase.auth.getSession();
+      await applySession(session);
     });
 
     btnLogout.addEventListener("click", async () => {
@@ -535,39 +576,12 @@
 
     // Sessão / bootstrap
     supabase.auth.onAuthStateChange(async (_event, session) => {
-      setMsg("");
-      if (!session) {
-        loginCard.style.display = "";
-        app.style.display = "none";
-        return;
-      }
-
-      try {
-        await requireAdminOrFail();
-      } catch {
-        await supabase.auth.signOut();
-        setMsg("Seu usuário não está autorizado como admin.", "err");
-        return;
-      }
-
-      loginCard.style.display = "none";
-      app.style.display = "";
-      await loadAll();
+      await applySession(session);
     });
 
     // Carrega sessão atual (se já estiver logado)
     const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      try {
-        await requireAdminOrFail();
-        loginCard.style.display = "none";
-        app.style.display = "";
-        await loadAll();
-      } catch {
-        await supabase.auth.signOut();
-        setMsg("Seu usuário não está autorizado como admin.", "err");
-      }
-    }
+    await applySession(session);
   </script>
 </body>
 </html>
