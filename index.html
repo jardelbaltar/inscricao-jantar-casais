@@ -33,7 +33,7 @@
       min-height: 100vh;
       display: flex;
       justify-content: center;
-      padding: 20px 14px;
+      padding: max(16px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
       font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
       color: var(--text);
       background: radial-gradient(circle at top right, #312e81 0%, var(--bg) 40%, #020617 100%);
@@ -47,7 +47,8 @@
     .hero {
       color: #f8fafc;
       text-align: center;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
+      padding: 4px;
     }
 
     .hero h1 {
@@ -59,6 +60,8 @@
     .hero p {
       margin: 8px 0 0;
       color: #cbd5e1;
+      font-size: 0.98rem;
+      line-height: 1.45;
     }
 
     .hero-link {
@@ -79,7 +82,7 @@
       border: 1px solid rgba(148, 163, 184, 0.25);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      padding: 18px;
+      padding: 16px;
     }
 
     label {
@@ -94,6 +97,7 @@
     select,
     button {
       width: 100%;
+      min-height: 48px;
       padding: 12px 14px;
       margin-top: 7px;
       font-size: 16px;
@@ -140,6 +144,7 @@
       color: var(--muted);
       font-size: 0.91rem;
       margin: 8px 0 0;
+      line-height: 1.45;
     }
 
     #msg {
@@ -201,6 +206,26 @@
       .row > div {
         flex: 1;
         min-width: 220px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .hero-link {
+        margin-top: 12px;
+        font-size: 0.96rem;
+      }
+
+      .card {
+        padding: 14px;
+        border-radius: 14px;
+      }
+
+      label {
+        margin-top: 12px;
+      }
+
+      button {
+        margin-top: 16px;
       }
     }
   </style>
