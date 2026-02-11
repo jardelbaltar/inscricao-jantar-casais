@@ -8,32 +8,152 @@
   <meta http-equiv="Expires" content="0" />
   <title>Admin - Jantar de Casais</title>
   <style>
-    body{font-family:system-ui,Segoe UI,Roboto,Arial;max-width:1100px;margin:24px auto;padding:0 16px}
-    h1{margin:0 0 6px}
-    h2{margin:0 0 6px}
-    .muted{color:#666;font-size:14px}
-    .err{color:#b00020;font-weight:700}
-    .ok{color:#0a7a2f;font-weight:700}
-    .grid{display:grid;grid-template-columns: 1fr;gap:14px}
-    .card{border:1px solid #ddd;border-radius:14px;padding:14px}
-    label{display:block;font-weight:700;margin-top:10px}
-    input,select,button{width:100%;padding:10px;margin-top:6px;font-size:16px}
-    button{cursor:pointer}
-    .row{display:flex;gap:12px;flex-wrap:wrap}
-    .row > div{flex:1;min-width:220px}
-    table{width:100%;border-collapse:collapse;margin-top:10px}
-    th,td{border-bottom:1px solid #eee;padding:10px;text-align:left;vertical-align:top}
-    th{font-size:14px;color:#333}
-    .pill{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid #ddd;font-size:12px}
-    .right{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
-    .btn2{width:auto}
-    .small{font-size:13px}
-    .danger{border-color:#f0b4b4}
+    :root {
+      --bg: #0f172a;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --primary: #7c3aed;
+      --primary-hover: #6d28d9;
+      --success-bg: #dcfce7;
+      --success-text: #166534;
+      --error-text: #b91c1c;
+      --border: #e2e8f0;
+      --shadow: 0 18px 45px rgba(15, 23, 42, 0.25);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 20px 14px;
+      font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top right, #312e81 0%, var(--bg) 40%, #020617 100%);
+    }
+
+    .app-shell {
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    .hero {
+      color: #f8fafc;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.55rem, 5vw, 2.15rem);
+      line-height: 1.2;
+    }
+
+    h2 { margin: 0 0 6px; }
+
+    .hero p {
+      margin: 8px 0 0;
+      color: #cbd5e1;
+    }
+
+    .muted { color: var(--muted); font-size: 14px; }
+    .err {
+      color: var(--error-text);
+      background: #fee2e2;
+      border: 1px solid #fca5a5;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-weight: 700;
+    }
+
+    .ok {
+      color: var(--success-text);
+      background: var(--success-bg);
+      border: 1px solid #86efac;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-weight: 700;
+    }
+
+    .grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+
+    .card {
+      background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+
+    #msg {
+      margin: 0 0 14px;
+      font-weight: 700;
+      min-height: 24px;
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 12px 14px;
+      margin-top: 7px;
+      font-size: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #fff;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: color-mix(in srgb, var(--primary) 65%, white);
+      box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.15);
+    }
+
+    button {
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--primary) 0%, #2563eb 100%);
+      color: #fff;
+      border: 0;
+      font-weight: 700;
+    }
+
+    button:hover { transform: translateY(-1px); filter: brightness(1.03); }
+    button:disabled { cursor: not-allowed; opacity: 0.7; transform: none; }
+
+    .row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .row > div { flex: 1; min-width: 220px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border-bottom: 1px solid #e2e8f0; padding: 10px; text-align: left; vertical-align: top; }
+    th { font-size: 14px; color: #334155; }
+    .pill { display: inline-block; padding: 3px 10px; border-radius: 999px; border: 1px solid #cbd5e1; font-size: 12px; background:#f8fafc; }
+    .right { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+    .btn2 { width: auto; }
+    .small { font-size: 13px; }
+    .danger { border-color: #fca5a5; }
+
+    @media (min-width: 680px) {
+      body { padding: 30px 20px; }
+      .card { padding: 24px; }
+    }
   </style>
 </head>
 <body>
-  <h1>Admin — Jantar de Casais</h1>
-  <p class="muted">Acesso restrito (login obrigatório).</p>
+  <main class="app-shell">
+  <section class="hero">
+    <h1>Admin — Jantar de Casais</h1>
+    <p class="muted">Acesso restrito (login obrigatório).</p>
+  </section>
 
   <div id="msg"></div>
 
@@ -154,6 +274,8 @@
     </div>
 
   </div>
+
+  </main>
 
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.3/+esm";
