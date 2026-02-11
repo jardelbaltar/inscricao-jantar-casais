@@ -477,19 +477,31 @@
       setLoginLoading(true);
       try {
         await requireAdminOrFail();
-      } catch {
+
         // evita efeitos de callbacks antigos quando há corrida de autenticação
         if (currentCheck !== authCheckVersion) return;
-        await supabase.auth.signOut();
-        setMsg("Seu usuário não está autorizado como admin.", "err");
-        return;
-      }
 
-      if (currentCheck !== authCheckVersion) return;
-      loginCard.style.display = "none";
-      app.style.display = "";
-      await loadAll();
-      setLoginLoading(false);
+        loginCard.style.display = "none";
+        app.style.display = "";
+        await loadAll();
+      } catch (err) {
+        // evita efeitos de callbacks antigos quando há corrida de autenticação
+        if (currentCheck !== authCheckVersion) return;
+
+        if (err?.message === "NOT_ADMIN") {
+          await supabase.auth.signOut();
+          setMsg("Seu usuário não está autorizado como admin.", "err");
+          return;
+        }
+
+        loginCard.style.display = "";
+        app.style.display = "none";
+        setMsg(`Erro ao carregar painel admin: ${err?.message ?? "erro desconhecido"}.`, "err");
+      } finally {
+        if (currentCheck === authCheckVersion) {
+          setLoginLoading(false);
+        }
+      }
     }
 
     // LOGIN handlers
