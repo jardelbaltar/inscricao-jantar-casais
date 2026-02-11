@@ -239,12 +239,22 @@
           .from("events")
           .select("id,title,event_date,max_couples")
           .eq("id", eventId)
-          .single();
+          .maybeSingle();
 
-        if (eventError || !eventData) {
+        if (eventError) {
           eventTitle.textContent = "Evento não encontrado";
           setError("Não foi possível carregar o evento.");
           tableWrap.innerHTML = "<p class='muted'>Nenhuma inscrição para exibir.</p>";
+          return;
+        }
+
+        if (!eventData) {
+          eventTitle.textContent = "Evento não encontrado";
+          setError("Este evento não existe mais (ou o link está incorreto). Confira o parâmetro ?event=.");
+          tableWrap.innerHTML = "<p class='muted'>Nenhuma inscrição para exibir.</p>";
+          totalRegistered.textContent = "0";
+          remainingSlots.textContent = "0";
+          panelMeta.textContent = "";
           return;
         }
 
