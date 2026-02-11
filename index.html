@@ -237,8 +237,8 @@
 
       <p id="msg"></p>
       <div id="successBox" class="success-box" role="status" aria-live="polite">
-        <strong>✅ Inscrição confirmada com sucesso!</strong>
-        Sua participação foi registrada. Nos vemos no jantar 💜
+        <strong id="successBoxTitle">✅ Inscrição confirmada com sucesso!</strong>
+        <span id="successBoxText">Sua participação foi registrada. Nos vemos no jantar 💜</span>
       </div>
     </div>
   </main>
@@ -264,8 +264,26 @@
     const msg = document.getElementById("msg");
     const btn = document.getElementById("btn");
     const successBox = document.getElementById("successBox");
+    const successBoxTitle = document.getElementById("successBoxTitle");
+    const successBoxText = document.getElementById("successBoxText");
     const panelLink = document.getElementById("panelLink");
     const WAITLIST_MESSAGE = "Não há mais vagas disponíveis. Incluímos você na lista de espera. Nossa equipe entrará em contato com você em caso de desistências.";
+    const REGULAR_SUCCESS_MESSAGE = "Inscrição confirmada! 🙌";
+
+    function showSubmissionFeedback({ enteredWaitlist, message }) {
+      msg.className = "ok";
+      msg.textContent = message;
+
+      if (enteredWaitlist) {
+        successBoxTitle.textContent = "🕒 Você entrou na lista de espera";
+        successBoxText.textContent = "No momento todas as vagas foram preenchidas. Se houver desistência, a equipe entrará em contato.";
+      } else {
+        successBoxTitle.textContent = "✅ Inscrição confirmada com sucesso!";
+        successBoxText.textContent = "Sua participação foi registrada. Nos vemos no jantar 💜";
+      }
+
+      successBox.classList.add("show");
+    }
 
     function getPanelUrl() {
       const url = new URL(window.location.href);
@@ -333,11 +351,12 @@
 
     await loadDishes();
 
-    async function resolveRegistrationMessage(rpcData) {
+    async function resolveRegistrationResult(rpcData) {
       if (typeof rpcData?.entered_waitlist === "boolean") {
-        return rpcData.entered_waitlist
-          ? WAITLIST_MESSAGE
-          : "Inscrição confirmada! 🙌";
+        return {
+          enteredWaitlist: rpcData.entered_waitlist,
+          message: rpcData.entered_waitlist ? WAITLIST_MESSAGE : REGULAR_SUCCESS_MESSAGE
+        };
       }
 
       const [eventRes, countRes] = await Promise.all([
@@ -356,9 +375,10 @@
       const currentCount = Number(countRes.count ?? 0);
       const enteredWaitlist = eventLimit > 0 && currentCount > eventLimit;
 
-      return enteredWaitlist
-        ? WAITLIST_MESSAGE
-        : "Inscrição confirmada! 🙌";
+      return {
+        enteredWaitlist,
+        message: enteredWaitlist ? WAITLIST_MESSAGE : REGULAR_SUCCESS_MESSAGE
+      };
     }
 
     document.getElementById("f").addEventListener("submit", async (e) => {
@@ -399,9 +419,10 @@
             });
 
           if (!waitlistError) {
-            msg.className = "ok";
-            msg.textContent = WAITLIST_MESSAGE;
-            successBox.classList.add("show");
+            showSubmissionFeedback({
+              enteredWaitlist: true,
+              message: WAITLIST_MESSAGE
+            });
             e.target.reset();
             await loadDishes({ clearFeedback: false });
             return;
@@ -421,9 +442,8 @@
         return;
       }
 
-      msg.className = "ok";
-      msg.textContent = await resolveRegistrationMessage(data);
-      successBox.classList.add("show");
+      const registrationResult = await resolveRegistrationResult(data);
+      showSubmissionFeedback(registrationResult);
       e.target.reset();
       await loadDishes({ clearFeedback: false });
     });
