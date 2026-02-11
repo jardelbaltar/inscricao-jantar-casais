@@ -202,6 +202,11 @@
     const panelMeta = document.getElementById("panelMeta");
     const tableWrap = document.getElementById("tableWrap");
     const msg = document.getElementById("msg");
+    const POLLING_MS = 15000;
+    let isRefreshing = false;
+    let pendingRefresh = false;
+    let pollingId = null;
+    let realtimeChannel = null;
 
     function setError(text) {
       msg.className = "err";
@@ -220,83 +225,132 @@
     }
 
     async function loadPanel() {
+      if (isRefreshing) {
+        pendingRefresh = true;
+        return;
+      }
+
+      isRefreshing = true;
       msg.textContent = "";
       msg.className = "";
 
-      const { data: eventData, error: eventError } = await supabase
-        .from("events")
-        .select("id,title,event_date,max_couples")
-        .eq("id", eventId)
-        .single();
+      try {
+        const { data: eventData, error: eventError } = await supabase
+          .from("events")
+          .select("id,title,event_date,max_couples")
+          .eq("id", eventId)
+          .single();
 
-      if (eventError || !eventData) {
-        eventTitle.textContent = "Evento não encontrado";
-        setError("Não foi possível carregar o evento.");
-        tableWrap.innerHTML = "<p class='muted'>Nenhuma inscrição para exibir.</p>";
-        return;
+        if (eventError || !eventData) {
+          eventTitle.textContent = "Evento não encontrado";
+          setError("Não foi possível carregar o evento.");
+          tableWrap.innerHTML = "<p class='muted'>Nenhuma inscrição para exibir.</p>";
+          return;
+        }
+
+        eventTitle.textContent = eventData.title;
+
+        const { count, error: countError } = await supabase
+          .from("registrations")
+          .select("id", { count: "exact", head: true })
+          .eq("event_id", eventId);
+
+        if (countError) {
+          setError("Erro ao carregar o total de inscritos.");
+        }
+
+        const inscritos = count ?? 0;
+        const limite = Number(eventData.max_couples ?? 0);
+        const vagas = Math.max(limite - inscritos, 0);
+
+        totalRegistered.textContent = inscritos;
+        remainingSlots.textContent = vagas;
+        panelMeta.textContent = `Limite: ${limite} casais • Data do evento: ${eventData.event_date ?? "não informada"}`;
+
+        const { data: registrations, error: regError } = await supabase
+          .from("registrations")
+          .select(`
+            id,
+            couple_name,
+            wedding_date,
+            phone,
+            dishes ( name )
+          `)
+          .eq("event_id", eventId)
+          .order("created_at", { ascending: false });
+
+        if (regError) {
+          tableWrap.innerHTML = "<p class='err'>Erro ao carregar inscrições.</p>";
+          return;
+        }
+
+        const rows = (registrations ?? []).map((r) => `
+          <tr>
+            <td><strong>${escapeHtml(r.couple_name)}</strong></td>
+            <td>${escapeHtml(r.wedding_date)}</td>
+            <td>${escapeHtml(r.phone)}</td>
+            <td>${escapeHtml(r.dishes?.name ?? "—")}</td>
+          </tr>
+        `).join("");
+
+        tableWrap.innerHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>Nome do casal</th>
+                <th>Data de casamento</th>
+                <th>Telefone</th>
+                <th>Prato escolhido</th>
+              </tr>
+            </thead>
+            <tbody>${rows || "<tr><td colspan='4' class='muted'>Nenhuma inscrição ainda.</td></tr>"}</tbody>
+          </table>
+        `;
+      } finally {
+        isRefreshing = false;
+        if (pendingRefresh) {
+          pendingRefresh = false;
+          queueMicrotask(loadPanel);
+        }
       }
-
-      eventTitle.textContent = eventData.title;
-
-      const { count, error: countError } = await supabase
-        .from("registrations")
-        .select("id", { count: "exact", head: true })
-        .eq("event_id", eventId);
-
-      if (countError) {
-        setError("Erro ao carregar o total de inscritos.");
-      }
-
-      const inscritos = count ?? 0;
-      const limite = Number(eventData.max_couples ?? 0);
-      const vagas = Math.max(limite - inscritos, 0);
-
-      totalRegistered.textContent = inscritos;
-      remainingSlots.textContent = vagas;
-      panelMeta.textContent = `Limite: ${limite} casais • Data do evento: ${eventData.event_date ?? "não informada"}`;
-
-      const { data: registrations, error: regError } = await supabase
-        .from("registrations")
-        .select(`
-          id,
-          couple_name,
-          wedding_date,
-          phone,
-          dishes ( name )
-        `)
-        .eq("event_id", eventId)
-        .order("created_at", { ascending: false });
-
-      if (regError) {
-        tableWrap.innerHTML = "<p class='err'>Erro ao carregar inscrições.</p>";
-        return;
-      }
-
-      const rows = (registrations ?? []).map((r) => `
-        <tr>
-          <td><strong>${escapeHtml(r.couple_name)}</strong></td>
-          <td>${escapeHtml(r.wedding_date)}</td>
-          <td>${escapeHtml(r.phone)}</td>
-          <td>${escapeHtml(r.dishes?.name ?? "—")}</td>
-        </tr>
-      `).join("");
-
-      tableWrap.innerHTML = `
-        <table>
-          <thead>
-            <tr>
-              <th>Nome do casal</th>
-              <th>Data de casamento</th>
-              <th>Telefone</th>
-              <th>Prato escolhido</th>
-            </tr>
-          </thead>
-          <tbody>${rows || "<tr><td colspan='4' class='muted'>Nenhuma inscrição ainda.</td></tr>"}</tbody>
-        </table>
-      `;
     }
 
+    function startAutoRefresh() {
+      pollingId = window.setInterval(() => {
+        loadPanel();
+      }, POLLING_MS);
+
+      realtimeChannel = supabase
+        .channel(`painel-evento-${eventId}`)
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "registrations", filter: `event_id=eq.${eventId}` },
+          () => loadPanel()
+        )
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "events", filter: `id=eq.${eventId}` },
+          () => loadPanel()
+        )
+        .subscribe();
+    }
+
+    function stopAutoRefresh() {
+      if (pollingId !== null) {
+        window.clearInterval(pollingId);
+        pollingId = null;
+      }
+
+      if (realtimeChannel) {
+        supabase.removeChannel(realtimeChannel);
+        realtimeChannel = null;
+      }
+    }
+
+    window.addEventListener("beforeunload", stopAutoRefresh);
+
     await loadPanel();
+    startAutoRefresh();
   </script>
 </body>
 </html>
