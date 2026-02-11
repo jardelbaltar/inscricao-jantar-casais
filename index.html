@@ -268,7 +268,15 @@
 
     function getPanelUrl() {
       const url = new URL(window.location.href);
-      url.pathname = url.pathname.replace(/index\.html$/i, "painel.html");
+      const path = url.pathname;
+      if (/index\.html$/i.test(path)) {
+        url.pathname = path.replace(/index\.html$/i, "painel.html");
+      } else if (path.endsWith("/")) {
+        url.pathname = `${path}painel.html`;
+      } else {
+        const basePath = path.substring(0, path.lastIndexOf("/") + 1);
+        url.pathname = `${basePath}painel.html`;
+      }
       url.search = "";
       url.hash = "";
       url.searchParams.set("event", EVENT_ID);
@@ -318,12 +326,12 @@
 
     await loadDishes();
 
-    document.getElementById("f").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      msg.textContent = "";
-      msg.className = "";
-      successBox.classList.remove("show");
-      btn.disabled = true;
+    async function resolveRegistrationMessage(rpcData) {
+      if (typeof rpcData?.entered_waitlist === "boolean") {
+        return rpcData.entered_waitlist
+          ? "As vagas foram preenchidas. Seu casal entrou na lista de espera e, em caso de desistência, a equipe entrará em contato."
+          : "Inscrição confirmada! 🙌";
+      }
 
       const [eventRes, countRes] = await Promise.all([
         supabase
@@ -339,7 +347,19 @@
 
       const eventLimit = Number(eventRes.data?.max_couples ?? 0);
       const currentCount = Number(countRes.count ?? 0);
-      const shouldEnterWaitlist = eventLimit > 0 && currentCount >= eventLimit;
+      const enteredWaitlist = eventLimit > 0 && currentCount > eventLimit;
+
+      return enteredWaitlist
+        ? "As vagas foram preenchidas. Seu casal entrou na lista de espera e, em caso de desistência, a equipe entrará em contato."
+        : "Inscrição confirmada! 🙌";
+    }
+
+    document.getElementById("f").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      msg.textContent = "";
+      msg.className = "";
+      successBox.classList.remove("show");
+      btn.disabled = true;
 
       const payload = {
         p_event_id: EVENT_ID,
@@ -395,9 +415,7 @@
       }
 
       msg.className = "ok";
-      msg.textContent = shouldEnterWaitlist
-        ? "As vagas foram preenchidas. Seu casal entrou na lista de espera e, em caso de desistência, a equipe entrará em contato."
-        : "Inscrição confirmada! 🙌";
+      msg.textContent = await resolveRegistrationMessage(data);
       successBox.classList.add("show");
       e.target.reset();
       await loadDishes({ clearFeedback: false });
