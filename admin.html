@@ -474,7 +474,6 @@
         return;
       }
 
-      setLoginLoading(true);
       try {
         await requireAdminOrFail();
 
@@ -489,6 +488,9 @@
         if (currentCheck !== authCheckVersion) return;
 
         if (err?.message === "NOT_ADMIN") {
+          loginCard.style.display = "";
+          app.style.display = "none";
+          setLoginLoading(false);
           await supabase.auth.signOut();
           setMsg("Seu usuário não está autorizado como admin.", "err");
           return;
