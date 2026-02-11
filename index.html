@@ -9,8 +9,8 @@
     label{display:block;margin-top:12px;font-weight:600}
     input,select,button{width:100%;padding:10px;margin-top:6px;font-size:16px}
     .card{border:1px solid #ddd;border-radius:12px;padding:16px;margin-top:16px}
-    .row{display:flex;gap:12px}
-    .row > div{flex:1}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .row > div{flex:1;min-width:220px}
     .muted{color:#666;font-size:14px}
     .ok{color:#0a7a2f;font-weight:700}
     .err{color:#b00020;font-weight:700}
@@ -18,7 +18,7 @@
 </head>
 <body>
   <h1>Inscrição - Jantar de Casais</h1>
-  <p class="muted">Preencha seus dados e escolha um prato disponível.</p>
+  <p class="muted">Aponte a câmera para o QR Code e preencha.</p>
 
   <div class="card">
     <form id="f">
@@ -51,13 +51,12 @@
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-    // 1) COLE AQUI:
+    // COLE AQUI:
     const SUPABASE_URL = "https://nuqcefxwarrjehvhdoug.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51cWNlZnh3YXJyamVodmhkb3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NzE1NzUsImV4cCI6MjA4NjM0NzU3NX0.xLugRmdl6UKVsMZnDepBlFndh4vGVMnptuloFZC28Mc";
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // 2) EVENTO: pegue do parâmetro ?event=UUID
     const params = new URLSearchParams(location.search);
     const EVENT_ID = params.get("event");
     if (!EVENT_ID) {
@@ -76,7 +75,7 @@
 
       const { data, error } = await supabase
         .from("dishes")
-        .select("id,name,remaining,sort_order")
+        .select("id,name,remaining,sort_order,created_at")
         .eq("event_id", EVENT_ID)
         .eq("is_active", true)
         .order("sort_order", { ascending: true })
