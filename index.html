@@ -96,7 +96,10 @@
     input,
     select,
     button {
+      display: block;
       width: 100%;
+      max-width: 100%;
+      min-width: 0;
       min-height: 48px;
       padding: 12px 14px;
       margin-top: 7px;
@@ -112,6 +115,11 @@
       outline: none;
       border-color: color-mix(in srgb, var(--primary) 65%, white);
       box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.15);
+    }
+
+    input[type="date"] {
+      -webkit-appearance: none;
+      appearance: none;
     }
 
     button {
