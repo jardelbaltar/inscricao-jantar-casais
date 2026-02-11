@@ -64,17 +64,32 @@
       line-height: 1.45;
     }
 
+    .hero p + p {
+      margin-top: 4px;
+    }
+
     .hero-link {
       display: inline-flex;
+      align-items: center;
+      justify-content: center;
       margin-top: 10px;
       color: #bfdbfe;
-      font-weight: 600;
-      text-decoration: underline;
-      text-underline-offset: 2px;
+      text-decoration: none;
+      padding: 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(191, 219, 254, 0.45);
+      background: rgba(15, 23, 42, 0.25);
     }
 
     .hero-link:hover {
       color: #dbeafe;
+      border-color: rgba(219, 234, 254, 0.85);
+      background: rgba(15, 23, 42, 0.4);
+    }
+
+    .hero-link svg {
+      width: 20px;
+      height: 20px;
     }
 
     .card {
@@ -241,9 +256,17 @@
 <body>
   <main class="app">
     <section class="hero">
-      <h1>Inscrição - Jantar de Casais</h1>
-      <p>Aponte a câmera para o QR Code e preencha seus dados.</p>
-      <a id="panelLink" class="hero-link" href="#">Ver painel público de inscrições</a>
+      <h1 id="eventName">Carregando evento...</h1>
+      <p id="eventDate">Data do evento: --</p>
+      <p id="eventSlots">Vagas: --/--</p>
+      <a id="panelLink" class="hero-link" href="#" aria-label="Abrir painel público de inscrições" title="Abrir painel público de inscrições">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <rect x="3" y="3" width="8" height="8" rx="2" stroke="currentColor" stroke-width="1.7"></rect>
+          <rect x="13" y="3" width="8" height="5" rx="2" stroke="currentColor" stroke-width="1.7"></rect>
+          <rect x="13" y="10" width="8" height="11" rx="2" stroke="currentColor" stroke-width="1.7"></rect>
+          <rect x="3" y="13" width="8" height="8" rx="2" stroke="currentColor" stroke-width="1.7"></rect>
+        </svg>
+      </a>
     </section>
 
     <div class="card">
@@ -309,6 +332,9 @@
     const successBoxTitle = document.getElementById("successBoxTitle");
     const successBoxText = document.getElementById("successBoxText");
     const panelLink = document.getElementById("panelLink");
+    const eventName = document.getElementById("eventName");
+    const eventDate = document.getElementById("eventDate");
+    const eventSlots = document.getElementById("eventSlots");
     const WAITLIST_MESSAGE = "Não há mais vagas disponíveis. Incluímos você na lista de espera. Nossa equipe entrará em contato com você em caso de desistências.";
     const REGULAR_SUCCESS_MESSAGE = "Inscrição confirmada! 🙌";
 
@@ -351,6 +377,52 @@
     }
 
     panelLink.href = getPanelUrl();
+
+    function formatDateTime(value) {
+      if (!value) return "--";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "--";
+      return new Intl.DateTimeFormat("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      }).format(date);
+    }
+
+    async function loadEventSummary() {
+      const [eventRes, countRes] = await Promise.all([
+        supabase
+          .from("events")
+          .select("title,event_date,max_couples")
+          .eq("id", EVENT_ID)
+          .maybeSingle(),
+        supabase
+          .from("registrations")
+          .select("id", { count: "exact", head: true })
+          .eq("event_id", EVENT_ID)
+      ]);
+
+      if (eventRes.error || !eventRes.data) {
+        eventName.textContent = "Evento não encontrado";
+        return;
+      }
+
+      const eventData = eventRes.data;
+      const totalRegistrations = Number(countRes.count ?? 0);
+      const totalSlots = Number(eventData.max_couples ?? 0);
+      const availableSlots = totalSlots > 0 ? Math.max(totalSlots - totalRegistrations, 0) : 0;
+
+      eventName.textContent = eventData.title || "Evento";
+      document.title = eventData.title || "Inscrição";
+      eventDate.textContent = `Data do evento: ${formatDateTime(eventData.event_date)}`;
+      eventSlots.textContent = totalSlots > 0
+        ? `Vagas: ${availableSlots}/${totalSlots}`
+        : "Vagas: ilimitadas";
+    }
+
+    await loadEventSummary();
 
     function delay(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
