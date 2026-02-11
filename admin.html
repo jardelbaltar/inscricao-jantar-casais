@@ -212,11 +212,41 @@
       return url.toString();
     }
 
+    function delay(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
     async function requireAdminOrFail() {
-      // Checa se usuário autenticado está em public.admins (policy permite só o próprio)
-      const { data, error } = await supabase.from("admins").select("*").limit(1);
-      if (error) throw new Error("NOT_ADMIN");
-      if (!data || data.length === 0) throw new Error("NOT_ADMIN");
+      // Checa se usuário autenticado está em public.admins (policy permite só o próprio).
+      // Após login/refresh, alguns ambientes podem levar alguns ms para estabilizar o token.
+      const retries = [0, 150, 300, 600];
+
+      for (const waitMs of retries) {
+        if (waitMs > 0) {
+          await delay(waitMs);
+        }
+
+        const { data, error } = await supabase.from("admins").select("*").limit(1);
+
+        if (!error) {
+          if (!data || data.length === 0) throw new Error("NOT_ADMIN");
+          return;
+        }
+
+        const msg = (error.message || "").toLowerCase();
+        const isTransientAuthError =
+          msg.includes("jwt") ||
+          msg.includes("token") ||
+          msg.includes("not authenticated") ||
+          msg.includes("invalid claim");
+
+        // Se for erro de autenticação transitório, tenta novamente.
+        if (isTransientAuthError && waitMs !== retries[retries.length - 1]) {
+          continue;
+        }
+
+        throw new Error("NOT_ADMIN");
+      }
     }
 
     async function refreshEvents() {
@@ -606,13 +636,30 @@
     btnExportCSV.addEventListener("click", exportCSV);
 
     // Sessão / bootstrap
-    supabase.auth.onAuthStateChange(async (_event, session) => {
+    // Em alguns refreshes o callback de auth pode emitir estados em ordem diferente.
+    // Guardamos se a sessão inicial já foi resolvida para evitar sobrescrever UI com null transitório.
+    let initialSessionResolved = false;
+
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "INITIAL_SESSION") {
+        initialSessionResolved = true;
+        await applySession(session);
+        return;
+      }
+
+      if (!initialSessionResolved && !session) {
+        return;
+      }
+
       await applySession(session);
     });
 
-    // Carrega sessão atual (se já estiver logado)
+    // Fallback: se o ambiente não disparar INITIAL_SESSION, usa getSession.
     const { data: { session } } = await supabase.auth.getSession();
-    await applySession(session);
+    if (!initialSessionResolved) {
+      initialSessionResolved = true;
+      await applySession(session);
+    }
   </script>
 </body>
 </html>
