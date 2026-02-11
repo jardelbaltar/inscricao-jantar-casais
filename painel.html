@@ -194,7 +194,7 @@
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const params = new URLSearchParams(location.search);
-    const eventId = params.get("event")?.trim().toLowerCase();
+    const eventId = params.get("event")?.trim();
 
     const eventTitle = document.getElementById("eventTitle");
     const totalRegistered = document.getElementById("totalRegistered");
@@ -270,9 +270,10 @@
             .select("id", { count: "exact", head: true })
             .eq("event_id", eventId);
 
-          const hasAnyPublicData = (dishCount ?? 0) > 0 || inscritos > 0;
+          const hasAnyPublicData = inscritos > 0 || (dishCount ?? 0) > 0;
+          const canConfirmEventDoesNotExist = !hasAnyPublicData && !dishError;
 
-          if (!hasAnyPublicData || dishError) {
+          if (canConfirmEventDoesNotExist) {
             eventTitle.textContent = "Evento não encontrado";
             setError("Este evento não existe mais (ou o link está incorreto). Confira o parâmetro ?event=.");
             tableWrap.innerHTML = "<p class='muted'>Nenhuma inscrição para exibir.</p>";
@@ -286,7 +287,12 @@
           panelMeta.textContent = "Detalhes do evento indisponíveis para consulta pública.";
           totalRegistered.textContent = inscritos;
           remainingSlots.textContent = "—";
-          setInfo("Não foi possível carregar título/data do evento, mas os inscritos continuam disponíveis.");
+
+          if (dishError && inscritos === 0) {
+            setInfo("Não foi possível validar os dados públicos do evento agora. Tente novamente em instantes.");
+          } else {
+            setInfo("Não foi possível carregar título/data do evento, mas os inscritos continuam disponíveis.");
+          }
         } else {
           const limite = Number(eventData.max_couples ?? 0);
           const vagas = Math.max(limite - inscritos, 0);
