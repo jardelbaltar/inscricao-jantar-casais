@@ -510,15 +510,28 @@
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
       setLoginLoading(true);
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         setLoginLoading(false);
         setMsg("Falha no login. Verifique e-mail/senha.", "err");
         return;
       }
 
+      // Usa a sessão retornada no login para evitar corrida entre persistência de sessão e getSession()
+      let session = data?.session ?? null;
+
       // fallback: em alguns ambientes o evento de auth pode demorar/não disparar de imediato
-      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        const { data: current } = await supabase.auth.getSession();
+        session = current?.session ?? null;
+      }
+
+      if (!session) {
+        setLoginLoading(false);
+        setMsg("Login efetuado, mas não foi possível validar a sessão no navegador. Tente novamente.", "err");
+        return;
+      }
+
       await applySession(session);
     });
 
