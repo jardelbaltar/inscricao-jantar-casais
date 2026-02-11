@@ -357,12 +357,18 @@
           return;
         }
 
+        const hasEventLimitData = eventData !== null && eventData !== undefined;
         const limit = Number(eventData?.max_couples ?? 0);
-        const hasFiniteLimit = limit > 0;
+        const hasFiniteLimit = hasEventLimitData && limit > 0;
         const rows = (registrations ?? []).map((r, idx) => {
-          const isConfirmed = hasFiniteLimit ? idx < limit : true;
-          const statusIcon = isConfirmed ? "✅" : "⏳";
-          const statusLabel = isConfirmed ? "Confirmado" : "Lista de espera";
+          const isConfirmed = hasFiniteLimit ? idx < limit : hasEventLimitData;
+          const isUnknownStatus = !hasEventLimitData;
+          const statusIcon = isUnknownStatus ? "❔" : isConfirmed ? "✅" : "⏳";
+          const statusLabel = isUnknownStatus
+            ? "Status indisponível"
+            : isConfirmed
+              ? "Confirmado"
+              : "Lista de espera";
           return `
           <tr>
             <td title="${statusLabel}">${statusIcon}</td>
