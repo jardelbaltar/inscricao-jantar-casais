@@ -606,13 +606,30 @@
     btnExportCSV.addEventListener("click", exportCSV);
 
     // Sessão / bootstrap
-    supabase.auth.onAuthStateChange(async (_event, session) => {
+    // Em alguns refreshes o callback de auth pode emitir estados em ordem diferente.
+    // Guardamos se a sessão inicial já foi resolvida para evitar sobrescrever UI com null transitório.
+    let initialSessionResolved = false;
+
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "INITIAL_SESSION") {
+        initialSessionResolved = true;
+        await applySession(session);
+        return;
+      }
+
+      if (!initialSessionResolved && !session) {
+        return;
+      }
+
       await applySession(session);
     });
 
-    // Carrega sessão atual (se já estiver logado)
+    // Fallback: se o ambiente não disparar INITIAL_SESSION, usa getSession.
     const { data: { session } } = await supabase.auth.getSession();
-    await applySession(session);
+    if (!initialSessionResolved) {
+      initialSessionResolved = true;
+      await applySession(session);
+    }
   </script>
 </body>
 </html>
