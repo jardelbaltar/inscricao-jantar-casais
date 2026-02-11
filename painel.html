@@ -50,6 +50,12 @@
       padding: 4px;
     }
 
+    .hero-link-row {
+      margin-top: 10px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
     .hero h1 {
       margin: 0;
       font-size: clamp(1.55rem, 5vw, 2.3rem);
@@ -64,7 +70,6 @@
     }
 
     .hero-link {
-      margin-top: 10px;
       display: inline-flex;
       align-items: center;
       gap: 8px;
@@ -234,10 +239,12 @@
     <section class="hero">
       <h1 id="heroTitle">Inscrições - Carregando evento...</h1>
       <p id="heroSubtitle">Carregando informações do evento...</p>
-      <a id="registrationLink" class="hero-link" href="index.html" aria-label="Abrir formulário de inscrição">
-        <span class="hero-link-icon" aria-hidden="true">📝</span>
-        <span>Ir para inscrição</span>
-      </a>
+      <div class="hero-link-row">
+        <a id="registrationLink" class="hero-link" href="index.html" aria-label="Abrir formulário de inscrição">
+          <span class="hero-link-icon" aria-hidden="true">📝</span>
+          <span>Ir para inscrição</span>
+        </a>
+      </div>
     </section>
 
     <section class="card">
