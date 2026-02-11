@@ -326,14 +326,17 @@
           }
         } else {
           const limite = Number(eventData.max_couples ?? 0);
-          const vagas = Math.max(limite - inscritos, 0);
-          const emEspera = Math.max(inscritos - limite, 0);
+          const hasFiniteLimit = limite > 0;
+          const vagas = hasFiniteLimit ? Math.max(limite - inscritos, 0) : "∞";
+          const emEspera = hasFiniteLimit ? Math.max(inscritos - limite, 0) : 0;
 
           eventTitle.textContent = eventData.title;
           totalRegistered.textContent = inscritos;
           remainingSlots.textContent = vagas;
           waitlistTotal.textContent = emEspera;
-          panelMeta.textContent = `Limite: ${limite} casais • Data do evento: ${formatDateTime(eventData.event_date)}`;
+          panelMeta.textContent = hasFiniteLimit
+            ? `Limite: ${limite} casais • Data do evento: ${formatDateTime(eventData.event_date)}`
+            : `Sem limite de vagas • Data do evento: ${formatDateTime(eventData.event_date)}`;
         }
 
         const { data: registrations, error: regError } = await supabase
@@ -357,7 +360,7 @@
         const limit = Number(eventData?.max_couples ?? 0);
         const hasFiniteLimit = limit > 0;
         const rows = (registrations ?? []).map((r, idx) => {
-          const isConfirmed = hasFiniteLimit ? idx < limit : false;
+          const isConfirmed = hasFiniteLimit ? idx < limit : true;
           const statusIcon = isConfirmed ? "✅" : "⏳";
           const statusLabel = isConfirmed ? "Confirmado" : "Lista de espera";
           return `
