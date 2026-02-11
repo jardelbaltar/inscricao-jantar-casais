@@ -5,48 +5,229 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Inscrição - Jantar de Casais</title>
   <style>
-    body{font-family:system-ui,Segoe UI,Roboto,Arial;max-width:720px;margin:24px auto;padding:0 16px}
-    label{display:block;margin-top:12px;font-weight:600}
-    input,select,button{width:100%;padding:10px;margin-top:6px;font-size:16px}
-    .card{border:1px solid #ddd;border-radius:12px;padding:16px;margin-top:16px}
-    .row{display:flex;gap:12px;flex-wrap:wrap}
-    .row > div{flex:1;min-width:220px}
-    .muted{color:#666;font-size:14px}
-    .ok{color:#0a7a2f;font-weight:700}
-    .err{color:#b00020;font-weight:700}
+    :root {
+      --bg: #0f172a;
+      --bg-accent: #1e293b;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --primary: #7c3aed;
+      --primary-hover: #6d28d9;
+      --success-bg: #dcfce7;
+      --success-text: #166534;
+      --error-text: #b91c1c;
+      --border: #e2e8f0;
+      --shadow: 0 18px 45px rgba(15, 23, 42, 0.25);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 20px 14px;
+      font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top right, #312e81 0%, var(--bg) 40%, #020617 100%);
+    }
+
+    .app {
+      width: 100%;
+      max-width: 760px;
+    }
+
+    .hero {
+      color: #f8fafc;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(1.55rem, 5vw, 2.15rem);
+      line-height: 1.2;
+    }
+
+    .hero p {
+      margin: 8px 0 0;
+      color: #cbd5e1;
+    }
+
+    .card {
+      background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    label {
+      display: block;
+      margin-top: 14px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    input,
+    select,
+    button {
+      width: 100%;
+      padding: 12px 14px;
+      margin-top: 7px;
+      font-size: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #fff;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: color-mix(in srgb, var(--primary) 65%, white);
+      box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.15);
+    }
+
+    button {
+      margin-top: 20px;
+      background: linear-gradient(135deg, var(--primary) 0%, #2563eb 100%);
+      color: #fff;
+      border: 0;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.03);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.7;
+      transform: none;
+    }
+
+    .row {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 0.91rem;
+      margin: 8px 0 0;
+    }
+
+    #msg {
+      margin: 14px 0 0;
+      font-weight: 700;
+      min-height: 24px;
+    }
+
+    .ok {
+      color: var(--success-text);
+      background: var(--success-bg);
+      border: 1px solid #86efac;
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+
+    .err {
+      color: var(--error-text);
+      background: #fee2e2;
+      border: 1px solid #fca5a5;
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+
+    .success-box {
+      margin-top: 14px;
+      background: linear-gradient(140deg, #ecfdf5 0%, #f0fdf4 100%);
+      border: 1px solid #86efac;
+      border-radius: 14px;
+      color: #14532d;
+      padding: 14px;
+      display: none;
+    }
+
+    .success-box strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 1rem;
+    }
+
+    .success-box.show {
+      display: block;
+    }
+
+    @media (min-width: 680px) {
+      body {
+        padding: 30px 20px;
+      }
+
+      .card {
+        padding: 24px;
+      }
+
+      .row {
+        flex-direction: row;
+        gap: 12px;
+      }
+
+      .row > div {
+        flex: 1;
+        min-width: 220px;
+      }
+    }
   </style>
 </head>
 <body>
-  <h1>Inscrição - Jantar de Casais</h1>
-  <p class="muted">Aponte a câmera para o QR Code e preencha.</p>
+  <main class="app">
+    <section class="hero">
+      <h1>Inscrição - Jantar de Casais</h1>
+      <p>Aponte a câmera para o QR Code e preencha seus dados.</p>
+    </section>
 
-  <div class="card">
-    <form id="f">
-      <label>Nome do casal</label>
-      <input id="couple_name" required placeholder="Ex: João e Maria" />
+    <div class="card">
+      <form id="f">
+        <label>Nome do casal</label>
+        <input id="couple_name" required placeholder="Ex: João e Maria" />
 
-      <div class="row">
-        <div>
-          <label>Data de casamento</label>
-          <input id="wedding_date" type="date" required />
+        <div class="row">
+          <div>
+            <label>Data de casamento</label>
+            <input id="wedding_date" type="date" required />
+          </div>
+          <div>
+            <label>Telefone (WhatsApp)</label>
+            <input id="phone" required placeholder="Ex: (61) 99999-9999" />
+          </div>
         </div>
-        <div>
-          <label>Telefone (WhatsApp)</label>
-          <input id="phone" required placeholder="Ex: (61) 99999-9999" />
-        </div>
+
+        <label>Prato escolhido</label>
+        <select id="dish" required>
+          <option value="">Carregando...</option>
+        </select>
+        <p class="muted" id="dishHint"></p>
+
+        <button id="btn" type="submit">Confirmar inscrição</button>
+      </form>
+
+      <p id="msg"></p>
+      <div id="successBox" class="success-box" role="status" aria-live="polite">
+        <strong>✅ Inscrição confirmada com sucesso!</strong>
+        Sua participação foi registrada. Nos vemos no jantar 💜
       </div>
-
-      <label>Prato escolhido</label>
-      <select id="dish" required>
-        <option value="">Carregando...</option>
-      </select>
-      <p class="muted" id="dishHint"></p>
-
-      <button id="btn" type="submit">Confirmar inscrição</button>
-    </form>
-
-    <p id="msg"></p>
-  </div>
+    </div>
+  </main>
 
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
@@ -68,9 +249,11 @@
     const dishHint = document.getElementById("dishHint");
     const msg = document.getElementById("msg");
     const btn = document.getElementById("btn");
+    const successBox = document.getElementById("successBox");
 
     async function loadDishes() {
       msg.textContent = "";
+      successBox.classList.remove("show");
       dishSelect.innerHTML = "<option value=''>Carregando...</option>";
 
       const { data, error } = await supabase
@@ -111,6 +294,7 @@
       e.preventDefault();
       msg.textContent = "";
       msg.className = "";
+      successBox.classList.remove("show");
       btn.disabled = true;
 
       const payload = {
@@ -147,6 +331,7 @@
 
       msg.className = "ok";
       msg.textContent = "Inscrição confirmada! 🙌";
+      successBox.classList.add("show");
       e.target.reset();
       await loadDishes();
     });
