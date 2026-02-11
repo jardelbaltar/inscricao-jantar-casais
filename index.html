@@ -251,9 +251,11 @@
     const btn = document.getElementById("btn");
     const successBox = document.getElementById("successBox");
 
-    async function loadDishes() {
+    async function loadDishes({ clearFeedback = true } = {}) {
       msg.textContent = "";
-      successBox.classList.remove("show");
+      if (clearFeedback) {
+        successBox.classList.remove("show");
+      }
       dishSelect.innerHTML = "<option value=''>Carregando...</option>";
 
       const { data, error } = await supabase
@@ -333,7 +335,7 @@
       msg.textContent = "Inscrição confirmada! 🙌";
       successBox.classList.add("show");
       e.target.reset();
-      await loadDishes();
+      await loadDishes({ clearFeedback: false });
     });
   </script>
 </body>
