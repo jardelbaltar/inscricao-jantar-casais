@@ -281,7 +281,7 @@
           </div>
           <div>
             <label>Telefone</label>
-            <input id="phone" required placeholder="Ex: (61) 9999-9999" inputmode="tel" maxlength="14" />
+            <input id="phone" required placeholder="Ex: (61) 99999-9999" inputmode="tel" maxlength="15" />
           </div>
         </div>
 
@@ -340,13 +340,14 @@
     const REGULAR_SUCCESS_MESSAGE = "Inscrição confirmada! 🙌";
 
     function formatPhone(value) {
-      const digits = value.replace(/\D/g, "").slice(0, 10);
+      const digits = value.replace(/\D/g, "").slice(0, 11);
 
       if (digits.length === 0) return "";
       if (digits.length < 3) return `(${digits}`;
       if (digits.length < 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+      if (digits.length < 11) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
 
-      return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+      return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
     }
 
     phoneInput.addEventListener("input", (event) => {
