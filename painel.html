@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Painel de Inscrições - Jantar de Casais</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --primary: #2563eb;
+      --success: #0f766e;
+      --border: #e2e8f0;
+      --shadow: 0 20px 45px rgba(15, 23, 42, 0.24);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+      background: radial-gradient(circle at top right, #1e3a8a 0%, var(--bg) 42%, #020617 100%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px 14px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1060px;
+      margin: 0 auto;
+      display: grid;
+      gap: 14px;
+    }
+
+    .hero {
+      color: #f8fafc;
+      text-align: center;
+      padding: 8px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(1.55rem, 5vw, 2.3rem);
+      line-height: 1.2;
+    }
+
+    .hero p {
+      margin: 8px 0 0;
+      color: #cbd5e1;
+    }
+
+    .card {
+      background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid rgba(148, 163, 184, 0.28);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .panel {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .big-box {
+      border-radius: 14px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .big-box h2 {
+      margin: 0;
+      font-size: 0.95rem;
+      color: var(--muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+
+    .big-number {
+      margin-top: 6px;
+      font-size: clamp(2rem, 9vw, 3.4rem);
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .big-box.primary .big-number { color: var(--primary); }
+    .big-box.success .big-number { color: var(--success); }
+
+    .meta {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    .table-wrap {
+      margin-top: 12px;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 12px 10px;
+      border-bottom: 1px solid #edf2f7;
+      white-space: nowrap;
+    }
+
+    th {
+      font-size: .85rem;
+      text-transform: uppercase;
+      letter-spacing: .02em;
+      color: #334155;
+      background: #f8fafc;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    #msg {
+      min-height: 22px;
+      margin: 8px 0 0;
+      font-weight: 700;
+    }
+
+    .err {
+      color: #b91c1c;
+      background: #fee2e2;
+      border: 1px solid #fecaca;
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+
+    .muted { color: var(--muted); }
+
+    @media (max-width: 640px) {
+      .panel {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <section class="hero">
+      <h1>Painel de Inscrições</h1>
+      <p>Acompanhe em tempo real a quantidade de casais inscritos.</p>
+    </section>
+
+    <section class="card">
+      <h2 id="eventTitle" style="margin:0">Carregando evento...</h2>
+      <div class="panel">
+        <article class="big-box primary">
+          <h2>Inscritos</h2>
+          <div class="big-number" id="totalRegistered">--</div>
+        </article>
+        <article class="big-box success">
+          <h2>Vagas restantes</h2>
+          <div class="big-number" id="remainingSlots">--</div>
+        </article>
+      </div>
+      <p class="meta" id="panelMeta"></p>
+      <p id="msg"></p>
+    </section>
+
+    <section class="card">
+      <h2 style="margin:0">Lista completa dos inscritos</h2>
+      <p class="meta" style="margin-bottom:0">Nome do casal, data de casamento, telefone e prato escolhido.</p>
+      <div class="table-wrap" id="tableWrap">
+        <p class="muted">Carregando inscrições...</p>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+    const SUPABASE_URL = "https://nuqcefxwarrjehvhdoug.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51cWNlZnh3YXJyamVodmhkb3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NzE1NzUsImV4cCI6MjA4NjM0NzU3NX0.xLugRmdl6UKVsMZnDepBlFndh4vGVMnptuloFZC28Mc";
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const params = new URLSearchParams(location.search);
+    const eventId = params.get("event");
+
+    const eventTitle = document.getElementById("eventTitle");
+    const totalRegistered = document.getElementById("totalRegistered");
+    const remainingSlots = document.getElementById("remainingSlots");
+    const panelMeta = document.getElementById("panelMeta");
+    const tableWrap = document.getElementById("tableWrap");
+    const msg = document.getElementById("msg");
+    const POLLING_MS = 15000;
+    let isRefreshing = false;
+    let pendingRefresh = false;
+    let pollingId = null;
+    let realtimeChannel = null;
+
+    function setError(text) {
+      msg.className = "err";
+      msg.textContent = text;
+    }
+
+    function escapeHtml(s) {
+      return (s ?? "").toString().replace(/[&<>"']/g, (c) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+    }
+
+    if (!eventId) {
+      setError("Link inválido: faltou o parâmetro ?event=.");
+      eventTitle.textContent = "Evento não informado";
+      tableWrap.innerHTML = "<p class='muted'>Sem evento para consultar.</p>";
+      throw new Error("Missing event");
+    }
+
+    async function loadPanel() {
+      if (isRefreshing) {
+        pendingRefresh = true;
+        return;
+      }
+
+      isRefreshing = true;
+      msg.textContent = "";
+      msg.className = "";
+
+      try {
+        const { data: eventData, error: eventError } = await supabase
+          .from("events")
+          .select("id,title,event_date,max_couples")
+          .eq("id", eventId)
+          .single();
+
+        if (eventError || !eventData) {
+          eventTitle.textContent = "Evento não encontrado";
+          setError("Não foi possível carregar o evento.");
+          tableWrap.innerHTML = "<p class='muted'>Nenhuma inscrição para exibir.</p>";
+          return;
+        }
+
+        eventTitle.textContent = eventData.title;
+
+        const { count, error: countError } = await supabase
+          .from("registrations")
+          .select("id", { count: "exact", head: true })
+          .eq("event_id", eventId);
+
+        if (countError) {
+          setError("Erro ao carregar o total de inscritos.");
+        }
+
+        const inscritos = count ?? 0;
+        const limite = Number(eventData.max_couples ?? 0);
+        const vagas = Math.max(limite - inscritos, 0);
+
+        totalRegistered.textContent = inscritos;
+        remainingSlots.textContent = vagas;
+        panelMeta.textContent = `Limite: ${limite} casais • Data do evento: ${eventData.event_date ?? "não informada"}`;
+
+        const { data: registrations, error: regError } = await supabase
+          .from("registrations")
+          .select(`
+            id,
+            couple_name,
+            wedding_date,
+            phone,
+            dishes ( name )
+          `)
+          .eq("event_id", eventId)
+          .order("created_at", { ascending: false });
+
+        if (regError) {
+          tableWrap.innerHTML = "<p class='err'>Erro ao carregar inscrições.</p>";
+          return;
+        }
+
+        const rows = (registrations ?? []).map((r) => `
+          <tr>
+            <td><strong>${escapeHtml(r.couple_name)}</strong></td>
+            <td>${escapeHtml(r.wedding_date)}</td>
+            <td>${escapeHtml(r.phone)}</td>
+            <td>${escapeHtml(r.dishes?.name ?? "—")}</td>
+          </tr>
+        `).join("");
+
+        tableWrap.innerHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>Nome do casal</th>
+                <th>Data de casamento</th>
+                <th>Telefone</th>
+                <th>Prato escolhido</th>
+              </tr>
+            </thead>
+            <tbody>${rows || "<tr><td colspan='4' class='muted'>Nenhuma inscrição ainda.</td></tr>"}</tbody>
+          </table>
+        `;
+      } finally {
+        isRefreshing = false;
+        if (pendingRefresh) {
+          pendingRefresh = false;
+          queueMicrotask(loadPanel);
+        }
+      }
+    }
+
+    function startAutoRefresh() {
+      pollingId = window.setInterval(() => {
+        loadPanel();
+      }, POLLING_MS);
+
+      realtimeChannel = supabase
+        .channel(`painel-evento-${eventId}`)
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "registrations", filter: `event_id=eq.${eventId}` },
+          () => loadPanel()
+        )
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "events", filter: `id=eq.${eventId}` },
+          () => loadPanel()
+        )
+        .subscribe();
+    }
+
+    function stopAutoRefresh() {
+      if (pollingId !== null) {
+        window.clearInterval(pollingId);
+        pollingId = null;
+      }
+
+      if (realtimeChannel) {
+        supabase.removeChannel(realtimeChannel);
+        realtimeChannel = null;
+      }
+    }
+
+    window.addEventListener("beforeunload", stopAutoRefresh);
+
+    await loadPanel();
+    startAutoRefresh();
+  </script>
+</body>
+</html>
