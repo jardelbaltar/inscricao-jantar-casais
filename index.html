@@ -58,6 +58,19 @@
       color: #cbd5e1;
     }
 
+    .hero-link {
+      display: inline-flex;
+      margin-top: 10px;
+      color: #bfdbfe;
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .hero-link:hover {
+      color: #dbeafe;
+    }
+
     .card {
       background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
       border: 1px solid rgba(148, 163, 184, 0.25);
@@ -194,6 +207,7 @@
     <section class="hero">
       <h1>Inscrição - Jantar de Casais</h1>
       <p>Aponte a câmera para o QR Code e preencha seus dados.</p>
+      <a id="panelLink" class="hero-link" href="#">Ver painel público de inscrições</a>
     </section>
 
     <div class="card">
@@ -250,6 +264,18 @@
     const msg = document.getElementById("msg");
     const btn = document.getElementById("btn");
     const successBox = document.getElementById("successBox");
+    const panelLink = document.getElementById("panelLink");
+
+    function getPanelUrl() {
+      const url = new URL(window.location.href);
+      url.pathname = url.pathname.replace(/index\.html$/i, "painel.html");
+      url.search = "";
+      url.hash = "";
+      url.searchParams.set("event", EVENT_ID);
+      return url.toString();
+    }
+
+    panelLink.href = getPanelUrl();
 
     async function loadDishes({ clearFeedback = true } = {}) {
       msg.textContent = "";
@@ -299,6 +325,22 @@
       successBox.classList.remove("show");
       btn.disabled = true;
 
+      const [eventRes, countRes] = await Promise.all([
+        supabase
+          .from("events")
+          .select("max_couples")
+          .eq("id", EVENT_ID)
+          .maybeSingle(),
+        supabase
+          .from("registrations")
+          .select("id", { count: "exact", head: true })
+          .eq("event_id", EVENT_ID)
+      ]);
+
+      const eventLimit = Number(eventRes.data?.max_couples ?? 0);
+      const currentCount = Number(countRes.count ?? 0);
+      const shouldEnterWaitlist = eventLimit > 0 && currentCount >= eventLimit;
+
       const payload = {
         p_event_id: EVENT_ID,
         p_couple_name: document.getElementById("couple_name").value.trim(),
@@ -318,9 +360,30 @@
       }
 
       if (!data?.ok) {
+        if (data?.error === "EVENT_FULL") {
+          const { error: waitlistError } = await supabase
+            .from("registrations")
+            .insert({
+              event_id: EVENT_ID,
+              couple_name: payload.p_couple_name,
+              wedding_date: payload.p_wedding_date,
+              phone: payload.p_phone,
+              dish_id: payload.p_dish_id || null
+            });
+
+          if (!waitlistError) {
+            msg.className = "ok";
+            msg.textContent = "As vagas foram preenchidas. Seu casal entrou na lista de espera e, em caso de desistência, a equipe entrará em contato.";
+            successBox.classList.add("show");
+            e.target.reset();
+            await loadDishes({ clearFeedback: false });
+            return;
+          }
+        }
+
         msg.className = "err";
         const map = {
-          EVENT_FULL: "As vagas para casais esgotaram.",
+          EVENT_FULL: "As vagas foram preenchidas. No momento não foi possível incluir automaticamente na lista de espera. Tente novamente em instantes.",
           DISH_SOLD_OUT: "Esse prato acabou. Escolha outro.",
           PHONE_ALREADY_REGISTERED: "Este telefone já está inscrito neste evento.",
           DISH_NOT_FOUND: "Prato inválido. Recarregue a página.",
@@ -332,7 +395,9 @@
       }
 
       msg.className = "ok";
-      msg.textContent = "Inscrição confirmada! 🙌";
+      msg.textContent = shouldEnterWaitlist
+        ? "As vagas foram preenchidas. Seu casal entrou na lista de espera e, em caso de desistência, a equipe entrará em contato."
+        : "Inscrição confirmada! 🙌";
       successBox.classList.add("show");
       e.target.reset();
       await loadDishes({ clearFeedback: false });
