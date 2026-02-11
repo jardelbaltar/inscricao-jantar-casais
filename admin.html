@@ -214,7 +214,7 @@
 
     async function requireAdminOrFail() {
       // Checa se usuário autenticado está em public.admins (policy permite só o próprio)
-      const { data, error } = await supabase.from("admins").select("user_id").limit(1);
+      const { data, error } = await supabase.from("admins").select("*").limit(1);
       if (error) throw new Error("NOT_ADMIN");
       if (!data || data.length === 0) throw new Error("NOT_ADMIN");
     }
@@ -482,7 +482,11 @@
 
         loginCard.style.display = "none";
         app.style.display = "";
-        await loadAll();
+        try {
+          await loadAll();
+        } catch (loadErr) {
+          setMsg(`Falha ao carregar todos os dados do painel: ${loadErr?.message ?? "erro desconhecido"}.`, "err");
+        }
       } catch (err) {
         // evita efeitos de callbacks antigos quando há corrida de autenticação
         if (currentCheck !== authCheckVersion) return;
