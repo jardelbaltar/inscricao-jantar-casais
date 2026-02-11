@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Painel de Inscrições - Jantar de Casais</title>
+  <title>Inscrições - Carregando evento...</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -206,12 +206,11 @@
 <body>
   <main class="container">
     <section class="hero">
-      <h1>Painel de Inscrições</h1>
-      <p>Acompanhe em tempo real a quantidade de casais inscritos.</p>
+      <h1 id="heroTitle">Inscrições - Carregando evento...</h1>
+      <p id="heroSubtitle">Carregando informações do evento...</p>
     </section>
 
     <section class="card">
-      <h2 id="eventTitle" style="margin:0">Carregando evento...</h2>
       <div class="panel">
         <article class="big-box primary">
           <h2>Inscritos</h2>
@@ -226,7 +225,6 @@
           <div class="big-number" id="waitlistTotal">--</div>
         </article>
       </div>
-      <p class="meta" id="panelMeta"></p>
       <p id="msg"></p>
     </section>
 
@@ -256,11 +254,11 @@
     const params = new URLSearchParams(location.search);
     const eventId = params.get("event")?.trim();
 
-    const eventTitle = document.getElementById("eventTitle");
+    const heroTitle = document.getElementById("heroTitle");
+    const heroSubtitle = document.getElementById("heroSubtitle");
     const totalRegistered = document.getElementById("totalRegistered");
     const remainingSlots = document.getElementById("remainingSlots");
     const waitlistTotal = document.getElementById("waitlistTotal");
-    const panelMeta = document.getElementById("panelMeta");
     const tableWrap = document.getElementById("tableWrap");
     const msg = document.getElementById("msg");
     const POLLING_MS = 15000;
@@ -307,7 +305,9 @@
 
     if (!eventId) {
       setError("Link inválido: faltou o parâmetro ?event=.");
-      eventTitle.textContent = "Evento não informado";
+      document.title = "Inscrições - Evento não informado";
+      heroTitle.textContent = "Inscrições - Evento não informado";
+      heroSubtitle.textContent = "Data do evento indisponível - Limite indisponível";
       tableWrap.innerHTML = "<p class='muted'>Sem evento para consultar.</p>";
       throw new Error("Missing event");
     }
@@ -330,7 +330,9 @@
           .maybeSingle();
 
         if (eventError) {
-          eventTitle.textContent = "Evento não encontrado";
+          document.title = "Inscrições - Evento não encontrado";
+          heroTitle.textContent = "Inscrições - Evento não encontrado";
+          heroSubtitle.textContent = "Data do evento indisponível - Limite indisponível";
           setError("Não foi possível carregar o evento.");
           tableWrap.innerHTML = "<p class='muted'>Nenhuma inscrição para exibir.</p>";
           return;
@@ -357,18 +359,20 @@
           const canConfirmEventDoesNotExist = !hasAnyPublicData && !dishError;
 
           if (canConfirmEventDoesNotExist) {
-            eventTitle.textContent = "Evento não encontrado";
+            document.title = "Inscrições - Evento não encontrado";
+            heroTitle.textContent = "Inscrições - Evento não encontrado";
+            heroSubtitle.textContent = "Data do evento indisponível - Limite indisponível";
             setError("Este evento não existe mais (ou o link está incorreto). Confira o parâmetro ?event=.");
             tableWrap.innerHTML = "<p class='muted'>Nenhuma inscrição para exibir.</p>";
             totalRegistered.textContent = "0";
             remainingSlots.textContent = "0";
             waitlistTotal.textContent = "0";
-            panelMeta.textContent = "";
             return;
           }
 
-          eventTitle.textContent = "Evento ativo";
-          panelMeta.textContent = "Detalhes do evento indisponíveis para consulta pública.";
+          document.title = "Inscrições - Evento ativo";
+          heroTitle.textContent = "Inscrições - Evento ativo";
+          heroSubtitle.textContent = "Data do evento indisponível - Limite indisponível";
           totalRegistered.textContent = inscritos;
           remainingSlots.textContent = "—";
           waitlistTotal.textContent = "—";
@@ -384,13 +388,12 @@
           const vagas = hasFiniteLimit ? Math.max(limite - inscritos, 0) : "∞";
           const emEspera = hasFiniteLimit ? Math.max(inscritos - limite, 0) : 0;
 
-          eventTitle.textContent = eventData.title;
+          document.title = `Inscrições - ${eventData.title}`;
+          heroTitle.textContent = `Inscrições - ${eventData.title}`;
+          heroSubtitle.textContent = `${formatDateTime(eventData.event_date)} - ${hasFiniteLimit ? `${limite} casais` : "Sem limite de casais"}`;
           totalRegistered.textContent = inscritos;
           remainingSlots.textContent = vagas;
           waitlistTotal.textContent = emEspera;
-          panelMeta.textContent = hasFiniteLimit
-            ? `Limite: ${limite} casais • Data do evento: ${formatDateTime(eventData.event_date)}`
-            : `Sem limite de vagas • Data do evento: ${formatDateTime(eventData.event_date)}`;
         }
 
         const { data: registrations, error: regError } = await supabase
