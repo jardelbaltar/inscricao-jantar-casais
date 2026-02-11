@@ -280,24 +280,24 @@
             <input id="wedding_date" type="date" required />
           </div>
           <div>
-            <label>Telefone (WhatsApp)</label>
+            <label>Telefone</label>
             <input id="phone" required placeholder="Ex: (61) 99999-9999" />
           </div>
         </div>
 
-        <label>Prato escolhido</label>
+        <label>Escolha o prato que irá trazer</label>
         <select id="dish" required>
           <option value="">Carregando...</option>
         </select>
         <p class="muted" id="dishHint"></p>
 
-        <button id="btn" type="submit">Confirmar inscrição</button>
+        <button id="btn" type="submit">Solicitar inscrição</button>
       </form>
 
       <p id="msg"></p>
       <div id="successBox" class="success-box" role="status" aria-live="polite">
         <strong id="successBoxTitle">✅ Inscrição confirmada com sucesso!</strong>
-        <span id="successBoxText">Sua participação foi registrada. Nos vemos no jantar 💜</span>
+        <span id="successBoxText">Sua participação foi registrada. Nos vemos no jantar!</span>
       </div>
     </div>
   </main>
@@ -416,7 +416,7 @@
 
       eventName.textContent = eventData.title || "Evento";
       document.title = eventData.title || "Inscrição";
-      eventDate.textContent = `Data do evento: ${formatDateTime(eventData.event_date)}`;
+      eventDate.textContent = `${formatDateTime(eventData.event_date)}`;
       eventSlots.textContent = totalSlots > 0
         ? `Vagas: ${availableSlots}/${totalSlots}`
         : "Vagas: ilimitadas";
