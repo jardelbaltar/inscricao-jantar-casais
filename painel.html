@@ -19,6 +19,13 @@
 
     * { box-sizing: border-box; }
 
+    html,
+    body {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
     body {
       margin: 0;
       font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
@@ -34,6 +41,7 @@
       margin: 0 auto;
       display: grid;
       gap: 12px;
+      min-width: 0;
     }
 
     .hero {
@@ -61,6 +69,7 @@
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       padding: 16px;
+      min-width: 0;
     }
 
     .panel {
@@ -106,6 +115,8 @@
 
     .table-wrap {
       margin-top: 12px;
+      width: 100%;
+      max-width: 100%;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       border: 1px solid #e2e8f0;
@@ -183,7 +194,7 @@
       }
 
       table {
-        min-width: 640px;
+        min-width: 600px;
       }
 
       th, td {
