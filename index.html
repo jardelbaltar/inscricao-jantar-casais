@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Inscrição - Jantar de Casais</title>
+  <style>
+    body{font-family:system-ui,Segoe UI,Roboto,Arial;max-width:720px;margin:24px auto;padding:0 16px}
+    label{display:block;margin-top:12px;font-weight:600}
+    input,select,button{width:100%;padding:10px;margin-top:6px;font-size:16px}
+    .card{border:1px solid #ddd;border-radius:12px;padding:16px;margin-top:16px}
+    .row{display:flex;gap:12px}
+    .row > div{flex:1}
+    .muted{color:#666;font-size:14px}
+    .ok{color:#0a7a2f;font-weight:700}
+    .err{color:#b00020;font-weight:700}
+  </style>
+</head>
+<body>
+  <h1>Inscrição - Jantar de Casais</h1>
+  <p class="muted">Preencha seus dados e escolha um prato disponível.</p>
+
+  <div class="card">
+    <form id="f">
+      <label>Nome do casal</label>
+      <input id="couple_name" required placeholder="Ex: João e Maria" />
+
+      <div class="row">
+        <div>
+          <label>Data de casamento</label>
+          <input id="wedding_date" type="date" required />
+        </div>
+        <div>
+          <label>Telefone (WhatsApp)</label>
+          <input id="phone" required placeholder="Ex: (61) 99999-9999" />
+        </div>
+      </div>
+
+      <label>Prato escolhido</label>
+      <select id="dish" required>
+        <option value="">Carregando...</option>
+      </select>
+      <p class="muted" id="dishHint"></p>
+
+      <button id="btn" type="submit">Confirmar inscrição</button>
+    </form>
+
+    <p id="msg"></p>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+    // 1) COLE AQUI:
+    const SUPABASE_URL = "https://nuqcefxwarrjehvhdoug.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51cWNlZnh3YXJyamVodmhkb3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NzE1NzUsImV4cCI6MjA4NjM0NzU3NX0.xLugRmdl6UKVsMZnDepBlFndh4vGVMnptuloFZC28Mc";
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // 2) EVENTO: pegue do parâmetro ?event=UUID
+    const params = new URLSearchParams(location.search);
+    const EVENT_ID = params.get("event");
+    if (!EVENT_ID) {
+      document.body.innerHTML = "<p class='err'>Link inválido: faltou o parâmetro <b>?event=</b>.</p>";
+      throw new Error("Missing event");
+    }
+
+    const dishSelect = document.getElementById("dish");
+    const dishHint = document.getElementById("dishHint");
+    const msg = document.getElementById("msg");
+    const btn = document.getElementById("btn");
+
+    async function loadDishes() {
+      msg.textContent = "";
+      dishSelect.innerHTML = "<option value=''>Carregando...</option>";
+
+      const { data, error } = await supabase
+        .from("dishes")
+        .select("id,name,remaining,sort_order")
+        .eq("event_id", EVENT_ID)
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        dishSelect.innerHTML = "<option value=''>Erro ao carregar</option>";
+        msg.className = "err";
+        msg.textContent = "Erro ao carregar pratos. Tente novamente.";
+        return;
+      }
+
+      const available = (data ?? []).filter(d => d.remaining > 0);
+      if (available.length === 0) {
+        dishSelect.innerHTML = "<option value=''>Sem pratos disponíveis</option>";
+        dishHint.textContent = "As opções esgotaram. Procure a equipe de organização.";
+        return;
+      }
+
+      dishSelect.innerHTML = "<option value=''>Selecione um prato</option>";
+      for (const d of available) {
+        const opt = document.createElement("option");
+        opt.value = d.id;
+        opt.textContent = `${d.name} (restam ${d.remaining})`;
+        dishSelect.appendChild(opt);
+      }
+      dishHint.textContent = "As quantidades atualizam conforme as inscrições.";
+    }
+
+    await loadDishes();
+
+    document.getElementById("f").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      msg.textContent = "";
+      msg.className = "";
+      btn.disabled = true;
+
+      const payload = {
+        p_event_id: EVENT_ID,
+        p_couple_name: document.getElementById("couple_name").value.trim(),
+        p_wedding_date: document.getElementById("wedding_date").value,
+        p_phone: document.getElementById("phone").value.trim(),
+        p_dish_id: dishSelect.value
+      };
+
+      const { data, error } = await supabase.rpc("register_couple", payload);
+
+      btn.disabled = false;
+
+      if (error) {
+        msg.className = "err";
+        msg.textContent = "Erro na inscrição. Tente novamente.";
+        return;
+      }
+
+      if (!data?.ok) {
+        msg.className = "err";
+        const map = {
+          EVENT_FULL: "As vagas para casais esgotaram.",
+          DISH_SOLD_OUT: "Esse prato acabou. Escolha outro.",
+          PHONE_ALREADY_REGISTERED: "Este telefone já está inscrito neste evento.",
+          DISH_NOT_FOUND: "Prato inválido. Recarregue a página.",
+          EVENT_NOT_FOUND: "Evento inválido."
+        };
+        msg.textContent = map[data.error] ?? "Não foi possível concluir. Tente novamente.";
+        await loadDishes();
+        return;
+      }
+
+      msg.className = "ok";
+      msg.textContent = "Inscrição confirmada! 🙌";
+      e.target.reset();
+      await loadDishes();
+    });
+  </script>
+</body>
+</html>
