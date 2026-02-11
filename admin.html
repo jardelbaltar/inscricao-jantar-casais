@@ -3,6 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>Admin - Jantar de Casais</title>
   <style>
     body{font-family:system-ui,Segoe UI,Roboto,Arial;max-width:1100px;margin:24px auto;padding:0 16px}
@@ -153,7 +156,7 @@
   </div>
 
   <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.6/+esm";
 
     // ✅ COLE AQUI:
     const SUPABASE_URL = "https://nuqcefxwarrjehvhdoug.supabase.co";
@@ -233,8 +236,30 @@
       return url.toString();
     }
 
+
     function delay(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function withRetry(operation, retries = 2, delayMs = 400) {
+      let lastError = null;
+
+      for (let attempt = 0; attempt <= retries; attempt += 1) {
+        try {
+          const result = await operation();
+          if (result?.error) {
+            throw result.error;
+          }
+          return result;
+        } catch (error) {
+          lastError = error;
+          if (attempt < retries) {
+            await delay(delayMs);
+          }
+        }
+      }
+
+      throw lastError;
     }
 
     async function requireAdminOrFail() {
@@ -273,12 +298,14 @@
     async function refreshEvents() {
       eventSelect.innerHTML = "<option>Carregando...</option>";
 
-      const { data, error } = await supabase
-        .from("events")
-        .select("id,title,event_date,max_couples,created_at")
-        .order("created_at", { ascending: false });
-
-      if (error) {
+      let data;
+      try {
+        const response = await withRetry(() => supabase
+          .from("events")
+          .select("id,title,event_date,max_couples,created_at")
+          .order("created_at", { ascending: false }));
+        data = response.data;
+      } catch (error) {
         eventSelect.innerHTML = "<option>Erro ao carregar eventos</option>";
         throw error;
       }
@@ -545,7 +572,8 @@
         try {
           await loadAll();
         } catch (loadErr) {
-          setMsg(`Falha ao carregar todos os dados do painel: ${loadErr?.message ?? "erro desconhecido"}.`, "err");
+          await supabase.auth.signOut();
+          setMsg("Sessão expirou ou ficou inconsistente. Entre novamente.", "err");
         }
       } catch (err) {
         // evita efeitos de callbacks antigos quando há corrida de autenticação

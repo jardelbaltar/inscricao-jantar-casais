@@ -3,6 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>Inscrição - Jantar de Casais</title>
   <style>
     :root {
@@ -244,7 +247,7 @@
   </main>
 
   <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.6/+esm";
 
     // COLE AQUI:
     const SUPABASE_URL = "https://nuqcefxwarrjehvhdoug.supabase.co";
@@ -310,6 +313,31 @@
 
     panelLink.href = getPanelUrl();
 
+    function delay(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function withRetry(operation, retries = 2, delayMs = 400) {
+      let lastError = null;
+
+      for (let attempt = 0; attempt <= retries; attempt += 1) {
+        try {
+          const result = await operation();
+          if (result?.error) {
+            throw result.error;
+          }
+          return result;
+        } catch (error) {
+          lastError = error;
+          if (attempt < retries) {
+            await delay(delayMs);
+          }
+        }
+      }
+
+      throw lastError;
+    }
+
     async function loadDishes({ clearFeedback = true } = {}) {
       msg.textContent = "";
       if (clearFeedback) {
@@ -317,15 +345,17 @@
       }
       dishSelect.innerHTML = "<option value=''>Carregando...</option>";
 
-      const { data, error } = await supabase
-        .from("dishes")
-        .select("id,name,remaining,sort_order,created_at")
-        .eq("event_id", EVENT_ID)
-        .eq("is_active", true)
-        .order("sort_order", { ascending: true })
-        .order("created_at", { ascending: true });
-
-      if (error) {
+      let data;
+      try {
+        const response = await withRetry(() => supabase
+          .from("dishes")
+          .select("id,name,remaining,sort_order,created_at")
+          .eq("event_id", EVENT_ID)
+          .eq("is_active", true)
+          .order("sort_order", { ascending: true })
+          .order("created_at", { ascending: true }));
+        data = response.data;
+      } catch (_error) {
         dishSelect.innerHTML = "<option value=''>Erro ao carregar</option>";
         msg.className = "err";
         msg.textContent = "Erro ao carregar pratos. Tente novamente.";
@@ -396,7 +426,14 @@
         p_dish_id: dishSelect.value
       };
 
-      const { data, error } = await supabase.rpc("register_couple", payload);
+      let data;
+      let error = null;
+      try {
+        const response = await withRetry(() => supabase.rpc("register_couple", payload));
+        data = response.data;
+      } catch (err) {
+        error = err;
+      }
 
       btn.disabled = false;
 
