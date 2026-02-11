@@ -194,7 +194,7 @@
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const params = new URLSearchParams(location.search);
-    const eventId = params.get("event");
+    const eventId = params.get("event")?.trim().toLowerCase();
 
     const eventTitle = document.getElementById("eventTitle");
     const totalRegistered = document.getElementById("totalRegistered");
@@ -210,6 +210,11 @@
 
     function setError(text) {
       msg.className = "err";
+      msg.textContent = text;
+    }
+
+    function setInfo(text) {
+      msg.className = "muted";
       msg.textContent = text;
     }
 
@@ -248,18 +253,6 @@
           return;
         }
 
-        if (!eventData) {
-          eventTitle.textContent = "Evento não encontrado";
-          setError("Este evento não existe mais (ou o link está incorreto). Confira o parâmetro ?event=.");
-          tableWrap.innerHTML = "<p class='muted'>Nenhuma inscrição para exibir.</p>";
-          totalRegistered.textContent = "0";
-          remainingSlots.textContent = "0";
-          panelMeta.textContent = "";
-          return;
-        }
-
-        eventTitle.textContent = eventData.title;
-
         const { count, error: countError } = await supabase
           .from("registrations")
           .select("id", { count: "exact", head: true })
@@ -270,12 +263,39 @@
         }
 
         const inscritos = count ?? 0;
-        const limite = Number(eventData.max_couples ?? 0);
-        const vagas = Math.max(limite - inscritos, 0);
 
-        totalRegistered.textContent = inscritos;
-        remainingSlots.textContent = vagas;
-        panelMeta.textContent = `Limite: ${limite} casais • Data do evento: ${eventData.event_date ?? "não informada"}`;
+        if (!eventData) {
+          const { count: dishCount, error: dishError } = await supabase
+            .from("dishes")
+            .select("id", { count: "exact", head: true })
+            .eq("event_id", eventId);
+
+          const hasAnyPublicData = (dishCount ?? 0) > 0 || inscritos > 0;
+
+          if (!hasAnyPublicData || dishError) {
+            eventTitle.textContent = "Evento não encontrado";
+            setError("Este evento não existe mais (ou o link está incorreto). Confira o parâmetro ?event=.");
+            tableWrap.innerHTML = "<p class='muted'>Nenhuma inscrição para exibir.</p>";
+            totalRegistered.textContent = "0";
+            remainingSlots.textContent = "0";
+            panelMeta.textContent = "";
+            return;
+          }
+
+          eventTitle.textContent = "Evento ativo";
+          panelMeta.textContent = "Detalhes do evento indisponíveis para consulta pública.";
+          totalRegistered.textContent = inscritos;
+          remainingSlots.textContent = "—";
+          setInfo("Não foi possível carregar título/data do evento, mas os inscritos continuam disponíveis.");
+        } else {
+          const limite = Number(eventData.max_couples ?? 0);
+          const vagas = Math.max(limite - inscritos, 0);
+
+          eventTitle.textContent = eventData.title;
+          totalRegistered.textContent = inscritos;
+          remainingSlots.textContent = vagas;
+          panelMeta.textContent = `Limite: ${limite} casais • Data do evento: ${eventData.event_date ?? "não informada"}`;
+        }
 
         const { data: registrations, error: regError } = await supabase
           .from("registrations")
