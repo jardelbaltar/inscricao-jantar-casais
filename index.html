@@ -281,7 +281,7 @@
           </div>
           <div>
             <label>Telefone</label>
-            <input id="phone" required placeholder="Ex: (61) 99999-9999" />
+            <input id="phone" required placeholder="Ex: (61) 9999-9999" inputmode="tel" maxlength="14" />
           </div>
         </div>
 
@@ -335,8 +335,23 @@
     const eventName = document.getElementById("eventName");
     const eventDate = document.getElementById("eventDate");
     const eventSlots = document.getElementById("eventSlots");
+    const phoneInput = document.getElementById("phone");
     const WAITLIST_MESSAGE = "Não há mais vagas disponíveis. Incluímos você na lista de espera. Nossa equipe entrará em contato com você em caso de desistências.";
     const REGULAR_SUCCESS_MESSAGE = "Inscrição confirmada! 🙌";
+
+    function formatPhone(value) {
+      const digits = value.replace(/\D/g, "").slice(0, 10);
+
+      if (digits.length === 0) return "";
+      if (digits.length < 3) return `(${digits}`;
+      if (digits.length < 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+
+      return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+    }
+
+    phoneInput.addEventListener("input", (event) => {
+      event.target.value = formatPhone(event.target.value);
+    });
 
     function showSubmissionFeedback({ enteredWaitlist, message }) {
       msg.className = "ok";
