@@ -355,8 +355,9 @@
         }
 
         const limit = Number(eventData?.max_couples ?? 0);
+        const hasFiniteLimit = limit > 0;
         const rows = (registrations ?? []).map((r, idx) => {
-          const isConfirmed = limit <= 0 ? true : idx < limit;
+          const isConfirmed = hasFiniteLimit ? idx < limit : false;
           const statusIcon = isConfirmed ? "✅" : "⏳";
           const statusLabel = isConfirmed ? "Confirmado" : "Lista de espera";
           return `
