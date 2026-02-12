@@ -179,7 +179,6 @@
     .muted { color: var(--muted); font-size: 14px; }
 
     #msg { min-height: 24px; margin: 0; font-weight: 700; }
-
     .err {
       color: var(--danger);
       background: #fee2e2;
@@ -265,18 +264,28 @@
 
     #qrReader{
       width:100%;
-      min-height: 300px;
+      min-height: 320px;
+      border-radius: 14px;
+      background: rgba(0,0,0,.18);
       display:flex;
       align-items:center;
       justify-content:center;
-      border-radius: 14px;
-      background: rgba(0,0,0,.15);
       position: relative;
+      overflow:hidden;
     }
     #qrReader video{
-      width:100% !important;
-      height:auto !important;
+      width:100%;
+      height:auto;
       border-radius: 14px;
+    }
+    .scanOverlayBox{
+      position:absolute;
+      width: min(72vw, 260px);
+      aspect-ratio: 1 / 1;
+      border-radius: 18px;
+      border: 2px dashed rgba(45,212,191,.55);
+      box-shadow: 0 0 0 6px rgba(45,212,191,.10);
+      pointer-events:none;
     }
 
     .scannerHint{
@@ -311,7 +320,6 @@
       min-height: 44px;
       white-space: pre-wrap;
     }
-
     .debug{
       margin-top: 10px;
       padding: 10px 12px;
@@ -432,10 +440,12 @@
 
       <div class="modalBody">
         <div class="scannerBox">
-          <div id="qrReader"></div>
+          <div id="qrReader">
+            <div class="muted" style="color:#e5e7eb">Pronto para iniciar.</div>
+          </div>
           <div class="scannerHint">
             Funciona com QR contendo <b>rid:UUID</b> ou um link do tipo <b>recibo.html?rid=UUID</b>.
-            <br/>No iPhone: toque em <b>aA</b> → <b>Ajustes do Site</b> → <b>Câmera: Permitir</b>.
+            <br/>No iPhone: <b>aA</b> → <b>Ajustes do Site</b> → <b>Câmera: Permitir</b>.
           </div>
         </div>
 
@@ -458,14 +468,14 @@
     </div>
   </div>
 
-  <!-- fallback lib -->
-  <script src="https://unpkg.com/html5-qrcode@2.3.10/minified/html5-qrcode.min.js"></script>
+  <!-- jsQR (decoder) -->
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.3/+esm";
 
     const SUPABASE_URL = "https://nuqcefxwarrjehvhdoug.supabase.co";
-    const SUPABASE_ANON_KEY = "SUA_ANON_KEY_AQUI"; // mantenha a sua
+    const SUPABASE_ANON_KEY = "SUA_ANON_KEY_AQUI"; // mantenha a sua anon key
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
@@ -503,7 +513,6 @@
     function escapeHtml(s){
       return (s ?? "").toString().replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     }
-
     function logDbg(line){
       const now = new Date().toLocaleTimeString();
       const prev = debugLogEl.textContent === "—" ? "" : debugLogEl.textContent + "\n";
@@ -637,7 +646,7 @@
 
     function isUuid36(s){ return /^[0-9a-fA-F-]{36}$/.test((s||"").trim()); }
 
-    function tryExtractRidFromAny(text){
+    function extractRid(text){
       const raw = (text || "").trim();
       const m1 = raw.match(/^rid:\s*([0-9a-fA-F-]{36})$/);
       if (m1) return m1[1];
@@ -654,7 +663,7 @@
     async function setPresenceByRid(rid){
       const now = Date.now();
       if (now < scanLockUntil) return;
-      scanLockUntil = now + 1600;
+      scanLockUntil = now + 1500;
 
       scanValueEl.textContent = rid;
       scanStatusEl.textContent = "Validando inscrição…";
@@ -668,13 +677,13 @@
 
       if (regErr || !reg){
         scanStatusEl.textContent = "❌ Não encontrei esta inscrição.";
-        logDbg("Não encontrado / erro no select registrations.");
+        logDbg("Não encontrado / erro ao buscar registrations.");
         return;
       }
 
       if (EVENT_ID && reg.event_id !== EVENT_ID){
         scanStatusEl.textContent = "⚠️ Este QR é de outro evento.";
-        logDbg(`Evento divergente: reg.event_id=${reg.event_id} vs EVENT_ID=${EVENT_ID}`);
+        logDbg(`Evento divergente: reg.event_id=${reg.event_id}`);
         return;
       }
 
@@ -697,7 +706,7 @@
 
       if (error || !data?.ok){
         scanStatusEl.textContent = "❌ Falha ao marcar presença. Tente novamente.";
-        logDbg(`Falha RPC set_presence_public: ${error?.message || data?.error || "?"}`);
+        logDbg(`Falha RPC: ${error?.message || data?.error || "?"}`);
         return;
       }
 
@@ -706,6 +715,7 @@
         row.is_present = true;
         row.checked_in_at = new Date().toISOString();
       }
+
       renderTable();
       highlightRow(reg.id);
 
@@ -715,25 +725,32 @@
       setTimeout(() => setMsg(""), 1200);
     }
 
-    // ===== Scanner: BarcodeDetector (primário) + fallback html5-qrcode =====
+    // ===== Scanner via getUserMedia + jsQR =====
     let scanning = false;
     let stream = null;
-    let bd = null;
     let rafId = null;
-    let qrFallback = null;
+    let videoEl = null;
+    let canvasEl = null;
+    let ctx = null;
 
-    function ensureVideo(){
+    function buildVideoUI(){
       const wrap = document.getElementById("qrReader");
-      let video = wrap.querySelector("video");
-      if (!video){
-        video = document.createElement("video");
-        video.setAttribute("playsinline", "true");
-        video.muted = true;
-        video.autoplay = true;
-        wrap.innerHTML = "";
-        wrap.appendChild(video);
-      }
-      return video;
+      wrap.innerHTML = "";
+
+      videoEl = document.createElement("video");
+      videoEl.setAttribute("playsinline", "true");
+      videoEl.muted = true;
+      videoEl.autoplay = true;
+
+      const box = document.createElement("div");
+      box.className = "scanOverlayBox";
+
+      wrap.appendChild(videoEl);
+      wrap.appendChild(box);
+
+      canvasEl = document.createElement("canvas");
+      canvasEl.style.display = "none";
+      ctx = canvasEl.getContext("2d", { willReadFrequently: true });
     }
 
     function stopStream(){
@@ -743,41 +760,45 @@
       }
     }
 
-    async function startBarcodeDetector(){
+    async function startJsQr(){
       logDbg(`secureContext=${window.isSecureContext}`);
       logDbg(`hasMediaDevices=${!!navigator.mediaDevices}`);
       logDbg(`hasGetUserMedia=${!!navigator.mediaDevices?.getUserMedia}`);
-      logDbg(`hasBarcodeDetector=${"BarcodeDetector" in window}`);
+      logDbg(`jsQRLoaded=${typeof window.jsQR === "function"}`);
 
-      if (!("BarcodeDetector" in window)) return false;
-
-      try{
-        bd = new BarcodeDetector({ formats: ["qr_code"] });
-        logDbg("BarcodeDetector inicializado.");
-      }catch(err){
-        logDbg("BarcodeDetector falhou ao inicializar.");
-        scanStatusEl.textContent = "❌ BarcodeDetector indisponível neste iPhone.";
+      if (!window.isSecureContext){
+        scanStatusEl.textContent = "❌ A câmera só funciona em HTTPS (ou localhost).";
+        logDbg("ERRO: não é HTTPS/secureContext.");
         return false;
       }
 
-      const video = ensureVideo();
+      if (typeof window.jsQR !== "function"){
+        scanStatusEl.textContent = "❌ Biblioteca jsQR não carregou (CDN).";
+        logDbg("ERRO: jsQR não carregou.");
+        return false;
+      }
+
+      buildVideoUI();
+
+      scanStatusEl.textContent = "Solicitando acesso à câmera…";
 
       try{
         stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: { ideal: "environment" } },
           audio: false
         });
-        logDbg("getUserMedia OK (stream recebida).");
+        logDbg("getUserMedia OK.");
       }catch(err){
         logDbg(`getUserMedia ERRO: ${err?.name || ""} ${err?.message || ""}`.trim());
         scanStatusEl.textContent =
-          "❌ Sem acesso à câmera.\n\nNo iPhone: aA → Ajustes do Site → Câmera: Permitir.\nE verifique Ajustes do iPhone → Safari → Câmera.";
+          "❌ Sem acesso à câmera.\n\nNo iPhone: aA → Ajustes do Site → Câmera: Permitir.\nAjustes do iPhone → Safari → Câmera.";
         return false;
       }
 
-      video.srcObject = stream;
+      videoEl.srcObject = stream;
+
       try{
-        await video.play();
+        await videoEl.play();
         logDbg("video.play OK.");
       }catch(err){
         logDbg(`video.play ERRO: ${err?.name || ""} ${err?.message || ""}`.trim());
@@ -785,78 +806,54 @@
 
       scanStatusEl.textContent = "Aponte para o QR do recibo…";
 
-      const tick = async () => {
+      const loop = async () => {
         if (!overlay.classList.contains("show")) return;
-        if (!video || video.readyState < 2) {
-          rafId = requestAnimationFrame(tick);
+
+        if (!videoEl || videoEl.readyState < 2) {
+          rafId = requestAnimationFrame(loop);
           return;
         }
 
-        try{
-          const codes = await bd.detect(video);
-          if (codes && codes.length){
-            const raw = codes[0].rawValue || "";
-            scanValueEl.textContent = raw;
-            logDbg(`QR lido: ${raw}`);
+        const vw = videoEl.videoWidth || 0;
+        const vh = videoEl.videoHeight || 0;
+        if (vw && vh){
+          // reduz para performance
+          const targetW = Math.min(720, vw);
+          const scale = targetW / vw;
+          const targetH = Math.floor(vh * scale);
 
-            const rid = tryExtractRidFromAny(raw);
-            if (rid){
-              await setPresenceByRid(rid);
-            } else {
+          canvasEl.width = targetW;
+          canvasEl.height = targetH;
+
+          ctx.drawImage(videoEl, 0, 0, targetW, targetH);
+          const imageData = ctx.getImageData(0, 0, targetW, targetH);
+
+          const code = window.jsQR(imageData.data, targetW, targetH, {
+            inversionAttempts: "dontInvert"
+          });
+
+          if (code?.data){
+            const decodedText = code.data.trim();
+            scanValueEl.textContent = decodedText;
+            logDbg(`QR lido: ${decodedText}`);
+
+            const rid = extractRid(decodedText);
+            if (!rid){
               scanStatusEl.textContent = "⚠️ QR inválido. Precisa conter rid:UUID ou recibo.html?rid=UUID";
-              logDbg("QR inválido (não extraiu rid).");
+            } else {
+              await setPresenceByRid(rid);
             }
-            await new Promise(r => setTimeout(r, 1100));
+
+            // pausa curta para evitar leituras repetidas
+            await new Promise(r => setTimeout(r, 900));
           }
-        }catch(err){
-          logDbg(`bd.detect ERRO: ${err?.name || ""} ${err?.message || ""}`.trim());
         }
 
-        rafId = requestAnimationFrame(tick);
+        rafId = requestAnimationFrame(loop);
       };
 
-      rafId = requestAnimationFrame(tick);
+      rafId = requestAnimationFrame(loop);
       return true;
-    }
-
-    async function startHtml5QrcodeFallback(){
-      logDbg("Iniciando fallback html5-qrcode…");
-      const wrap = document.getElementById("qrReader");
-      wrap.innerHTML = "<div class='muted' style='color:#e5e7eb'>Inicializando…</div>";
-
-      if (!qrFallback) qrFallback = new Html5Qrcode("qrReader");
-
-      const config = { fps: 12, qrbox: { width: 260, height: 260 }, aspectRatio: 1.0, disableFlip: true };
-
-      const onScanSuccess = async (decodedText) => {
-        scanValueEl.textContent = decodedText;
-        logDbg(`QR lido (fallback): ${decodedText}`);
-        const rid = tryExtractRidFromAny(decodedText);
-        if (!rid){
-          scanStatusEl.textContent = "⚠️ QR inválido. Precisa conter rid:UUID ou recibo.html?rid=UUID";
-          return;
-        }
-        await setPresenceByRid(rid);
-      };
-
-      try{
-        await qrFallback.start({ facingMode: "environment" }, config, onScanSuccess, () => {});
-        scanStatusEl.textContent = "Aponte para o QR do recibo…";
-        logDbg("Fallback iniciado (environment).");
-        return true;
-      }catch(e1){
-        logDbg(`Fallback ERRO env: ${e1?.name || ""} ${e1?.message || ""}`.trim());
-        try{
-          await qrFallback.start({ facingMode: "user" }, config, onScanSuccess, () => {});
-          scanStatusEl.textContent = "Aponte para o QR do recibo…";
-          logDbg("Fallback iniciado (user).");
-          return true;
-        }catch(e2){
-          logDbg(`Fallback ERRO user: ${e2?.name || ""} ${e2?.message || ""}`.trim());
-          scanStatusEl.textContent = "❌ Não consegui iniciar o leitor. Verifique permissões da câmera.";
-          return false;
-        }
-      }
     }
 
     async function openScanner(){
@@ -866,23 +863,10 @@
       overlay.classList.add("show");
       debugLogEl.textContent = "—";
       scanValueEl.textContent = "—";
-      scanStatusEl.textContent = "Solicitando acesso à câmera…";
+      scanStatusEl.textContent = "Inicializando…";
 
-      if (!window.isSecureContext){
-        logDbg("ERRO: não é HTTPS/secureContext.");
-        scanStatusEl.textContent = "❌ A câmera só funciona em HTTPS (ou localhost).";
-        scanning = false;
-        return;
-      }
-
-      const ok = await startBarcodeDetector();
-      if (ok) {
-        logDbg("Scanner ativo: BarcodeDetector.");
-        return;
-      }
-
-      const ok2 = await startHtml5QrcodeFallback();
-      if (ok2) logDbg("Scanner ativo: html5-qrcode (fallback).");
+      const ok = await startJsQr();
+      if (!ok) scanning = false;
     }
 
     async function stopScanner(){
@@ -894,16 +878,11 @@
       }
 
       stopStream();
-
-      try{
-        if (qrFallback){
-          await qrFallback.stop();
-          await qrFallback.clear();
-        }
-      }catch{}
-
       scanning = false;
-      scanStatusEl.textContent = "Leitor fechado.";
+
+      const wrap = document.getElementById("qrReader");
+      wrap.innerHTML = "<div class='muted' style='color:#e5e7eb'>Leitor parado.</div>";
+
       logDbg("Scanner parado.");
     }
 
