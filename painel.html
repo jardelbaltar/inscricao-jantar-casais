@@ -284,7 +284,7 @@
             <img src="logo-modern-noglow.png" alt="Casais 2 em 1" />
           </div>
         </div>
-        <h1 id="heroTitle">Inscrições - Carregando evento...</h1>
+        <h1 id="heroTitle">Carregando evento...</h1>
         <a class="home-link" href="home.html" aria-label="Voltar para a página inicial" title="Voltar para home">
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M3 11.5 12 4l9 7.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -293,10 +293,6 @@
         </a>
       </div>
       <p id="heroSubtitle">Carregando informações do evento...</p>
-      <a id="registrationLink" class="hero-link" href="index.html" aria-label="Abrir formulário de inscrição">
-        <span class="hero-link-icon" aria-hidden="true">📝</span>
-        <span>Ir para inscrição</span>
-      </a>
     </section>
 
     <section class="card">
@@ -349,7 +345,6 @@
     const waitlistTotal = document.getElementById("waitlistTotal");
     const tableWrap = document.getElementById("tableWrap");
     const msg = document.getElementById("msg");
-    const registrationLink = document.getElementById("registrationLink");
     const POLLING_MS = 15000;
     let isRefreshing = false;
     let pendingRefresh = false;
@@ -395,13 +390,12 @@
     if (!eventId) {
       setError("Link inválido: faltou o parâmetro ?event=.");
       document.title = "Inscrições - Evento não informado";
-      heroTitle.textContent = "Inscrições - Evento não informado";
+      heroTitle.textContent = "Evento não informado";
       heroSubtitle.textContent = "Data do evento indisponível - Limite indisponível";
       tableWrap.innerHTML = "<p class='muted'>Sem evento para consultar.</p>";
       throw new Error("Missing event");
     }
 
-    registrationLink.href = `index.html?event=${encodeURIComponent(eventId)}`;
 
     async function loadPanel() {
       if (isRefreshing) {
@@ -422,7 +416,7 @@
 
         if (eventError) {
           document.title = "Inscrições - Evento não encontrado";
-          heroTitle.textContent = "Inscrições - Evento não encontrado";
+          heroTitle.textContent = "Evento não encontrado";
           heroSubtitle.textContent = "Data do evento indisponível - Limite indisponível";
           setError("Não foi possível carregar o evento.");
           tableWrap.innerHTML = "<p class='muted'>Nenhuma inscrição para exibir.</p>";
@@ -451,7 +445,7 @@
 
           if (canConfirmEventDoesNotExist) {
             document.title = "Inscrições - Evento não encontrado";
-            heroTitle.textContent = "Inscrições - Evento não encontrado";
+            heroTitle.textContent = "Evento não encontrado";
             heroSubtitle.textContent = "Data do evento indisponível - Limite indisponível";
             setError("Este evento não existe mais (ou o link está incorreto). Confira o parâmetro ?event=.");
             tableWrap.innerHTML = "<p class='muted'>Nenhuma inscrição para exibir.</p>";
@@ -462,7 +456,7 @@
           }
 
           document.title = "Inscrições - Evento ativo";
-          heroTitle.textContent = "Inscrições - Evento ativo";
+          heroTitle.textContent = "Evento ativo";
           heroSubtitle.textContent = "Data do evento indisponível - Limite indisponível";
           totalRegistered.textContent = inscritos;
           remainingSlots.textContent = "—";
@@ -480,7 +474,7 @@
           const emEspera = hasFiniteLimit ? Math.max(inscritos - limite, 0) : 0;
 
           document.title = `Inscrições - ${eventData.title}`;
-          heroTitle.textContent = `Inscrições - ${eventData.title}`;
+          heroTitle.textContent = eventData.title;
           heroSubtitle.textContent = `${formatDateTime(eventData.event_date)} - ${hasFiniteLimit ? `${limite} casais` : "Sem limite de casais"}`;
           totalRegistered.textContent = inscritos;
           remainingSlots.textContent = vagas;
