@@ -190,49 +190,6 @@
       padding: 10px 12px;
     }
 
-    .success-box {
-      margin-top: 14px;
-      background: linear-gradient(140deg, #ecfdf5 0%, #f0fdf4 100%);
-      border: 1px solid #86efac;
-      border-radius: 14px;
-      color: #14532d;
-      padding: 14px;
-      display: none;
-    }
-
-    .success-box strong {
-      display: block;
-      margin-bottom: 4px;
-      font-size: 1rem;
-    }
-
-    .success-box.show { display: block; }
-
-    /* ===== NOVO: ações do recibo ===== */
-    .receipt-actions{
-      margin-top:12px;
-      display:none;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-    .receipt-actions.show{ display:flex; }
-    .receipt-actions a, .receipt-actions button{
-      width:auto;
-      min-height: 44px;
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(22,101,52,.25);
-      background: rgba(255,255,255,.65);
-      color: #14532d;
-      font-weight: 900;
-      text-decoration:none;
-      cursor:pointer;
-    }
-    .receipt-actions a.primary{
-      border-color: rgba(37,99,235,.22);
-      background: linear-gradient(135deg, rgba(37,99,235,.18) 0%, rgba(124,58,237,.14) 100%);
-      color:#0f172a;
-    }
 
     @media (min-width: 680px) {
       body { padding: 30px 20px; }
@@ -306,17 +263,6 @@
 
       <p id="msg"></p>
 
-      <div id="successBox" class="success-box" role="status" aria-live="polite">
-        <strong id="successBoxTitle">✅ Inscrição confirmada com sucesso!</strong>
-        <span id="successBoxText">Sua participação foi registrada. Nos vemos no jantar!</span>
-
-        <!-- NOVO -->
-        <div id="receiptActions" class="receipt-actions">
-          <a id="receiptLink" class="primary" href="#" target="_blank" rel="noopener">Ver recibo</a>
-          <button id="shareBtn" type="button">Compartilhar</button>
-          <a id="saveImgLink" href="#" target="_blank" rel="noopener">Salvar imagem</a>
-        </div>
-      </div>
     </div>
   </main>
 
@@ -341,22 +287,12 @@
     const dishHint = document.getElementById("dishHint");
     const msg = document.getElementById("msg");
     const btn = document.getElementById("btn");
-    const successBox = document.getElementById("successBox");
-    const successBoxTitle = document.getElementById("successBoxTitle");
-    const successBoxText = document.getElementById("successBoxText");
     const panelLink = document.getElementById("panelLink");
     const eventName = document.getElementById("eventName");
     const eventDate = document.getElementById("eventDate");
     const eventSlots = document.getElementById("eventSlots");
     const phoneInput = document.getElementById("phone");
     const WAITLIST_MESSAGE = "Não há mais vagas disponíveis. Incluímos você na lista de espera. Nossa equipe entrará em contato com você em caso de desistências.";
-    const REGULAR_SUCCESS_MESSAGE = "Inscrição confirmada! 🙌";
-
-    // NOVO: ações do recibo
-    const receiptActions = document.getElementById("receiptActions");
-    const receiptLink = document.getElementById("receiptLink");
-    const shareBtn = document.getElementById("shareBtn");
-    const saveImgLink = document.getElementById("saveImgLink");
 
     function formatPhone(value) {
       const digits = value.replace(/\D/g, "").slice(0, 11);
@@ -371,19 +307,9 @@
       event.target.value = formatPhone(event.target.value);
     });
 
-    function showSubmissionFeedback({ enteredWaitlist, message }) {
+    function showSubmissionFeedback({ message }) {
       msg.className = "ok";
       msg.textContent = message;
-
-      if (enteredWaitlist) {
-        successBoxTitle.textContent = "🕒 Você entrou na lista de espera";
-        successBoxText.textContent = "No momento todas as vagas foram preenchidas. Se houver desistência, a equipe entrará em contato.";
-      } else {
-        successBoxTitle.textContent = "✅ Inscrição confirmada com sucesso!";
-        successBoxText.textContent = "Sua participação foi registrada. Nos vemos no jantar 💜";
-      }
-
-      successBox.classList.add("show");
     }
 
     function getPanelUrl() {
@@ -465,10 +391,9 @@
     }
 
     async function loadDishes({ clearFeedback = true } = {}) {
-      msg.textContent = "";
       if (clearFeedback) {
-        successBox.classList.remove("show");
-        receiptActions.classList.remove("show");
+        msg.textContent = "";
+        msg.className = "";
       }
       dishSelect.innerHTML = "<option value=''>Carregando...</option>";
 
@@ -512,7 +437,7 @@
       if (typeof rpcData?.entered_waitlist === "boolean") {
         return {
           enteredWaitlist: rpcData.entered_waitlist,
-          message: rpcData.entered_waitlist ? WAITLIST_MESSAGE : REGULAR_SUCCESS_MESSAGE
+          message: rpcData.entered_waitlist ? WAITLIST_MESSAGE : ""
         };
       }
 
@@ -527,7 +452,7 @@
 
       return {
         enteredWaitlist,
-        message: enteredWaitlist ? WAITLIST_MESSAGE : REGULAR_SUCCESS_MESSAGE
+        message: enteredWaitlist ? WAITLIST_MESSAGE : ""
       };
     }
 
@@ -572,44 +497,16 @@
       return res.data?.id ?? null;
     }
 
-    // NOVO: configurar botões do recibo
-    async function setupReceiptActions({ phone, eventTitle, eventDateText }){
+    async function redirectToReceipt(phone){
       const rid = await findRegistrationIdByPhone(phone);
       if (!rid) return;
-
-      const receiptUrl = getReceiptUrl(rid);
-      receiptLink.href = receiptUrl;
-      saveImgLink.href = receiptUrl; // usuário abre e salva de lá
-
-      receiptActions.classList.add("show");
-
-      shareBtn.onclick = async () => {
-        const text =
-          `Recibo da inscrição — ${eventTitle}\n` +
-          `${eventDateText}\n` +
-          `Telefone: ${phone}\n` +
-          `Link: ${receiptUrl}`;
-
-        try{
-          if (navigator.share){
-            await navigator.share({ title: "Recibo de Inscrição", text, url: receiptUrl });
-          } else {
-            await navigator.clipboard.writeText(receiptUrl);
-            msg.className = "ok";
-            msg.textContent = "Link do recibo copiado ✅";
-          }
-        }catch{
-          // usuário cancelou
-        }
-      };
+      window.location.href = getReceiptUrl(rid);
     }
 
     document.getElementById("f").addEventListener("submit", async (e) => {
       e.preventDefault();
       msg.textContent = "";
       msg.className = "";
-      successBox.classList.remove("show");
-      receiptActions.classList.remove("show");
       btn.disabled = true;
 
       const coupleName = document.getElementById("couple_name").value.trim();
@@ -656,14 +553,7 @@
             .single();
 
           if (!waitlistError) {
-            showSubmissionFeedback({ enteredWaitlist:true, message: WAITLIST_MESSAGE });
-
-            // ações do recibo (lista de espera também tem recibo)
-            await setupReceiptActions({
-              phone,
-              eventTitle: eventName.textContent || "Evento",
-              eventDateText: eventDate.textContent || ""
-            });
+            showSubmissionFeedback({ message: WAITLIST_MESSAGE });
 
             e.target.reset();
             await loadDishes({ clearFeedback: false });
@@ -685,17 +575,17 @@
       }
 
       const registrationResult = await resolveRegistrationResult(data);
-      showSubmissionFeedback(registrationResult);
+      if (registrationResult.enteredWaitlist) {
+        showSubmissionFeedback({ message: WAITLIST_MESSAGE });
+        e.target.reset();
+        await loadDishes({ clearFeedback: false });
+        return;
+      }
 
-      // NOVO: habilita recibo (após sucesso)
-      await setupReceiptActions({
-        phone,
-        eventTitle: eventName.textContent || "Evento",
-        eventDateText: eventDate.textContent || ""
-      });
+      await redirectToReceipt(phone);
 
-      e.target.reset();
-      await loadDishes({ clearFeedback: false });
+      msg.className = "err";
+      msg.textContent = "Inscrição confirmada, mas não foi possível abrir o recibo automaticamente.";
     });
   </script>
 </body>
