@@ -299,7 +299,7 @@
           </div>
         </div>
         <h1 id="heroTitle">Carregando evento...</h1>
-        <a class="home-link" href="index.html" aria-label="Nova inscrição" title="Nova inscrição">
+        <a class="home-link" id="newRegistrationLink" href="index.html" aria-label="Nova inscrição" title="Nova inscrição">
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M12 5v14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
             <path d="M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -354,6 +354,7 @@
 
     const heroTitle = document.getElementById("heroTitle");
     const heroSubtitle = document.getElementById("heroSubtitle");
+    const newRegistrationLink = document.getElementById("newRegistrationLink");
     const totalRegistered = document.getElementById("totalRegistered");
     const remainingSlots = document.getElementById("remainingSlots");
     const waitlistTotal = document.getElementById("waitlistTotal");
@@ -426,6 +427,31 @@
       return url.toString();
     }
 
+    function getNewRegistrationUrl() {
+      const url = new URL(window.location.href);
+      const path = url.pathname;
+
+      if (/painel\.html$/i.test(path)) {
+        url.pathname = path.replace(/painel\.html$/i, "index.html");
+      } else if (path.endsWith("/")) {
+        url.pathname = `${path}index.html`;
+      } else {
+        const lastSegment = path.split("/").pop() ?? "";
+        const looksLikeFile = /\.[a-z0-9]+$/i.test(lastSegment);
+        if (looksLikeFile) {
+          const basePath = path.substring(0, path.lastIndexOf("/") + 1);
+          url.pathname = `${basePath}index.html`;
+        } else {
+          url.pathname = `${path}/index.html`;
+        }
+      }
+
+      url.search = "";
+      url.hash = "";
+      url.searchParams.set("event", eventId);
+      return url.toString();
+    }
+
     if (!eventId) {
       setError("Link inválido: faltou o parâmetro ?event=.");
       document.title = "Inscrições - Evento não informado";
@@ -434,6 +460,8 @@
       tableWrap.innerHTML = "<p class='muted'>Sem evento para consultar.</p>";
       throw new Error("Missing event");
     }
+
+    newRegistrationLink.href = getNewRegistrationUrl();
 
 
     async function loadPanel() {
