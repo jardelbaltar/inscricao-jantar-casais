@@ -56,7 +56,33 @@
       margin-bottom:14px;
     }
 
+    /* ===== BÔNUS: lockup corporativo (logo + título) ===== */
     .brand{
+      display:flex;
+      flex-direction:row;
+      align-items:center;
+      gap:12px;
+      min-width: 280px;
+    }
+    .brandMark{
+      width:54px;
+      height:54px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex:0 0 auto;
+    }
+    .brandMark img{
+      width:54px;
+      height:54px;
+      object-fit:contain;
+      filter: drop-shadow(0 10px 24px rgba(0,0,0,.35));
+    }
+    @media (max-width: 520px){
+      .brandMark, .brandMark img{ width:46px; height:46px; }
+    }
+
+    .brandText{
       display:flex;
       flex-direction:column;
       gap:6px;
@@ -67,6 +93,7 @@
       font-size:22px;
       font-weight:900;
       letter-spacing:.2px;
+      line-height:1.1;
     }
 
     .brand .subtitle{
@@ -207,6 +234,7 @@
       transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
       backdrop-filter: blur(10px);
       min-height: 170px;
+      cursor: pointer; /* card clicável */
     }
     .card:hover{
       transform: translateY(-2px);
@@ -261,7 +289,9 @@
       align-items:center;
       justify-content:flex-end;
       flex-wrap:wrap;
+      pointer-events: none; /* para o clique do card não "brigar" */
     }
+    .cardActions .btn{ pointer-events: all; } /* mas o botão continua clicável */
 
     .btnSmall{
       min-width:auto;
@@ -309,13 +339,21 @@
   <div class="container">
     <div class="topbar">
       <div class="brand">
-        <h1>Central do Evento</h1>
-        <div class="subtitle">
-          <span class="chip"><span class="dot"></span><span id="statusText">Pronto</span></span>
-          <span class="chip">Casais 2 em 1</span>
-          <span class="chip" id="eventChip">EVENT_ID: —</span>
+        <div class="brandMark">
+          <!-- coloque o arquivo em assets/logo-modern.png -->
+          <img src="logo-modern.png" alt="Casais 2 em 1" />
+        </div>
+
+        <div class="brandText">
+          <h1>Central do Evento</h1>
+          <div class="subtitle">
+            <span class="chip"><span class="dot"></span><span id="statusText">Pronto</span></span>
+            <span class="chip">Casais 2 em 1</span>
+            <span class="chip" id="eventChip">EVENT_ID: —</span>
+          </div>
         </div>
       </div>
+
       <div class="chip">Acesso rápido às funcionalidades</div>
     </div>
 
@@ -364,7 +402,7 @@
           </div>
         </div>
         <div class="cardActions">
-          <button class="btn btnSmall btnPrimary" data-open>فتح Abrir</button>
+          <button class="btn btnSmall btnPrimary" data-open>Abrir</button>
         </div>
       </div>
 
@@ -504,10 +542,8 @@
 
     function getBaseUrl(){
       const url = new URL(window.location.href);
-      // remove query/hash e arquivo atual
       url.search = "";
       url.hash = "";
-      // mantém path da pasta (remove filename)
       url.pathname = url.pathname.replace(/[^\/]*$/, "");
       return url.toString();
     }
@@ -552,7 +588,6 @@
         showToast("Link da inscrição copiado");
         setStatus("Link copiado");
       }catch{
-        // fallback
         const ta = document.createElement("textarea");
         ta.value = link;
         document.body.appendChild(ta);
@@ -574,14 +609,22 @@
       window.location.href = `${page}?event=${encodeURIComponent(id)}`;
     }
 
-    // Wire buttons
     btnSave.addEventListener("click", saveEvent);
     btnCopy.addEventListener("click", copyInscricaoLink);
 
-    // Card open buttons
+    // Botões Abrir
     document.querySelectorAll("[data-open]").forEach(btn => {
       btn.addEventListener("click", (e) => {
+        e.stopPropagation();
         const card = e.target.closest(".card");
+        const page = card?.dataset?.page;
+        if (page) go(page);
+      });
+    });
+
+    // Clique no card inteiro também abre
+    document.querySelectorAll(".card").forEach(card => {
+      card.addEventListener("click", () => {
         const page = card?.dataset?.page;
         if (page) go(page);
       });
