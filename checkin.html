@@ -191,13 +191,9 @@
       background: #fff;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
+    table { width: 100%; border-collapse: collapse; }
 
-    th,
-    td {
+    th, td {
       border-bottom: 1px solid #edf2f7;
       padding: 10px;
       text-align: left;
@@ -255,8 +251,6 @@
     .click { cursor: pointer; }
     .small { font-size: 13px; }
     .right { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
-
-    .status-label-mobile { display: none; }
 
     /* ===== Modal do scanner ===== */
     .overlay{
@@ -320,7 +314,21 @@
       padding: 10px;
       overflow: hidden;
     }
-    #qrReader{ width:100%; }
+
+    #qrReader{
+      width:100%;
+      min-height: 280px; /* IMPORTANTÍSSIMO no iPhone */
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    #qrReader video{
+      width:100% !important;
+      height:auto !important;
+      border-radius: 14px;
+    }
+
     .scannerHint{
       margin-top: 10px;
       color: rgba(229,231,235,.78);
@@ -361,6 +369,7 @@
       line-height: 1.4;
       color: rgba(229,231,235,.92);
       min-height: 44px;
+      white-space: pre-wrap;
     }
 
     .modalFooter{
@@ -388,45 +397,9 @@
     }
 
     @media (max-width: 640px) {
-      body { padding-left: 8px; padding-right: 8px; }
-      .hero-top {
-        grid-template-columns: 42px 1fr 42px;
-        gap: 8px;
-      }
-      .brandMark img { width: 42px; height: 42px; }
-      .home-link { width: 38px; height: 38px; }
-      .hero p { font-size: 0.9rem; }
       .card { padding: 14px; border-radius: 14px; }
       .right { justify-content: stretch; }
       button { width: 100%; }
-      .table-wrap {
-        border: 0;
-        background: transparent;
-        overflow: visible;
-      }
-      table, thead, tbody, tr, td { display: block; width: 100%; }
-      thead { display: none; }
-      tr.click {
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        background: #fff;
-        margin-bottom: 10px;
-      }
-      td {
-        white-space: normal;
-        border-bottom: 0;
-        padding: 8px 10px;
-      }
-      td:first-child { padding-top: 10px; }
-      td:last-child { padding-bottom: 10px; }
-      .status-label-mobile {
-        display: block;
-        font-size: .72rem;
-        text-transform: uppercase;
-        letter-spacing: .04em;
-        color: #64748b;
-        margin-bottom: 2px;
-      }
     }
   </style>
 </head>
@@ -526,7 +499,7 @@
     </div>
   </div>
 
-  <!-- Lib do scanner -->
+  <!-- Lib do scanner (fallback) -->
   <script src="https://unpkg.com/html5-qrcode@2.3.10/minified/html5-qrcode.min.js"></script>
 
   <script type="module">
@@ -560,7 +533,6 @@
     const EVENT_ID = params.get("event");
 
     let allRows = [];
-    let qr = null;
     let scanning = false;
     let scanLockUntil = 0;
 
@@ -608,7 +580,8 @@
         return `
           <tr class="click ${cls}" data-id="${r.id}" data-present="${r.is_present}">
             <td><strong>${escapeHtml(r.couple_name)}</strong></td>
-            <td><span class="status-label-mobile">Presença</span>${status}<br/><span class="muted small">Check-in: ${checkedAt}</span></td>
+            <td>${escapeHtml(r.wedding_date ?? "—")}</td>
+            <td>${status}<br/><span class="muted small">Check-in: ${checkedAt}</span></td>
           </tr>
         `;
       }).join("");
@@ -618,11 +591,12 @@
           <thead>
             <tr>
               <th>Casal</th>
+              <th>Data casamento</th>
               <th>Presença</th>
             </tr>
           </thead>
           <tbody>
-            ${htmlRows || "<tr><td colspan='2' class='muted'>Nenhum resultado.</td></tr>"}
+            ${htmlRows || "<tr><td colspan='3' class='muted'>Nenhum resultado.</td></tr>"}
           </tbody>
         </table>
       `;
@@ -698,17 +672,25 @@
       renderTable();
     }
 
-    function extractRid(text){
+    function isUuid36(s){
+      return /^[0-9a-fA-F-]{36}$/.test((s||"").trim());
+    }
+
+    function tryExtractRidFromAny(text){
       const raw = (text || "").trim();
+
       const m1 = raw.match(/^rid:\s*([0-9a-fA-F-]{36})$/);
       if (m1) return m1[1];
+
       try{
         const u = new URL(raw);
         const rid = u.searchParams.get("rid");
-        if (rid && /^[0-9a-fA-F-]{36}$/.test(rid)) return rid;
+        if (rid && isUuid36(rid)) return rid;
       }catch{}
+
       const m2 = raw.match(/rid=([0-9a-fA-F-]{36})/);
       if (m2) return m2[1];
+
       return null;
     }
 
@@ -771,23 +753,100 @@
       setTimeout(() => setMsg(""), 1200);
     }
 
-    // ✅ iPhone-friendly
-    async function openScanner(){
-      if (scanning) return;
-      overlay.classList.add("show");
-      scanStatusEl.textContent = "Solicitando acesso à câmera…";
+    // ===== Scanner (iPhone-friendly: BarcodeDetector + fallback html5-qrcode) =====
+    let stream = null;
+    let bd = null;                 // BarcodeDetector
+    let scanTimer = null;          // loop
+    let qrFallback = null;         // Html5Qrcode fallback
 
-      if (!window.isSecureContext) {
-        scanning = false;
-        scanStatusEl.textContent = "❌ A câmera só funciona em HTTPS (ou localhost).";
-        return;
+    function showScanError(prefix, err){
+      const msg = (err && (err.name || err.message)) ? `${err.name || ""} ${err.message || ""}`.trim() : String(err || "");
+      scanStatusEl.textContent =
+        `${prefix}\n\nDetalhe: ${msg}\n\nNo iPhone: toque em aA → Ajustes do Site → Câmera: Permitir.`;
+      console.error(prefix, err);
+    }
+
+    function ensureVideoElement(){
+      const wrap = document.getElementById("qrReader");
+      let video = wrap.querySelector("video");
+      if (!video){
+        video = document.createElement("video");
+        video.setAttribute("playsinline", "true");
+        video.muted = true;
+        video.autoplay = true;
+        video.style.width = "100%";
+        video.style.borderRadius = "14px";
+        wrap.innerHTML = "";
+        wrap.appendChild(video);
+      }
+      return video;
+    }
+
+    async function startNativeScanner(){
+      if (!("BarcodeDetector" in window)) return false;
+
+      try{
+        bd = new BarcodeDetector({ formats: ["qr_code"] });
+      }catch(err){
+        console.warn("BarcodeDetector init error:", err);
+        return false;
       }
 
-      if (!qr){
-        qr = new Html5Qrcode("qrReader");
+      const video = ensureVideoElement();
+
+      try{
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: "environment" } },
+          audio: false
+        });
+      }catch(err){
+        showScanError("❌ Não consegui abrir a câmera (getUserMedia).", err);
+        return false;
       }
 
-      scanning = true;
+      video.srcObject = stream;
+
+      try{ await video.play(); }catch(err){ console.warn("video.play failed:", err); }
+
+      scanStatusEl.textContent = "Aponte para o QR do recibo…";
+
+      const tick = async () => {
+        if (!overlay.classList.contains("show")) return;
+        if (!video || video.readyState < 2) {
+          scanTimer = requestAnimationFrame(tick);
+          return;
+        }
+
+        try{
+          const codes = await bd.detect(video);
+          if (codes && codes.length){
+            const raw = codes[0].rawValue || "";
+            scanValueEl.textContent = raw;
+
+            const rid = tryExtractRidFromAny(raw);
+            if (rid){
+              await setPresenceByRid(rid);
+            } else {
+              scanStatusEl.textContent = "⚠️ QR inválido. Precisa conter rid:UUID ou recibo.html?rid=UUID";
+            }
+            await new Promise(r => setTimeout(r, 1200));
+          }
+        }catch(err){
+          console.warn("BarcodeDetector detect error:", err);
+        }
+
+        scanTimer = requestAnimationFrame(tick);
+      };
+
+      scanTimer = requestAnimationFrame(tick);
+      return true;
+    }
+
+    async function startFallbackHtml5Qrcode(){
+      const wrap = document.getElementById("qrReader");
+      wrap.innerHTML = "";
+
+      if (!qrFallback) qrFallback = new Html5Qrcode("qrReader");
 
       const config = {
         fps: 12,
@@ -797,51 +856,75 @@
       };
 
       const onScanSuccess = async (decodedText) => {
-        const rid = extractRid(decodedText);
         scanValueEl.textContent = decodedText;
-
+        const rid = tryExtractRidFromAny(decodedText);
         if (!rid){
           scanStatusEl.textContent = "⚠️ QR inválido. Precisa conter rid:UUID ou recibo.html?rid=UUID";
           return;
         }
-
         await setPresenceByRid(rid);
       };
 
       try{
-        // 1) tenta câmera traseira (mais estável no iOS)
-        await qr.start({ facingMode: "environment" }, config, onScanSuccess, () => {});
+        await qrFallback.start({ facingMode: "environment" }, config, onScanSuccess, () => {});
         scanStatusEl.textContent = "Aponte para o QR do recibo…";
-        return;
+        return true;
       }catch(e1){
         try{
-          // 2) fallback: câmera frontal
-          await qr.start({ facingMode: "user" }, config, onScanSuccess, () => {});
+          await qrFallback.start({ facingMode: "user" }, config, onScanSuccess, () => {});
           scanStatusEl.textContent = "Aponte para o QR do recibo…";
-          return;
+          return true;
         }catch(e2){
-          scanning = false;
-          scanStatusEl.textContent =
-            "❌ Não consegui acessar a câmera. No iPhone: toque em aA → Ajustes do Site → Câmera: Permitir.";
-          console.error("Camera start error:", e2 || e1);
+          showScanError("❌ Não consegui iniciar o leitor (fallback).", e2 || e1);
+          return false;
         }
       }
     }
 
-    async function stopScanner(){
-      if (!qr || !scanning) {
-        overlay.classList.remove("show");
+    async function openScanner(){
+      if (scanning) return;
+      overlay.classList.add("show");
+      scanning = true;
+
+      scanValueEl.textContent = "—";
+      scanStatusEl.textContent = "Solicitando acesso à câmera…";
+
+      if (!window.isSecureContext){
+        scanning = false;
+        scanStatusEl.textContent = "❌ A câmera só funciona em HTTPS (ou localhost).";
         return;
       }
-      try{
-        await qr.stop();
-        await qr.clear();
-      }catch{}
-      scanning = false;
-      overlay.classList.remove("show");
+
+      const okNative = await startNativeScanner();
+      if (okNative) return;
+
+      await startFallbackHtml5Qrcode();
     }
 
-    // ✅ evita travar câmera no iPhone ao trocar de aba
+    async function stopScanner(){
+      overlay.classList.remove("show");
+
+      if (scanTimer){
+        cancelAnimationFrame(scanTimer);
+        scanTimer = null;
+      }
+
+      if (stream){
+        for (const t of stream.getTracks()) t.stop();
+        stream = null;
+      }
+
+      try{
+        if (qrFallback){
+          await qrFallback.stop();
+          await qrFallback.clear();
+        }
+      }catch{}
+
+      scanning = false;
+      scanStatusEl.textContent = "Leitor fechado.";
+    }
+
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) stopScanner();
     });
