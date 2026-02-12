@@ -453,16 +453,26 @@
       }
     });
 
-    function renderQr(ridValue){
+    async function renderQr(ridValue){
       const target = document.getElementById("qrcode");
       target.innerHTML = "";
       const payload = `rid:${ridValue}`;
-      // QRCode.toCanvas (biblioteca qrcode)
-      QRCode.toCanvas(payload, { width: 122, margin: 1 }, (err, canvas) => {
-        if (err) return;
-        target.appendChild(canvas);
-      });
       ridMiniText.textContent = payload;
+
+      try {
+        const dataUrl = await QRCode.toDataURL(payload, {
+          width: 122,
+          margin: 1,
+          errorCorrectionLevel: "M"
+        });
+
+        const img = document.createElement("img");
+        img.src = dataUrl;
+        img.alt = `QR Code da inscrição ${ridValue}`;
+        target.appendChild(img);
+      } catch {
+        target.textContent = "QR indisponível";
+      }
     }
 
     async function load(){
@@ -496,7 +506,7 @@
       dishHint.textContent = reg.dish_id ? "Obrigado por contribuir com o jantar 💜" : "—";
       ridEl.textContent = reg.id;
 
-      renderQr(reg.id);
+      await renderQr(reg.id);
       statusEl.textContent = "Pronto";
     }
 
