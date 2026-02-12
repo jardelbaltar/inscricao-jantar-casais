@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Check-in — Jantar de Casais</title>
+
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <style>
+    body{font-family:system-ui,Segoe UI,Roboto,Arial;max-width:1100px;margin:24px auto;padding:0 16px}
+    h1{margin:0 0 6px}
+    .muted{color:#666;font-size:14px}
+    .err{color:#b00020;font-weight:700}
+    .ok{color:#0a7a2f;font-weight:700}
+    .card{border:1px solid #ddd;border-radius:14px;padding:14px;margin-top:14px}
+    label{display:block;font-weight:700;margin-top:10px}
+    input,button{width:100%;padding:10px;margin-top:6px;font-size:16px}
+    button{cursor:pointer}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .row > div{flex:1;min-width:220px}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{border-bottom:1px solid #eee;padding:10px;text-align:left;vertical-align:middle}
+    th{font-size:14px;color:#333}
+    .pill{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid #ddd;font-size:12px;margin-right:6px}
+    .present{background:#eaf7ee;border-color:#bfe3c8}
+    .absent{background:#fdecec;border-color:#f2c1c1}
+    .click{cursor:pointer}
+    .small{font-size:13px}
+    .right{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+    .btn2{width:auto}
+  </style>
+</head>
+
+<body>
+  <h1>Check-in — Jantar de Casais</h1>
+  <p class="muted">Clique no casal para marcar como presente/ausente.</p>
+
+  <div id="msg"></div>
+
+  <div class="card">
+    <div class="row">
+      <div>
+        <label>Buscar (nome)</label>
+        <input id="search" placeholder="Ex: Maria" />
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <div class="right">
+          <button id="btnReload" class="btn2">Recarregar</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:10px">
+      <span class="pill" id="pillTotal">Total: —</span>
+      <span class="pill present" id="pillPresent">Presentes: —</span>
+      <span class="pill absent" id="pillAbsent">Ausentes: —</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div id="tableWrap"></div>
+    <p class="muted small" style="margin-top:10px">
+      Dica: use a busca para acelerar.
+    </p>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.3/+esm";
+
+    const SUPABASE_URL = "https://nuqcefxwarrjehvhdoug.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51cWNlZnh3YXJyamVodmhkb3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NzE1NzUsImV4cCI6MjA4NjM0NzU3NX0.xLugRmdl6UKVsMZnDepBlFndh4vGVMnptuloFZC28Mc";
+
+    // Público: sem sessão
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+    });
+
+    const msg = document.getElementById("msg");
+    const searchInput = document.getElementById("search");
+    const btnReload = document.getElementById("btnReload");
+
+    const pillTotal = document.getElementById("pillTotal");
+    const pillPresent = document.getElementById("pillPresent");
+    const pillAbsent = document.getElementById("pillAbsent");
+
+    const tableWrap = document.getElementById("tableWrap");
+
+    const params = new URLSearchParams(location.search);
+    const EVENT_ID = params.get("event");
+
+    let allRows = [];
+
+    function setMsg(text, kind="") {
+      msg.className = kind ? kind : "";
+      msg.textContent = text || "";
+    }
+
+    function escapeHtml(s){
+      return (s ?? "").toString().replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    function renderStats(rows) {
+      const total = rows.length;
+      const present = rows.filter(r => r.is_present).length;
+      const absent = total - present;
+      pillTotal.textContent = `Total: ${total}`;
+      pillPresent.textContent = `Presentes: ${present}`;
+      pillAbsent.textContent = `Ausentes: ${absent}`;
+    }
+
+    function getFiltered() {
+      const q = (searchInput.value || "").trim().toLowerCase();
+      if (!q) return allRows;
+      return allRows.filter(r => (r.couple_name || "").toLowerCase().includes(q));
+    }
+
+    function renderTable() {
+      const rows = getFiltered();
+      renderStats(rows);
+
+      const htmlRows = rows.map(r => {
+        const status = r.is_present ? "✅ Presente" : "⬜ Ausente";
+        const cls = r.is_present ? "present" : "absent";
+        const checkedAt = r.checked_in_at ? new Date(r.checked_in_at).toLocaleString() : "—";
+
+        return `
+          <tr class="click ${cls}" data-id="${r.id}" data-present="${r.is_present}">
+            <td><strong>${escapeHtml(r.couple_name)}</strong></td>
+            <td>${escapeHtml(r.wedding_date ?? "—")}</td>
+            <td>${status}<br/><span class="muted small">Check-in: ${checkedAt}</span></td>
+          </tr>
+        `;
+      }).join("");
+
+      tableWrap.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Casal</th>
+              <th>Data casamento</th>
+              <th>Presença</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${htmlRows || "<tr><td colspan='3' class='muted'>Nenhum resultado.</td></tr>"}
+          </tbody>
+        </table>
+      `;
+
+      tableWrap.querySelectorAll("tr[data-id]").forEach(tr => {
+        tr.addEventListener("click", async () => {
+          const id = tr.dataset.id;
+          const wasPresent = tr.dataset.present === "true";
+          const newPresent = !wasPresent;
+
+          // UI otimista
+          tr.dataset.present = String(newPresent);
+          const row = allRows.find(x => x.id === id);
+          if (row) {
+            row.is_present = newPresent;
+            row.checked_in_at = newPresent ? new Date().toISOString() : null;
+          }
+          renderTable();
+
+          // Atualiza no banco via RPC pública
+          const { data, error } = await supabase.rpc("set_presence_public", {
+            p_registration_id: id,
+            p_is_present: newPresent
+          });
+
+          if (error || !data?.ok) {
+            // desfaz se falhar
+            if (row) {
+              row.is_present = wasPresent;
+              // não sabemos o checked_in_at anterior sem recarregar, então só volta o boolean
+            }
+            renderTable();
+            setMsg("Falha ao atualizar. Recarregue e tente novamente.", "err");
+          } else {
+            setMsg("Atualizado.", "ok");
+            setTimeout(() => setMsg(""), 800);
+          }
+        });
+      });
+    }
+
+    async function loadRegistrations() {
+      if (!EVENT_ID) {
+        setMsg("Link inválido: faltou ?event=UUID_DO_EVENTO", "err");
+        tableWrap.innerHTML = "";
+        return;
+      }
+
+      setMsg("");
+      tableWrap.innerHTML = "<p class='muted'>Carregando...</p>";
+
+      const { data, error } = await supabase
+        .from("registrations_checkin")
+        .select("id,couple_name,wedding_date,is_present,checked_in_at,created_at")
+        .eq("event_id", EVENT_ID)
+        .order("couple_name", { ascending: true });
+
+      if (error) {
+        tableWrap.innerHTML = "<p class='err'>Erro ao carregar lista.</p>";
+        return;
+      }
+
+      allRows = data ?? [];
+      renderTable();
+    }
+
+    searchInput.addEventListener("input", renderTable);
+    btnReload.addEventListener("click", loadRegistrations);
+
+    await loadRegistrations();
+  </script>
+</body>
+</html>
