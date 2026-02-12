@@ -50,6 +50,20 @@
       padding: 4px;
     }
 
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 8px;
+    }
+
+    .brandMark img {
+      width: 52px;
+      height: 52px;
+      object-fit: contain;
+    }
+
     .hero-link-row {
       margin-top: 10px;
       display: flex;
@@ -237,6 +251,11 @@
 <body>
   <main class="container">
     <section class="hero">
+      <div class="brand">
+        <div class="brandMark">
+          <img src="logo-modern-noglow.png" alt="Casais 2 em 1" />
+        </div>
+      </div>
       <h1 id="heroTitle">Inscrições - Carregando evento...</h1>
       <p id="heroSubtitle">Carregando informações do evento...</p>
       <div class="hero-link-row">
