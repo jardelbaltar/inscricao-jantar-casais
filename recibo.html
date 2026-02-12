@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Recibo de Inscrição — Casais 2 em 1</title>
+
+  <style>
+    :root{
+      --bg:#0b1220; --bg2:#0a1a2f;
+      --text:#eaf0ff; --muted:#9db0d1; --line:rgba(255,255,255,.10);
+      --accent:#2dd4bf; --accent2:#60a5fa;
+      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:system-ui,Segoe UI,Roboto,Arial; color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 15% 10%, rgba(45,212,191,.14), transparent 55%),
+        radial-gradient(1100px 740px at 85% 15%, rgba(96,165,250,.14), transparent 55%),
+        linear-gradient(180deg,var(--bg),var(--bg2));
+      min-height:100vh;
+      display:flex; align-items:center; justify-content:center;
+      padding:18px;
+    }
+    .wrap{max-width:640px;width:100%}
+    .card{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding:16px;
+    }
+    h1{margin:0 0 6px; font-size:20px; font-weight:900}
+    .muted{color:var(--muted); font-size:13px}
+    .receipt{
+      margin-top:12px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:14px;
+      background: rgba(0,0,0,.18);
+    }
+    .row{display:flex; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px dashed rgba(255,255,255,.10)}
+    .row:last-child{border-bottom:none}
+    .k{color:var(--muted); font-size:13px}
+    .v{font-weight:800}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px; border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      color:var(--muted); font-size:12px;
+    }
+    .actions{
+      display:flex; gap:10px; flex-wrap:wrap;
+      justify-content:flex-end; margin-top:14px;
+    }
+    .btn{
+      padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06); color:var(--text); cursor:pointer; font-weight:900;
+    }
+    .btnPrimary{
+      background: linear-gradient(90deg, rgba(45,212,191,.22), rgba(96,165,250,.18));
+      border-color: rgba(45,212,191,.35);
+    }
+    .err{
+      color:#ff5d7a; font-weight:900; margin-top:10px;
+      padding:10px 12px; border-radius:12px; border:1px solid rgba(255,93,122,.25);
+      background: rgba(255,93,122,.10);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center;">
+        <div>
+          <h1>Recibo de Inscrição</h1>
+          <div class="muted">Guarde este comprovante e apresente se necessário.</div>
+        </div>
+        <div class="pill" id="status">Carregando…</div>
+      </div>
+
+      <div id="receipt" class="receipt" style="display:none">
+        <div class="row"><div class="k">Evento</div><div class="v" id="evTitle">—</div></div>
+        <div class="row"><div class="k">Data</div><div class="v" id="evDate">—</div></div>
+        <div class="row"><div class="k">Casal</div><div class="v" id="couple">—</div></div>
+        <div class="row"><div class="k">Data de casamento</div><div class="v" id="wedding">—</div></div>
+        <div class="row"><div class="k">Prato</div><div class="v" id="dish">—</div></div>
+        <div class="row"><div class="k">Inscrição (ID)</div><div class="v" id="rid">—</div></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="btnCopy">Copiar link</button>
+        <button class="btn btnPrimary" id="btnShare">Compartilhar</button>
+      </div>
+
+      <div id="err" class="err" style="display:none"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.3/+esm";
+
+    const SUPABASE_URL = "https://nuqcefxwarrjehvhdoug.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51cWNlZnh3YXJyamVodmhkb3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NzE1NzUsImV4cCI6MjA4NjM0NzU3NX0.xLugRmdl6UKVsMZnDepBlFndh4vGVMnptuloFZC28Mc";
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+    });
+
+    const params = new URLSearchParams(location.search);
+    const rid = params.get("rid");
+
+    const statusEl = document.getElementById("status");
+    const receiptEl = document.getElementById("receipt");
+    const errEl = document.getElementById("err");
+
+    const evTitle = document.getElementById("evTitle");
+    const evDate  = document.getElementById("evDate");
+    const couple  = document.getElementById("couple");
+    const wedding = document.getElementById("wedding");
+    const dish    = document.getElementById("dish");
+    const ridEl   = document.getElementById("rid");
+
+    const btnCopy = document.getElementById("btnCopy");
+    const btnShare = document.getElementById("btnShare");
+
+    function showErr(msg){
+      errEl.textContent = msg;
+      errEl.style.display = "block";
+      statusEl.textContent = "Erro";
+    }
+
+    function getSelfLink(){
+      return window.location.href;
+    }
+
+    btnCopy.addEventListener("click", async () => {
+      try{
+        await navigator.clipboard.writeText(getSelfLink());
+        statusEl.textContent = "Link copiado ✅";
+        setTimeout(()=> statusEl.textContent = "Pronto", 1200);
+      }catch{
+        showErr("Não foi possível copiar automaticamente. Copie pela barra de endereço.");
+      }
+    });
+
+    btnShare.addEventListener("click", async () => {
+      const link = getSelfLink();
+      const text = `Recibo da inscrição — ${evTitle.textContent} (${evDate.textContent})\nCasal: ${couple.textContent}\nLink: ${link}`;
+      try{
+        if (navigator.share){
+          await navigator.share({ title: "Recibo de Inscrição", text, url: link });
+        }else{
+          await navigator.clipboard.writeText(link);
+          statusEl.textContent = "Link copiado ✅";
+          setTimeout(()=> statusEl.textContent = "Pronto", 1200);
+        }
+      }catch{
+        // usuário cancelou share — ok
+      }
+    });
+
+    async function load(){
+      if (!rid) {
+        showErr("Link inválido: faltou ?rid=ID_DA_INSCRIÇÃO");
+        return;
+      }
+
+      // Busca inscrição
+      const { data: reg, error: regErr } = await supabase
+        .from("registrations")
+        .select("id,event_id,couple_name,wedding_date,dish_id,created_at")
+        .eq("id", rid)
+        .maybeSingle();
+
+      if (regErr || !reg){
+        showErr("Não foi possível encontrar esta inscrição.");
+        return;
+      }
+
+      // Busca evento e prato (tolerante: se dish não existir, mostra id)
+      const [evRes, dishRes] = await Promise.all([
+        supabase.from("events").select("title,event_date").eq("id", reg.event_id).maybeSingle(),
+        reg.dish_id ? supabase.from("dishes").select("name").eq("id", reg.dish_id).maybeSingle() : Promise.resolve({ data:null })
+      ]);
+
+      evTitle.textContent = evRes.data?.title ?? "Evento";
+      evDate.textContent = evRes.data?.event_date ?? "—";
+      couple.textContent = reg.couple_name ?? "—";
+      wedding.textContent = reg.wedding_date ?? "—";
+      dish.textContent = dishRes.data?.name ?? (reg.dish_id ? "Prato selecionado" : "—");
+      ridEl.textContent = reg.id;
+
+      receiptEl.style.display = "block";
+      statusEl.textContent = "Pronto";
+    }
+
+    await load();
+  </script>
+</body>
+</html>
