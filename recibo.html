@@ -251,11 +251,35 @@ function formatDateTime(v){
   return new Intl.DateTimeFormat("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}).format(d);
 }
 
+function formatDate(v){
+  if(!v)return "—";
+  const d = new Date(`${v}T00:00:00`);
+  if(Number.isNaN(d.getTime())) return "—";
+  return new Intl.DateTimeFormat("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric"}).format(d);
+}
+
 async function generateQR(id){
   const payload=`rid:${id}`;
+  const qrUrl=`https://api.qrserver.com/v1/create-qr-code/?size=170x170&margin=1&data=${encodeURIComponent(payload)}`;
+  const qrResponse=await fetch(qrUrl);
+  if(!qrResponse.ok){
+    throw new Error("Não foi possível gerar o QR Code.");
+  }
+
+  const qrBlob=await qrResponse.blob();
+  const qrDataUrl=await new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(reader.result);
+    reader.onerror=reject;
+    reader.readAsDataURL(qrBlob);
+  });
+
   const img=document.createElement("img");
   img.alt="QR Code do recibo";
-  img.src=`https://api.qrserver.com/v1/create-qr-code/?size=170x170&margin=1&data=${encodeURIComponent(payload)}`;
+  img.src=String(qrDataUrl);
+
+  await img.decode();
+
   qrBox.innerHTML="";
   qrBox.appendChild(img);
 }
@@ -285,7 +309,7 @@ async function load(){
   evDate.textContent=formatDateTime(ev?.event_date);
   couple.textContent=reg.couple_name??"—";
   phone.textContent=reg.phone??"—";
-  wedding.textContent=reg.wedding_date??"—";
+  wedding.textContent=formatDate(reg.wedding_date);
   dish.textContent=dishRes?.name??"—";
 
   await generateQR(reg.id);
@@ -297,7 +321,8 @@ async function exportImage(){
   }
   const canvas=await html2canvas(document.getElementById("receiptShot"),{
     backgroundColor:null,
-    scale:2
+    scale:2,
+    useCORS:true
   });
   return new Promise(resolve=>canvas.toBlob(resolve,"image/png"));
 }
