@@ -1,516 +1,313 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-  <title>Recibo de Inscrição — Jantar de Casais</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Recibo de Inscrição — Casais 2 em 1</title>
 
-  <style>
-    :root{
-      --bg:#0b1220;
-      --bg2:#0a1a2f;
-      --text:#eaf0ff;
-      --muted:#9db0d1;
-      --line:rgba(255,255,255,.10);
-      --accent:#2dd4bf;
-      --accent2:#60a5fa;
-      --good:#2cff9a;
-      --shadow: 0 14px 36px rgba(0,0,0,.45);
-      --radius: 18px;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      color:var(--text);
-      background:
-        radial-gradient(1200px 800px at 15% 10%, rgba(45,212,191,.14), transparent 55%),
-        radial-gradient(1100px 740px at 85% 15%, rgba(96,165,250,.14), transparent 55%),
-        radial-gradient(900px 650px at 50% 95%, rgba(167,139,250,.10), transparent 55%),
-        linear-gradient(180deg, var(--bg), var(--bg2));
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:18px;
-    }
-    .wrap{width:100%; max-width:760px}
-    .top{
-      display:flex; gap:12px; align-items:center; justify-content:space-between;
-      margin-bottom:12px; flex-wrap:wrap;
-    }
-    .brand{
-      display:flex; gap:12px; align-items:center;
-    }
-    .brand img{width:46px;height:46px; object-fit:contain}
-    .brand h1{margin:0; font-size:18px; font-weight:900}
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:6px 10px; border-radius:999px;
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.04);
-      color:var(--muted); font-size:12px;
-    }
-    .dot{width:8px;height:8px;border-radius:99px;background:var(--accent)}
-    .card{
-      border:1px solid var(--line);
-      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
+<style>
+:root{
+  --bg:#0b1220;
+  --bg2:#0a1a2f;
+  --text:#ffffff;
+  --muted:#cbd5e1;
+  --line:rgba(255,255,255,.12);
+  --accent:#2dd4bf;
+  --shadow:0 30px 80px rgba(0,0,0,.55);
+  --radius:22px;
+}
+*{box-sizing:border-box}
 
-    /* Área que vira PNG */
-    .receipt{
-      padding:18px;
-      background:
-        radial-gradient(700px 260px at 20% 0%, rgba(45,212,191,.18), transparent 60%),
-        radial-gradient(700px 260px at 80% 0%, rgba(96,165,250,.16), transparent 60%),
-        rgba(0,0,0,.18);
-    }
+body{
+  margin:0;
+  font-family:"Inter",system-ui;
+  color:var(--text);
+  background:
+    radial-gradient(1000px 600px at 20% 0%, rgba(45,212,191,.18), transparent 60%),
+    radial-gradient(1000px 600px at 80% 0%, rgba(96,165,250,.16), transparent 60%),
+    linear-gradient(180deg,var(--bg),var(--bg2));
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
 
-    .headline{
-      display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap;
-      margin-bottom:14px;
-    }
-    .headline .title{
-      display:flex; flex-direction:column; gap:6px;
-      min-width:260px;
-    }
-    .headline .title .big{
-      margin:0;
-      font-size:22px;
-      font-weight:1000;
-      letter-spacing:.2px;
-      line-height:1.15;
-    }
-    .headline .title .sub{
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.4;
-    }
+.wrap{width:100%;max-width:900px}
 
-    .stamp{
-      display:flex; flex-direction:column; align-items:flex-end; gap:6px;
-      min-width:180px;
-    }
-    .stamp .ok{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:8px 12px;
-      border-radius:999px;
-      border:1px solid rgba(44,255,154,.30);
-      background: rgba(44,255,154,.10);
-      color: #caffea;
-      font-weight:900;
-      font-size:12px;
-    }
-    .stamp .id{
-      color:var(--muted);
-      font-size:12px;
-      border:1px solid var(--line);
-      border-radius:999px;
-      padding:6px 10px;
-      background: rgba(255,255,255,.03);
-    }
+.card{
+  border-radius:var(--radius);
+  border:1px solid var(--line);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
+}
 
-    .grid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:12px;
-    }
-    @media (max-width:680px){ .grid{grid-template-columns:1fr} }
+/* ÁREA QUE VIRA IMAGEM */
+.receipt{
+  padding:26px;
+  display:grid;
+  grid-template-columns: 1.3fr .7fr;
+  gap:20px;
+}
 
-    .box{
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.04);
-      border-radius: 16px;
-      padding:12px;
-    }
-    .k{color:var(--muted); font-size:12px; font-weight:700; letter-spacing:.2px}
-    .v{margin-top:6px; font-weight:900; font-size:14px; line-height:1.25}
-    .v.small{font-size:13px; font-weight:800; color:rgba(234,240,255,.9)}
+@media(max-width:780px){
+  .receipt{grid-template-columns:1fr}
+}
 
-    .note{
-      margin-top:12px;
-      border:1px dashed rgba(255,255,255,.18);
-      border-radius:16px;
-      padding:12px;
-      color:rgba(234,240,255,.92);
-      background: rgba(0,0,0,.14);
-      font-size:12.5px;
-      line-height:1.45;
-    }
+.left{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
 
-    /* ===== QR SECTION (embaixo) ===== */
-    .qrWrap{
-      margin-top:12px;
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:16px;
-      background: rgba(255,255,255,.04);
-      padding:12px;
-      display:flex;
-      gap:12px;
-      align-items:center;
-      justify-content:space-between;
-      flex-wrap:wrap;
-    }
-    .qrLeft{
-      min-width: 220px;
-      flex: 1;
-    }
-    .qrTitle{
-      font-weight:1000;
-      font-size:13px;
-      letter-spacing:.2px;
-      margin:0;
-    }
-    .qrSubtitle{
-      margin:6px 0 0;
-      color: rgba(234,240,255,.82);
-      font-size:12.5px;
-      line-height:1.4;
-    }
-    .qrCodeBox{
-      width: 132px;
-      height: 132px;
-      border-radius: 14px;
-      background: #fff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow:hidden;
-      border: 1px solid rgba(255,255,255,.25);
-    }
-    .qrCodeBox canvas, .qrCodeBox img{
-      width: 122px;
-      height: 122px;
-      image-rendering: pixelated;
-    }
-    .ridMini{
-      margin-top:8px;
-      display:inline-flex;
-      gap:8px;
-      align-items:center;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.18);
-      color: rgba(234,240,255,.85);
-      font-size:12px;
-    }
+.eventTitle{
+  font-size:26px;
+  font-weight:1000;
+  line-height:1.1;
+}
 
-    .actions{
-      padding:12px;
-      display:flex;
-      justify-content:flex-end;
-      flex-wrap:wrap;
-      gap:10px;
-      border-top:1px solid rgba(255,255,255,.08);
-      background: rgba(0,0,0,.20);
-    }
-    .btn{
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
-      color:var(--text);
-      cursor:pointer;
-      font-weight:900;
-      font-size:13px;
-      display:inline-flex;
-      gap:10px;
-      align-items:center;
-      justify-content:center;
-    }
-    .btnPrimary{
-      border-color: rgba(45,212,191,.35);
-      background: linear-gradient(90deg, rgba(45,212,191,.22), rgba(96,165,250,.18));
-    }
-    .err{
-      margin-top:12px;
-      padding:10px 12px;
-      border-radius:14px;
-      border:1px solid rgba(255,93,122,.25);
-      background: rgba(255,93,122,.10);
-      color:#ffb2c1;
-      font-weight:900;
-      display:none;
-    }
-  </style>
+.eventDate{
+  color:var(--muted);
+  font-size:15px;
+}
+
+.section{
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:16px;
+  background:rgba(0,0,0,.20);
+}
+
+.label{
+  font-size:12px;
+  color:var(--muted);
+  font-weight:800;
+  letter-spacing:.3px;
+}
+
+.value{
+  margin-top:6px;
+  font-size:20px;
+  font-weight:1000;
+  line-height:1.25;
+}
+
+.value.big{
+  font-size:24px;
+}
+
+.right{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+  border-left:1px dashed rgba(255,255,255,.15);
+  padding-left:20px;
+}
+
+@media(max-width:780px){
+  .right{
+    border-left:none;
+    border-top:1px dashed rgba(255,255,255,.15);
+    padding-left:0;
+    padding-top:20px;
+  }
+}
+
+.qrBox{
+  width:200px;
+  height:200px;
+  background:#fff;
+  border-radius:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:14px;
+}
+
+.qrBox img{
+  width:170px;
+  height:170px;
+}
+
+.qrLabel{
+  font-size:13px;
+  font-weight:800;
+  text-align:center;
+  color:#e2e8f0;
+}
+
+.confirm{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 16px;
+  border-radius:999px;
+  border:1px solid rgba(44,255,154,.40);
+  background:rgba(44,255,154,.12);
+  font-weight:900;
+  font-size:13px;
+}
+
+.actions{
+  padding:16px;
+  display:flex;
+  justify-content:center;
+  border-top:1px solid rgba(255,255,255,.08);
+  background:rgba(0,0,0,.25);
+}
+
+.btn{
+  padding:12px 18px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.18);
+  background:linear-gradient(90deg,rgba(45,212,191,.28),rgba(96,165,250,.22));
+  font-weight:900;
+  cursor:pointer;
+  font-size:14px;
+}
+</style>
 </head>
 
 <body>
-  <div class="wrap">
-    <div class="top">
-      <div class="brand">
-        <img src="logo-modern-noglow.png" alt="Casais 2 em 1" />
-        <div>
-          <h1>Recibo de Inscrição</h1>
-          <div class="pill"><span class="dot"></span><span id="status">Carregando…</span></div>
-        </div>
-      </div>
-      <a class="pill" href="home.html" style="text-decoration:none;color:var(--muted)">Voltar para a Central</a>
-    </div>
+<div class="wrap">
+<div class="card">
 
-    <div class="card">
-      <!-- ESTA DIV É A QUE VIRARÁ IMAGEM -->
-      <div id="receiptShot" class="receipt">
-        <div class="headline">
-          <div class="title">
-            <div class="big" id="evTitle">—</div>
-            <div class="sub" id="evDate">—</div>
-          </div>
-          <div class="stamp">
-            <div class="ok">✅ CONFIRMADO</div>
-            <div class="id">ID: <span id="rid">—</span></div>
-          </div>
-        </div>
+<div id="receiptShot" class="receipt">
 
-        <div class="grid">
-          <div class="box">
-            <div class="k">Casal</div>
-            <div class="v" id="couple">—</div>
-          </div>
-          <div class="box">
-            <div class="k">Telefone</div>
-            <div class="v" id="phone">—</div>
-          </div>
-          <div class="box">
-            <div class="k">Data de casamento</div>
-            <div class="v" id="wedding">—</div>
-          </div>
-          <div class="box">
-            <div class="k">Prato escolhido</div>
-            <div class="v" id="dish">—</div>
-            <div class="v small" id="dishHint">—</div>
-          </div>
-        </div>
-
-        <div class="note" id="note">
-          Guarde este recibo. Caso necessário, apresente este comprovante no check-in.
-        </div>
-
-        <!-- QR EMBAIXO -->
-        <div class="qrWrap">
-          <div class="qrLeft">
-            <p class="qrTitle">Escaneie no check-in</p>
-            <p class="qrSubtitle">
-              A equipe vai apontar a câmera e marcar sua presença automaticamente.
-              <br/>Se preferir, você também pode mostrar este recibo na tela.
-            </p>
-            <div class="ridMini">Código: <span id="ridMiniText">—</span></div>
-          </div>
-
-          <div class="qrCodeBox" aria-label="QR Code do check-in">
-            <div id="qrcode"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="actions">
-        <button class="btn" id="btnCopy">Copiar link</button>
-        <button class="btn" id="btnPng">Salvar como imagem</button>
-        <button class="btn btnPrimary" id="btnShare">Compartilhar</button>
-      </div>
-    </div>
-
-    <div id="err" class="err"></div>
+<div class="left">
+  <div>
+    <div class="eventTitle" id="evTitle">—</div>
+    <div class="eventDate" id="evDate">—</div>
   </div>
 
-  <!-- Salvar como imagem -->
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <div class="confirm">✅ INSCRIÇÃO CONFIRMADA</div>
 
-  <!-- QR Code -->
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+  <div class="section">
+    <div class="label">CASAL</div>
+    <div class="value big" id="couple">—</div>
+  </div>
 
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.3/+esm";
+  <div class="section">
+    <div class="label">TELEFONE</div>
+    <div class="value" id="phone">—</div>
+  </div>
 
-    const SUPABASE_URL = "https://nuqcefxwarrjehvhdoug.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51cWNlZnh3YXJyamVodmhkb3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NzE1NzUsImV4cCI6MjA4NjM0NzU3NX0.xLugRmdl6UKVsMZnDepBlFndh4vGVMnptuloFZC28Mc";
+  <div class="section">
+    <div class="label">DATA DE CASAMENTO</div>
+    <div class="value" id="wedding">—</div>
+  </div>
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: { persistSession:false, autoRefreshToken:false, detectSessionInUrl:false }
-    });
+  <div class="section">
+    <div class="label">PRATO</div>
+    <div class="value" id="dish">—</div>
+  </div>
+</div>
 
-    const params = new URLSearchParams(location.search);
-    const rid = params.get("rid");
+<div class="right">
+  <div class="qrBox" id="qrBox"></div>
+  <div class="qrLabel">Apresente este QR no check-in</div>
+</div>
 
-    const statusEl = document.getElementById("status");
-    const errEl = document.getElementById("err");
+</div>
 
-    const evTitle = document.getElementById("evTitle");
-    const evDate  = document.getElementById("evDate");
-    const couple  = document.getElementById("couple");
-    const phone   = document.getElementById("phone");
-    const wedding = document.getElementById("wedding");
-    const dish    = document.getElementById("dish");
-    const dishHint= document.getElementById("dishHint");
-    const ridEl   = document.getElementById("rid");
-    const ridMiniText = document.getElementById("ridMiniText");
+<div class="actions">
+  <button class="btn" id="btnShare">Compartilhar recibo</button>
+</div>
 
-    const btnCopy = document.getElementById("btnCopy");
-    const btnPng  = document.getElementById("btnPng");
-    const btnShare= document.getElementById("btnShare");
+</div>
+</div>
 
-    function showErr(msg){
-      errEl.textContent = msg;
-      errEl.style.display = "block";
-      statusEl.textContent = "Erro";
-    }
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
 
-    function formatDateTime(value){
-      if (!value) return "—";
-      const d = new Date(value);
-      if (Number.isNaN(d.getTime())) return "—";
-      return new Intl.DateTimeFormat("pt-BR", {
-        day:"2-digit", month:"2-digit", year:"numeric",
-        hour:"2-digit", minute:"2-digit"
-      }).format(d);
-    }
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.3/+esm";
 
-    function selfLink(){
-      return window.location.href;
-    }
+const SUPABASE_URL = "https://nuqcefxwarrjehvhdoug.supabase.co";
+const SUPABASE_ANON_KEY = "SUA_CHAVE_AQUI";
 
-    btnCopy.addEventListener("click", async () => {
-      try{
-        await navigator.clipboard.writeText(selfLink());
-        statusEl.textContent = "Link copiado ✅";
-        setTimeout(()=> statusEl.textContent = "Pronto", 1200);
-      }catch{
-        showErr("Não foi possível copiar automaticamente. Copie pela barra de endereço.");
-      }
-    });
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY,{
+  auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}
+});
 
-    async function exportPngBlob(){
-      const node = document.getElementById("receiptShot");
-      const canvas = await html2canvas(node, {
-        backgroundColor: null,
-        scale: Math.min(window.devicePixelRatio || 2, 2)
-      });
-      return new Promise(resolve => canvas.toBlob(resolve, "image/png", 1));
-    }
+const params=new URLSearchParams(location.search);
+const rid=params.get("rid");
 
-    btnPng.addEventListener("click", async () => {
-      try{
-        statusEl.textContent = "Gerando imagem…";
-        const blob = await exportPngBlob();
-        if (!blob) throw new Error("blob");
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `recibo-${rid || "inscricao"}.png`;
-        a.click();
-        URL.revokeObjectURL(url);
-        statusEl.textContent = "Imagem salva ✅";
-        setTimeout(()=> statusEl.textContent = "Pronto", 1200);
-      }catch{
-        showErr("Não foi possível salvar a imagem neste dispositivo/navegador.");
-      }
-    });
+const evTitle=document.getElementById("evTitle");
+const evDate=document.getElementById("evDate");
+const couple=document.getElementById("couple");
+const phone=document.getElementById("phone");
+const wedding=document.getElementById("wedding");
+const dish=document.getElementById("dish");
+const qrBox=document.getElementById("qrBox");
+const btnShare=document.getElementById("btnShare");
 
-    btnShare.addEventListener("click", async () => {
-      try{
-        const link = selfLink();
-        const text =
-          `Recibo da inscrição — ${evTitle.textContent}\n` +
-          `${evDate.textContent}\n` +
-          `Casal: ${couple.textContent}\n` +
-          `Link: ${link}`;
+function formatDateTime(v){
+  if(!v)return "—";
+  const d=new Date(v);
+  return new Intl.DateTimeFormat("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}).format(d);
+}
 
-        // tenta compartilhar imagem (melhor), se suportado
-        if (navigator.canShare && navigator.share){
-          statusEl.textContent = "Preparando…";
-          const blob = await exportPngBlob();
-          const file = new File([blob], `recibo-${rid || "inscricao"}.png`, { type: "image/png" });
+async function generateQR(id){
+  const payload=`rid:${id}`;
+  const url=await QRCode.toDataURL(payload,{width:170,margin:1});
+  const img=document.createElement("img");
+  img.src=url;
+  qrBox.innerHTML="";
+  qrBox.appendChild(img);
+}
 
-          if (navigator.canShare({ files: [file] })){
-            await navigator.share({ title: "Recibo de Inscrição", text, files: [file] });
-            statusEl.textContent = "Compartilhado ✅";
-            setTimeout(()=> statusEl.textContent = "Pronto", 1200);
-            return;
-          }
-        }
+async function load(){
+  if(!rid)return;
 
-        // fallback: compartilhar link
-        if (navigator.share){
-          await navigator.share({ title:"Recibo de Inscrição", text, url: link });
-          statusEl.textContent = "Compartilhado ✅";
-          setTimeout(()=> statusEl.textContent = "Pronto", 1200);
-          return;
-        }
+  const {data:reg}=await supabase
+    .from("registrations")
+    .select("id,event_id,couple_name,wedding_date,phone,dish_id")
+    .eq("id",rid)
+    .maybeSingle();
 
-        // fallback: copiar link
-        await navigator.clipboard.writeText(link);
-        statusEl.textContent = "Link copiado ✅";
-        setTimeout(()=> statusEl.textContent = "Pronto", 1200);
-      }catch{
-        statusEl.textContent = "Pronto";
-      }
-    });
+  if(!reg)return;
 
-    async function renderQr(ridValue){
-      const target = document.getElementById("qrcode");
-      target.innerHTML = "";
-      const payload = `rid:${ridValue}`;
-      ridMiniText.textContent = payload;
+  const {data:ev}=await supabase
+    .from("events")
+    .select("title,event_date")
+    .eq("id",reg.event_id)
+    .maybeSingle();
 
-      try {
-        const dataUrl = await QRCode.toDataURL(payload, {
-          width: 122,
-          margin: 1,
-          errorCorrectionLevel: "M"
-        });
+  const {data:dishRes}=reg.dish_id
+    ? await supabase.from("dishes").select("name").eq("id",reg.dish_id).maybeSingle()
+    : {data:null};
 
-        const img = document.createElement("img");
-        img.src = dataUrl;
-        img.alt = `QR Code da inscrição ${ridValue}`;
-        target.appendChild(img);
-      } catch {
-        target.textContent = "QR indisponível";
-      }
-    }
+  evTitle.textContent=ev?.title??"Evento";
+  evDate.textContent=formatDateTime(ev?.event_date);
+  couple.textContent=reg.couple_name??"—";
+  phone.textContent=reg.phone??"—";
+  wedding.textContent=reg.wedding_date??"—";
+  dish.textContent=dishRes?.name??"—";
 
-    async function load(){
-      if (!rid){
-        showErr("Link inválido: faltou ?rid=...");
-        return;
-      }
+  await generateQR(reg.id);
+}
 
-      const { data: reg, error: regErr } = await supabase
-        .from("registrations")
-        .select("id,event_id,couple_name,wedding_date,phone,dish_id,created_at")
-        .eq("id", rid)
-        .maybeSingle();
+async function exportImage(){
+  const canvas=await html2canvas(document.getElementById("receiptShot"),{
+    backgroundColor:null,
+    scale:2
+  });
+  return new Promise(resolve=>canvas.toBlob(resolve,"image/png"));
+}
 
-      if (regErr || !reg){
-        showErr("Não foi possível encontrar esta inscrição.");
-        return;
-      }
+btnShare.addEventListener("click",async()=>{
+  const blob=await exportImage();
+  const file=new File([blob],"recibo.png",{type:"image/png"});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    await navigator.share({files:[file]});
+  }
+});
 
-      const [evRes, dishRes] = await Promise.all([
-        supabase.from("events").select("title,event_date").eq("id", reg.event_id).maybeSingle(),
-        reg.dish_id ? supabase.from("dishes").select("name").eq("id", reg.dish_id).maybeSingle() : Promise.resolve({ data:null })
-      ]);
-
-      evTitle.textContent = evRes.data?.title ?? "Evento";
-      evDate.textContent = formatDateTime(evRes.data?.event_date);
-      couple.textContent = reg.couple_name ?? "—";
-      phone.textContent = reg.phone ?? "—";
-      wedding.textContent = reg.wedding_date ?? "—";
-      dish.textContent = dishRes.data?.name ?? (reg.dish_id ? "Prato selecionado" : "—");
-      dishHint.textContent = reg.dish_id ? "Obrigado por contribuir com o jantar 💜" : "—";
-      ridEl.textContent = reg.id;
-
-      await renderQr(reg.id);
-      statusEl.textContent = "Pronto";
-    }
-
-    await load();
-  </script>
+await load();
+</script>
 </body>
 </html>
