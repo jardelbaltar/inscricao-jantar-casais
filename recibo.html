@@ -61,6 +61,19 @@ body{
   gap:18px;
 }
 
+.eventHeader{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.eventLogo{
+  width:60px;
+  height:60px;
+  object-fit:contain;
+  flex-shrink:0;
+}
+
 .eventTitle{
   font-size:26px;
   font-weight:1000;
@@ -178,9 +191,12 @@ body{
 <div id="receiptShot" class="receipt">
 
 <div class="left">
-  <div>
-    <div class="eventTitle" id="evTitle">—</div>
-    <div class="eventDate" id="evDate">—</div>
+  <div class="eventHeader">
+    <img class="eventLogo" src="./logo-modern-noglow.png" alt="Logo Casais 2 em 1"/>
+    <div>
+      <div class="eventTitle" id="evTitle">—</div>
+      <div class="eventDate" id="evDate">—</div>
+    </div>
   </div>
 
   <div class="confirm">✅ INSCRIÇÃO CONFIRMADA</div>
