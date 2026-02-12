@@ -318,9 +318,7 @@
       padding: 10px;
       overflow: hidden;
     }
-    #qrReader{
-      width:100%;
-    }
+    #qrReader{ width:100%; }
     .scannerHint{
       margin-top: 10px;
       color: rgba(229,231,235,.78);
@@ -377,13 +375,9 @@
       background: rgba(255,255,255,.06);
       color: #e5e7eb;
     }
-    .btnGhost:hover{
-      background: rgba(255,255,255,.10);
-    }
+    .btnGhost:hover{ background: rgba(255,255,255,.10); }
 
-    .flash{
-      animation: flashRow 800ms ease;
-    }
+    .flash{ animation: flashRow 800ms ease; }
     @keyframes flashRow{
       0%{ box-shadow: 0 0 0 0 rgba(45,212,191,.0); }
       20%{ box-shadow: 0 0 0 4px rgba(45,212,191,.22); }
@@ -475,7 +469,7 @@
           <div id="qrReader"></div>
           <div class="scannerHint">
             Funciona com QR contendo <b>rid:UUID</b> ou um link do tipo <b>recibo.html?rid=UUID</b>.
-            <br/>Dica: no celular, permita acesso à câmera.
+            <br/>Dica: no iPhone: toque em <b>aA</b> → <b>Ajustes do Site</b> → <b>Câmera: Permitir</b>.
           </div>
         </div>
 
@@ -603,7 +597,6 @@
           const wasPresent = tr.dataset.present === "true";
           const newPresent = !wasPresent;
 
-          // UI otimista
           tr.dataset.present = String(newPresent);
           const row = allRows.find(x => x.id === id);
           if (row) {
@@ -671,35 +664,26 @@
 
     function extractRid(text){
       const raw = (text || "").trim();
-
-      // Caso "rid:UUID"
       const m1 = raw.match(/^rid:\s*([0-9a-fA-F-]{36})$/);
       if (m1) return m1[1];
-
-      // Caso URL com ?rid=UUID
       try{
         const u = new URL(raw);
         const rid = u.searchParams.get("rid");
         if (rid && /^[0-9a-fA-F-]{36}$/.test(rid)) return rid;
       }catch{}
-
-      // Caso tenha "rid=" perdido no texto
       const m2 = raw.match(/rid=([0-9a-fA-F-]{36})/);
       if (m2) return m2[1];
-
       return null;
     }
 
     async function setPresenceByRid(rid){
-      // lock anti-spam (2s)
       const now = Date.now();
       if (now < scanLockUntil) return;
-      scanLockUntil = now + 2000;
+      scanLockUntil = now + 1800;
 
       scanValueEl.textContent = rid;
       scanStatusEl.textContent = "Validando inscrição…";
 
-      // Puxar a inscrição para validar event_id e pegar o nome
       const { data: reg, error: regErr } = await supabase
         .from("registrations")
         .select("id,event_id,couple_name,is_present")
@@ -718,7 +702,6 @@
 
       if (reg.is_present){
         scanStatusEl.textContent = `✅ Já estava presente: ${reg.couple_name || "Casal"}`;
-        // ainda assim destaca
         const row = allRows.find(x => x.id === reg.id);
         if (row){
           row.is_present = true;
@@ -728,7 +711,6 @@
         return;
       }
 
-      // marcar presente via RPC pública
       const { data, error } = await supabase.rpc("set_presence_public", {
         p_registration_id: reg.id,
         p_is_present: true
@@ -739,7 +721,6 @@
         return;
       }
 
-      // Atualiza cache local
       const row = allRows.find(x => x.id === reg.id);
       if (row){
         row.is_present = true;
@@ -754,10 +735,11 @@
       setTimeout(() => setMsg(""), 1200);
     }
 
+    // ✅ iPhone-friendly
     async function openScanner(){
       if (scanning) return;
       overlay.classList.add("show");
-      scanStatusEl.textContent = "Inicializando câmera…";
+      scanStatusEl.textContent = "Solicitando acesso à câmera…";
 
       if (!window.isSecureContext) {
         scanning = false;
@@ -771,56 +753,42 @@
 
       scanning = true;
 
+      const config = {
+        fps: 12,
+        qrbox: { width: 260, height: 260 },
+        aspectRatio: 1.0,
+        disableFlip: true
+      };
+
+      const onScanSuccess = async (decodedText) => {
+        const rid = extractRid(decodedText);
+        scanValueEl.textContent = decodedText;
+
+        if (!rid){
+          scanStatusEl.textContent = "⚠️ QR inválido. Precisa conter rid:UUID ou recibo.html?rid=UUID";
+          return;
+        }
+
+        await setPresenceByRid(rid);
+      };
+
       try{
-        const onScan = async (decodedText) => {
-          const rid = extractRid(decodedText);
-          scanValueEl.textContent = decodedText;
-
-          if (!rid){
-            scanStatusEl.textContent = "⚠️ QR inválido. Precisa conter rid:UUID ou recibo.html?rid=UUID";
-            return;
-          }
-
-          await setPresenceByRid(rid);
-        };
-
-        const config = {
-          fps: 12,
-          qrbox: { width: 260, height: 260 },
-          aspectRatio: 1.0,
-          videoConstraints: {
-            facingMode: { ideal: "environment" }
-          }
-        };
-
-        let started = false;
-        const cameras = await Html5Qrcode.getCameras();
-        if (cameras?.length) {
-          const backCam = cameras.find(c => /back|traseira|rear|environment/i.test(c.label || ""));
-          const chosenCameraId = (backCam || cameras[0]).id;
-
-          await qr.start(
-            { deviceId: { exact: chosenCameraId } },
-            config,
-            onScan,
-            () => {}
-          );
-          started = true;
-        }
-
-        if (!started) {
-          await qr.start(
-            { facingMode: "environment" },
-            config,
-            onScan,
-            () => {}
-          );
-        }
-
+        // 1) tenta câmera traseira (mais estável no iOS)
+        await qr.start({ facingMode: "environment" }, config, onScanSuccess, () => {});
         scanStatusEl.textContent = "Aponte para o QR do recibo…";
-      }catch(err){
-        scanning = false;
-        scanStatusEl.textContent = "❌ Não consegui acessar a câmera. No iPhone, confira permissões do Safari e use HTTPS.";
+        return;
+      }catch(e1){
+        try{
+          // 2) fallback: câmera frontal
+          await qr.start({ facingMode: "user" }, config, onScanSuccess, () => {});
+          scanStatusEl.textContent = "Aponte para o QR do recibo…";
+          return;
+        }catch(e2){
+          scanning = false;
+          scanStatusEl.textContent =
+            "❌ Não consegui acessar a câmera. No iPhone: toque em aA → Ajustes do Site → Câmera: Permitir.";
+          console.error("Camera start error:", e2 || e1);
+        }
       }
     }
 
@@ -836,6 +804,11 @@
       scanning = false;
       overlay.classList.remove("show");
     }
+
+    // ✅ evita travar câmera no iPhone ao trocar de aba
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) stopScanner();
+    });
 
     btnScan.addEventListener("click", openScanner);
     btnClose.addEventListener("click", stopScanner);
