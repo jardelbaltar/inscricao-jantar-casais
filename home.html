@@ -1,238 +1,326 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Central do Evento — Casais 2 em 1</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Central do Evento — Casais 2 em 1</title>
 
-  <style>
-    :root{
-      --bg:#0b1220;
-      --bg2:#0a1a2f;
-      --card: rgba(255,255,255,.06);
-      --card2: rgba(255,255,255,.04);
-      --line: rgba(255,255,255,.10);
-      --text:#eaf0ff;
-      --muted:#9db0d1;
+<style>
+:root{
+  --bg:#0b1220;
+  --bg2:#0a1a2f;
+  --card: rgba(255,255,255,.06);
+  --card2: rgba(255,255,255,.04);
+  --line: rgba(255,255,255,.10);
+  --text:#eaf0ff;
+  --muted:#9db0d1;
 
-      --accent:#2dd4bf;
-      --accent2:#60a5fa;
-      --accent3:#a78bfa;
+  --accent:#2dd4bf;
+  --accent2:#60a5fa;
+  --accent3:#a78bfa;
 
-      --shadow: 0 12px 30px rgba(0,0,0,.35);
-      --shadow2: 0 16px 45px rgba(0,0,0,.45);
-      --radius: 16px;
-    }
+  --shadow: 0 12px 30px rgba(0,0,0,.35);
+  --shadow2: 0 16px 45px rgba(0,0,0,.45);
+  --radius: 16px;
+}
 
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      color:var(--text);
-      background:
-        radial-gradient(1200px 800px at 15% 10%, rgba(45,212,191,.14), transparent 55%),
-        radial-gradient(1100px 740px at 85% 15%, rgba(96,165,250,.14), transparent 55%),
-        radial-gradient(900px 650px at 50% 95%, rgba(167,139,250,.10), transparent 55%),
-        linear-gradient(180deg, var(--bg), var(--bg2));
-      min-height:100vh;
-    }
+*{box-sizing:border-box}
 
-    .container{
-      max-width:1200px;
-      margin:0 auto;
-      padding:22px 16px 34px;
-    }
+body{
+  margin:0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  color:var(--text);
+  background:
+    radial-gradient(1200px 800px at 15% 10%, rgba(45,212,191,.14), transparent 55%),
+    radial-gradient(1100px 740px at 85% 15%, rgba(96,165,250,.14), transparent 55%),
+    radial-gradient(900px 650px at 50% 95%, rgba(167,139,250,.10), transparent 55%),
+    linear-gradient(180deg, var(--bg), var(--bg2));
+  min-height:100vh;
+}
 
-    .topbar{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-end;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-bottom:14px;
-    }
+.container{
+  max-width:1200px;
+  margin:0 auto;
+  padding:22px 16px 34px;
+}
 
-    /* LOGO + TÍTULO */
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:14px;
-    }
+/* ===== Topo ===== */
 
-    .brandMark img{
-      width:52px;
-      height:52px;
-      object-fit:contain;
-      filter:none; /* sem glow */
-    }
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  flex-wrap:wrap;
+  gap:12px;
+  margin-bottom:18px;
+}
 
-    .brandText{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-    }
+.brand{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
 
-    .brand h1{
-      margin:0;
-      font-size:22px;
-      font-weight:900;
-      letter-spacing:.2px;
-    }
+.brandMark img{
+  width:52px;
+  height:52px;
+  object-fit:contain;
+}
 
-    .brand .subtitle{
-      color:var(--muted);
-      font-size:13px;
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
+.brandText{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
 
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:6px 10px;
-      border:1px solid var(--line);
-      border-radius:999px;
-      background: rgba(255,255,255,.04);
-      color:var(--muted);
-      font-size:12px;
-    }
+.brand h1{
+  margin:0;
+  font-size:22px;
+  font-weight:900;
+}
 
-    .dot{
-      width:8px;height:8px;border-radius:999px;
-      background:var(--accent);
-    }
+.subtitle{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+  color:var(--muted);
+  font-size:13px;
+}
 
-    .panel{
-      border:1px solid var(--line);
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      border-radius: var(--radius);
-      padding:14px;
-      box-shadow: var(--shadow);
-    }
+.chip{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background: rgba(255,255,255,.04);
+}
 
-    .controls{
-      display:grid;
-      grid-template-columns: 1fr auto auto;
-      gap:10px;
-      align-items:end;
-      margin-top:12px;
-    }
+.dot{
+  width:8px;height:8px;border-radius:999px;
+  background:var(--accent);
+}
 
-    @media (max-width: 900px){
-      .controls{ grid-template-columns: 1fr; }
-    }
+/* ===== Painel EVENT_ID ===== */
 
-    label{
-      display:block;
-      color:var(--muted);
-      font-size:12px;
-      font-weight:700;
-      margin-bottom:6px;
-    }
+.panel{
+  border:1px solid var(--line);
+  background: linear-gradient(180deg, var(--card), var(--card2));
+  border-radius: var(--radius);
+  padding:14px;
+  box-shadow: var(--shadow);
+}
 
-    input{
-      width:100%;
-      padding:12px;
-      border-radius:12px;
-      border:1px solid var(--line);
-      background: rgba(0,0,0,.22);
-      color:var(--text);
-      font-size:14px;
-    }
+.controls{
+  display:grid;
+  grid-template-columns: 1fr auto auto;
+  gap:10px;
+  align-items:end;
+}
 
-    .btn{
-      padding:12px 14px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.06);
-      color:var(--text);
-      cursor:pointer;
-      font-weight:800;
-      min-width:140px;
-    }
+@media (max-width: 900px){
+  .controls{ grid-template-columns:1fr; }
+}
 
-    .btnPrimary{
-      border-color: rgba(45,212,191,.25);
-      background: linear-gradient(90deg, rgba(45,212,191,.22), rgba(96,165,250,.18));
-    }
+label{
+  font-size:12px;
+  font-weight:700;
+  color:var(--muted);
+  display:block;
+  margin-bottom:6px;
+}
 
-    .grid{
-      margin-top:14px;
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap:14px;
-    }
+input{
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background: rgba(0,0,0,.22);
+  color:var(--text);
+}
 
-    @media (max-width: 1000px){ .grid{grid-template-columns: repeat(2, 1fr);} }
-    @media (max-width: 680px){ .grid{grid-template-columns: 1fr;} }
+.btn{
+  padding:12px 14px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  color:var(--text);
+  cursor:pointer;
+  font-weight:800;
+  transition:.2s ease;
+}
 
-    .card{
-      border:1px solid var(--line);
-      background: linear-gradient(180deg, var(--card), var(--card2));
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding:16px;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      cursor:pointer;
-      transition:.2s ease;
-    }
+.btn:hover{
+  transform:translateY(-1px);
+  box-shadow:var(--shadow);
+}
 
-    .card:hover{
-      transform:translateY(-2px);
-      box-shadow: var(--shadow2);
-    }
+.btnPrimary{
+  background: linear-gradient(90deg, rgba(45,212,191,.22), rgba(96,165,250,.18));
+  border-color: rgba(45,212,191,.35);
+}
 
-    .cardTitle{
-      margin:0;
-      font-size:15px;
-      font-weight:900;
-    }
+/* ===== Cards ===== */
 
-    .cardDesc{
-      margin:6px 0 0;
-      color:var(--muted);
-      font-size:13px;
-    }
+.grid{
+  margin-top:18px;
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:16px;
+}
 
-    .footer{
-      margin-top:16px;
-      color:var(--muted);
-      font-size:12px;
-      display:flex;
-      justify-content:space-between;
-      flex-wrap:wrap;
-    }
-  </style>
+@media (max-width: 1000px){ .grid{grid-template-columns: repeat(2, 1fr);} }
+@media (max-width: 680px){ .grid{grid-template-columns: 1fr;} }
+
+.card{
+  border:1px solid var(--line);
+  background: linear-gradient(180deg, var(--card), var(--card2));
+  border-radius: var(--radius);
+  padding:16px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  box-shadow:var(--shadow);
+  cursor:pointer;
+  transition:.2s ease;
+}
+
+.card:hover{
+  transform:translateY(-3px);
+  box-shadow:var(--shadow2);
+}
+
+.cardTitle{
+  margin:0;
+  font-weight:900;
+}
+
+.cardDesc{
+  color:var(--muted);
+  font-size:13px;
+}
+
+.footer{
+  margin-top:20px;
+  color:var(--muted);
+  font-size:12px;
+  display:flex;
+  justify-content:space-between;
+  flex-wrap:wrap;
+}
+</style>
 </head>
 
 <body>
-  <div class="container">
-    <div class="topbar">
-      <div class="brand">
-        <div class="brandMark">
-          <img src="logo-modern-noglow.png" alt="Casais 2 em 1">
-        </div>
+<div class="container">
 
-        <div class="brandText">
-          <h1>Central do Evento</h1>
-          <div class="subtitle">
-            <span class="chip"><span class="dot"></span><span id="statusText">Pronto</span></span>
-            <span class="chip">Casais 2 em 1</span>
-            <span class="chip" id="eventChip">EVENT_ID: —</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="chip">Acesso rápido às funcionalidades</div>
+<div class="topbar">
+  <div class="brand">
+    <div class="brandMark">
+      <img src="logo-modern-noglow.png" alt="Casais 2 em 1">
     </div>
-
-    <!-- resto da página permanece igual -->
+    <div class="brandText">
+      <h1>Central do Evento</h1>
+      <div class="subtitle">
+        <span class="chip"><span class="dot"></span><span id="statusText">Pronto</span></span>
+        <span class="chip">Casais 2 em 1</span>
+        <span class="chip" id="eventChip">EVENT_ID: —</span>
+      </div>
+    </div>
   </div>
+  <div class="chip">Acesso rápido às funcionalidades</div>
+</div>
+
+<div class="panel">
+  <div class="controls">
+    <div>
+      <label>EVENT_ID</label>
+      <input id="eventId" placeholder="Cole o UUID do evento">
+    </div>
+    <button class="btn btnPrimary" onclick="saveEvent()">Salvar</button>
+    <button class="btn" onclick="copyInscricao()">Copiar link da inscrição</button>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="card" onclick="go('index.html')">
+    <h3 class="cardTitle">Inscrição</h3>
+    <p class="cardDesc">Formulário público via QR Code.</p>
+  </div>
+
+  <div class="card" onclick="go('painel.html')">
+    <h3 class="cardTitle">Acompanhamento</h3>
+    <p class="cardDesc">Visualize inscrições em tempo real.</p>
+  </div>
+
+  <div class="card" onclick="go('admin.html')">
+    <h3 class="cardTitle">Administração</h3>
+    <p class="cardDesc">Gerencie vagas e pratos.</p>
+  </div>
+
+  <div class="card" onclick="go('checkin.html')">
+    <h3 class="cardTitle">Check-in</h3>
+    <p class="cardDesc">Controle de presença.</p>
+  </div>
+
+  <div class="card" onclick="go('stats.html')">
+    <h3 class="cardTitle">Estatísticas</h3>
+    <p class="cardDesc">Dashboard completo do evento.</p>
+  </div>
+
+  <div class="card" onclick="go('sorteio.html')">
+    <h3 class="cardTitle">Sorteio</h3>
+    <p class="cardDesc">Momento show de TV.</p>
+  </div>
+</div>
+
+<div class="footer">
+  <div>Salve o EVENT_ID uma vez e navegue pelos módulos.</div>
+  <div>home.html?event=UUID</div>
+</div>
+
+</div>
+
+<script>
+const STORAGE_KEY="EVENT_ID";
+
+function saveEvent(){
+  const id=document.getElementById("eventId").value.trim();
+  if(!id){ alert("Informe o EVENT_ID"); return; }
+  localStorage.setItem(STORAGE_KEY,id);
+  document.getElementById("eventChip").textContent="EVENT_ID: "+id;
+  document.getElementById("statusText").textContent="Evento configurado";
+}
+
+function copyInscricao(){
+  const id=localStorage.getItem(STORAGE_KEY);
+  if(!id){ alert("Defina o EVENT_ID primeiro"); return; }
+  const base=location.href.replace(/[^\/]*$/,"");
+  navigator.clipboard.writeText(base+"index.html?event="+id);
+  alert("Link copiado!");
+}
+
+function go(page){
+  const id=localStorage.getItem(STORAGE_KEY);
+  if(!id){ alert("Defina o EVENT_ID primeiro"); return; }
+  location.href=page+"?event="+id;
+}
+
+(function(){
+  const params=new URLSearchParams(location.search);
+  const q=params.get("event");
+  if(q){
+    localStorage.setItem(STORAGE_KEY,q);
+  }
+  const saved=localStorage.getItem(STORAGE_KEY);
+  if(saved){
+    document.getElementById("eventId").value=saved;
+    document.getElementById("eventChip").textContent="EVENT_ID: "+saved;
+  }
+})();
+</script>
 
 </body>
 </html>
