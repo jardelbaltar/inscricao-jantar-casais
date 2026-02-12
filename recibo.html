@@ -220,8 +220,7 @@ body{
 </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.4/qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.3/+esm";
@@ -254,9 +253,9 @@ function formatDateTime(v){
 
 async function generateQR(id){
   const payload=`rid:${id}`;
-  const url=await QRCode.toDataURL(payload,{width:170,margin:1});
   const img=document.createElement("img");
-  img.src=url;
+  img.alt="QR Code do recibo";
+  img.src=`https://api.qrserver.com/v1/create-qr-code/?size=170x170&margin=1&data=${encodeURIComponent(payload)}`;
   qrBox.innerHTML="";
   qrBox.appendChild(img);
 }
@@ -293,6 +292,9 @@ async function load(){
 }
 
 async function exportImage(){
+  if(typeof html2canvas!=="function"){
+    throw new Error("Biblioteca de captura indisponível.");
+  }
   const canvas=await html2canvas(document.getElementById("receiptShot"),{
     backgroundColor:null,
     scale:2
@@ -301,10 +303,27 @@ async function exportImage(){
 }
 
 btnShare.addEventListener("click",async()=>{
-  const blob=await exportImage();
-  const file=new File([blob],"recibo.png",{type:"image/png"});
-  if(navigator.canShare&&navigator.canShare({files:[file]})){
-    await navigator.share({files:[file]});
+  try{
+    const blob=await exportImage();
+    if(!blob) throw new Error("Falha ao gerar imagem.");
+
+    const file=new File([blob],"recibo.png",{type:"image/png"});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      await navigator.share({files:[file],title:"Recibo de inscrição"});
+      return;
+    }
+
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;
+    a.download="recibo.png";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }catch(err){
+    console.error(err);
+    alert("Não foi possível compartilhar agora. Tente novamente.");
   }
 });
 
