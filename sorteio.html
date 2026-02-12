@@ -22,25 +22,34 @@ body{
     radial-gradient(circle at 50% 80%, rgba(106,228,255,.15), transparent 40%),
     linear-gradient(180deg,var(--bg1),var(--bg2));
   color:white;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
+  min-height:100vh;
   overflow:hidden;
+  padding: max(16px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
 }
 
 .container{
   text-align:center;
   width:100%;
   max-width:1000px;
+  margin: 0 auto;
+  min-height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
+.hero-top{
+  display:grid;
+  grid-template-columns:52px 1fr 52px;
+  align-items:center;
+  gap:10px;
+  margin-bottom:8px;
+}
 
 .brand{
   display:flex;
   align-items:center;
-  justify-content:center;
-  margin-bottom:12px;
+  justify-content:flex-start;
 }
 
 .brandMark img{
@@ -50,9 +59,43 @@ body{
 }
 
 h1{
-  font-size:34px;
-  margin-bottom:10px;
+  margin:0;
+  font-size:clamp(1.55rem, 5vw, 2.3rem);
+  line-height:1.2;
   letter-spacing:1px;
+}
+
+.hero-subtitle{
+  margin:8px 0 0;
+  color:#cbd5e1;
+  font-size:0.98rem;
+  line-height:1.45;
+}
+
+.home-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:42px;
+  height:42px;
+  justify-self:end;
+  color:#bfdbfe;
+  text-decoration:none;
+  border-radius:999px;
+  border:1px solid rgba(191, 219, 254, 0.45);
+  background:rgba(15, 23, 42, 0.25);
+}
+
+.home-link:hover,
+.home-link:focus-visible{
+  color:#dbeafe;
+  border-color:rgba(219, 234, 254, 0.85);
+  background:rgba(15, 23, 42, 0.4);
+}
+
+.home-link svg{
+  width:20px;
+  height:20px;
 }
 
 .countdown{
@@ -121,12 +164,21 @@ button:disabled{opacity:.5}
 </div>
 
 <div class="container">
-  <div class="brand">
-    <div class="brandMark">
-      <img src="logo-modern-noglow.png" alt="Casais 2 em 1">
+  <div class="hero-top">
+    <div class="brand">
+      <div class="brandMark">
+        <img src="logo-modern-noglow.png" alt="Casais 2 em 1">
+      </div>
     </div>
+    <h1>🎬 GRANDE MOMENTO DO SORTEIO 🎁</h1>
+    <a class="home-link" href="home.html" aria-label="Voltar para a página inicial" title="Voltar para home">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M3 11.5 12 4l9 7.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M6.5 10.5V20h11v-9.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+    </a>
   </div>
-  <h1>🎬 GRANDE MOMENTO DO SORTEIO 🎁</h1>
+  <p class="hero-subtitle">Sorteio oficial do evento.</p>
 
   <div class="countdown" id="countdown"></div>
   <div id="winner">Preparem-se...</div>

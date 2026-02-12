@@ -50,12 +50,18 @@
       padding: 4px;
     }
 
+    .hero-top {
+      display: grid;
+      grid-template-columns: 52px 1fr 52px;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
     .brand {
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 14px;
-      margin-bottom: 8px;
+      justify-content: flex-start;
     }
 
     .brandMark img {
@@ -64,11 +70,6 @@
       object-fit: contain;
     }
 
-    .hero-link-row {
-      margin-top: 10px;
-      display: flex;
-      justify-content: flex-end;
-    }
 
     .hero h1 {
       margin: 0;
@@ -106,6 +107,32 @@
     .hero-link-icon {
       font-size: 1rem;
       line-height: 1;
+    }
+
+    .home-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      justify-self: end;
+      color: #bfdbfe;
+      text-decoration: none;
+      border-radius: 999px;
+      border: 1px solid rgba(191, 219, 254, 0.45);
+      background: rgba(15, 23, 42, 0.25);
+    }
+
+    .home-link:hover,
+    .home-link:focus-visible {
+      color: #dbeafe;
+      border-color: rgba(219, 234, 254, 0.85);
+      background: rgba(15, 23, 42, 0.4);
+    }
+
+    .home-link svg {
+      width: 20px;
+      height: 20px;
     }
 
     .card {
@@ -251,19 +278,25 @@
 <body>
   <main class="container">
     <section class="hero">
-      <div class="brand">
-        <div class="brandMark">
-          <img src="logo-modern-noglow.png" alt="Casais 2 em 1" />
+      <div class="hero-top">
+        <div class="brand">
+          <div class="brandMark">
+            <img src="logo-modern-noglow.png" alt="Casais 2 em 1" />
+          </div>
         </div>
-      </div>
-      <h1 id="heroTitle">Inscrições - Carregando evento...</h1>
-      <p id="heroSubtitle">Carregando informações do evento...</p>
-      <div class="hero-link-row">
-        <a id="registrationLink" class="hero-link" href="index.html" aria-label="Abrir formulário de inscrição">
-          <span class="hero-link-icon" aria-hidden="true">📝</span>
-          <span>Ir para inscrição</span>
+        <h1 id="heroTitle">Inscrições - Carregando evento...</h1>
+        <a class="home-link" href="home.html" aria-label="Voltar para a página inicial" title="Voltar para home">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M3 11.5 12 4l9 7.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M6.5 10.5V20h11v-9.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
         </a>
       </div>
+      <p id="heroSubtitle">Carregando informações do evento...</p>
+      <a id="registrationLink" class="hero-link" href="index.html" aria-label="Abrir formulário de inscrição">
+        <span class="hero-link-icon" aria-hidden="true">📝</span>
+        <span>Ir para inscrição</span>
+      </a>
     </section>
 
     <section class="card">
