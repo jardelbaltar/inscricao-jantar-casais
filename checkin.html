@@ -3,70 +3,256 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Check-in — Jantar de Casais</title>
+  <title>Check-in — Carregando evento...</title>
 
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
 
   <style>
-    body{font-family:system-ui,Segoe UI,Roboto,Arial;max-width:1100px;margin:24px auto;padding:0 16px}
-    h1{margin:0 0 6px}
-    .muted{color:#666;font-size:14px}
-    .err{color:#b00020;font-weight:700}
-    .ok{color:#0a7a2f;font-weight:700}
-    .card{border:1px solid #ddd;border-radius:14px;padding:14px;margin-top:14px}
-    label{display:block;font-weight:700;margin-top:10px}
-    input,button{width:100%;padding:10px;margin-top:6px;font-size:16px}
-    button{cursor:pointer}
-    .row{display:flex;gap:12px;flex-wrap:wrap}
-    .row > div{flex:1;min-width:220px}
-    table{width:100%;border-collapse:collapse;margin-top:10px}
-    th,td{border-bottom:1px solid #eee;padding:10px;text-align:left;vertical-align:middle}
-    th{font-size:14px;color:#333}
-    .pill{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid #ddd;font-size:12px;margin-right:6px}
-    .present{background:#eaf7ee;border-color:#bfe3c8}
-    .absent{background:#fdecec;border-color:#f2c1c1}
-    .click{cursor:pointer}
-    .small{font-size:13px}
-    .right{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
-    .btn2{width:auto}
+    :root {
+      --bg: #0f172a;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success: #0f766e;
+      --danger: #b91c1c;
+      --border: #e2e8f0;
+      --shadow: 0 20px 45px rgba(15, 23, 42, 0.24);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      background: radial-gradient(circle at top right, #1e3a8a 0%, var(--bg) 42%, #020617 100%);
+      padding: max(16px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1060px;
+      margin: 0 auto;
+      display: grid;
+      gap: 12px;
+    }
+
+    .hero {
+      color: #f8fafc;
+      text-align: center;
+      padding: 4px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(1.55rem, 5vw, 2.3rem);
+      line-height: 1.2;
+    }
+
+    .hero p {
+      margin: 8px 0 0;
+      color: #cbd5e1;
+      font-size: 0.98rem;
+      line-height: 1.45;
+    }
+
+    .card {
+      background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid rgba(148, 163, 184, 0.28);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    input,
+    button {
+      width: 100%;
+      min-height: 46px;
+      margin-top: 7px;
+      padding: 11px 13px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      font-size: 16px;
+      transition: border-color .2s, box-shadow .2s, transform .2s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: color-mix(in srgb, var(--primary) 65%, white);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+    }
+
+    button {
+      width: auto;
+      cursor: pointer;
+      border: 0;
+      color: #fff;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary) 0%, #3b82f6 100%);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      background: linear-gradient(135deg, var(--primary-hover) 0%, #2563eb 100%);
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .row > div {
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .table-wrap {
+      margin-top: 10px;
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid #edf2f7;
+      padding: 10px;
+      text-align: left;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    th {
+      font-size: .85rem;
+      color: #334155;
+      text-transform: uppercase;
+      letter-spacing: .02em;
+      background: #f8fafc;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    .muted { color: var(--muted); font-size: 14px; }
+
+    #msg {
+      min-height: 24px;
+      margin: 0;
+      font-weight: 700;
+    }
+
+    .err {
+      color: var(--danger);
+      background: #fee2e2;
+      border: 1px solid #fecaca;
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+
+    .ok {
+      color: var(--success);
+      background: #ccfbf1;
+      border: 1px solid #99f6e4;
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      font-size: 12px;
+      margin-right: 6px;
+      background: #fff;
+    }
+
+    .present {
+      background: #ecfdf5;
+      border-color: #86efac;
+    }
+
+    .absent {
+      background: #fef2f2;
+      border-color: #fecaca;
+    }
+
+    .click { cursor: pointer; }
+    .small { font-size: 13px; }
+    .right { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+
+    @media (max-width: 640px) {
+      .card {
+        padding: 14px;
+        border-radius: 14px;
+      }
+
+      .right {
+        justify-content: stretch;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
   </style>
 </head>
 
 <body>
-  <h1>Check-in — Jantar de Casais</h1>
-  <p class="muted">Clique no casal para marcar como presente/ausente.</p>
+  <main class="container">
+    <section class="hero">
+      <h1 id="title">Check-in — Carregando evento...</h1>
+      <p>Clique no casal para marcar como presente/ausente.</p>
+    </section>
 
-  <div id="msg"></div>
+    <p id="msg"></p>
 
-  <div class="card">
-    <div class="row">
-      <div>
-        <label>Buscar (nome)</label>
-        <input id="search" placeholder="Ex: Maria" />
-      </div>
-      <div>
-        <label>&nbsp;</label>
-        <div class="right">
-          <button id="btnReload" class="btn2">Recarregar</button>
+    <div class="card">
+      <div class="row">
+        <div>
+          <label>Buscar (nome)</label>
+          <input id="search" placeholder="Ex: Maria" />
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <div class="right">
+            <button id="btnReload">Recarregar</button>
+          </div>
         </div>
       </div>
+
+      <div style="margin-top:10px">
+        <span class="pill" id="pillTotal">Total: —</span>
+        <span class="pill present" id="pillPresent">Presentes: —</span>
+        <span class="pill absent" id="pillAbsent">Ausentes: —</span>
+      </div>
     </div>
 
-    <div style="margin-top:10px">
-      <span class="pill" id="pillTotal">Total: —</span>
-      <span class="pill present" id="pillPresent">Presentes: —</span>
-      <span class="pill absent" id="pillAbsent">Ausentes: —</span>
+    <div class="card">
+      <div id="tableWrap" class="table-wrap"></div>
+      <p class="muted small" style="margin-top:10px">Dica: use a busca para acelerar.</p>
     </div>
-  </div>
-
-  <div class="card">
-    <div id="tableWrap"></div>
-    <p class="muted small" style="margin-top:10px">
-      Dica: use a busca para acelerar.
-    </p>
-  </div>
+  </main>
 
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.3/+esm";
@@ -80,6 +266,7 @@
     });
 
     const msg = document.getElementById("msg");
+    const titleEl = document.getElementById("title");
     const searchInput = document.getElementById("search");
     const btnReload = document.getElementById("btnReload");
 
@@ -188,6 +375,21 @@
       });
     }
 
+    async function loadEventTitle() {
+      if (!EVENT_ID) return;
+
+      const { data } = await supabase
+        .from("events")
+        .select("title")
+        .eq("id", EVENT_ID)
+        .maybeSingle();
+
+      const eventName = data?.title?.trim() || "Evento";
+      const finalTitle = `Check-in — ${eventName}`;
+      document.title = finalTitle;
+      titleEl.textContent = finalTitle;
+    }
+
     async function loadRegistrations() {
       if (!EVENT_ID) {
         setMsg("Link inválido: faltou ?event=UUID_DO_EVENTO", "err");
@@ -216,6 +418,7 @@
     searchInput.addEventListener("input", renderTable);
     btnReload.addEventListener("click", loadRegistrations);
 
+    await loadEventTitle();
     await loadRegistrations();
   </script>
 </body>
