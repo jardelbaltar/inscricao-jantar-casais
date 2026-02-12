@@ -13,8 +13,6 @@
     :root{
       --bg1:#0b1220;
       --bg2:#0a1a2f;
-      --card:#0f1b2f;
-      --card2:#101f38;
       --text:#eaf0ff;
       --muted:#9db0d1;
       --line:rgba(255,255,255,.08);
@@ -25,7 +23,6 @@
       --bad:#ff5d7a;
       --shadow: 0 10px 30px rgba(0,0,0,.35);
     }
-
     *{box-sizing:border-box}
     body{
       margin:0;
@@ -38,7 +35,6 @@
         linear-gradient(180deg, var(--bg1), var(--bg2));
       min-height:100vh;
     }
-
     header{
       max-width:1200px;
       margin:20px auto 10px;
@@ -49,19 +45,8 @@
       justify-content:space-between;
       flex-wrap:wrap;
     }
-
-    .title{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-    }
-
-    h1{
-      margin:0;
-      font-size:22px;
-      letter-spacing:.2px;
-      font-weight:800;
-    }
+    .title{display:flex;flex-direction:column;gap:6px}
+    h1{margin:0;font-size:22px;letter-spacing:.2px;font-weight:800}
     .sub{
       color:var(--muted);
       font-size:13px;
@@ -86,7 +71,6 @@
       background:var(--good);
       box-shadow: 0 0 0 3px rgba(44,255,154,.15);
     }
-
     .wrap{
       max-width:1200px;
       margin:0 auto 24px;
@@ -95,11 +79,7 @@
       grid-template-columns: 1.1fr .9fr;
       gap:14px;
     }
-
-    @media (max-width: 980px){
-      .wrap{grid-template-columns:1fr}
-    }
-
+    @media (max-width: 980px){ .wrap{grid-template-columns:1fr} }
     .card{
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
       border:1px solid var(--line);
@@ -108,16 +88,12 @@
       padding:14px;
       overflow:hidden;
     }
-
     .grid2{
       display:grid;
       grid-template-columns: 1fr 1fr;
       gap:14px;
     }
-    @media (max-width: 980px){
-      .grid2{grid-template-columns:1fr}
-    }
-
+    @media (max-width: 980px){ .grid2{grid-template-columns:1fr} }
     .card h2{
       margin:0 0 8px;
       font-size:14px;
@@ -125,7 +101,6 @@
       font-weight:700;
       letter-spacing:.2px;
     }
-
     .big{
       font-size:26px;
       font-weight:900;
@@ -133,13 +108,7 @@
       line-height:1.15;
       letter-spacing:.2px;
     }
-
-    .value{
-      display:flex;
-      gap:10px;
-      align-items:baseline;
-      flex-wrap:wrap;
-    }
+    .value{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
     .badge{
       display:inline-flex;
       align-items:center;
@@ -150,13 +119,7 @@
       background: rgba(255,255,255,.04);
       color: var(--muted);
     }
-
-    .list{
-      margin-top:10px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
+    .list{margin-top:10px;display:flex;flex-direction:column;gap:8px}
     .row{
       display:flex;
       justify-content:space-between;
@@ -167,12 +130,7 @@
       border-radius:12px;
       background: rgba(0,0,0,.18);
     }
-    .name{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      min-width:0;
-    }
+    .name{display:flex;gap:10px;align-items:center;min-width:0}
     .rank{
       width:28px;height:28px;border-radius:10px;
       display:flex;align-items:center;justify-content:center;
@@ -187,12 +145,7 @@
       text-overflow:ellipsis;
       font-weight:800;
     }
-    .time{
-      font-weight:900;
-      color: var(--accent);
-      flex:0 0 auto;
-    }
-
+    .time{font-weight:900;color: var(--accent);flex:0 0 auto}
     .muted{color:var(--muted);font-size:13px;margin-top:6px}
     .barWrap{
       margin-top:10px;
@@ -208,7 +161,6 @@
       background: linear-gradient(90deg, var(--accent), var(--accent2));
       transition: width .6s ease;
     }
-
     .footer{
       max-width:1200px;
       margin:0 auto 24px;
@@ -220,7 +172,6 @@
       flex-wrap:wrap;
       gap:10px;
     }
-
     .err{
       color:var(--bad);
       font-weight:800;
@@ -229,7 +180,6 @@
       border:1px solid rgba(255,93,122,.25);
       background: rgba(255,93,122,.10);
     }
-
     canvas{max-height:380px}
   </style>
 </head>
@@ -261,30 +211,27 @@
     <div class="grid2">
       <div class="card">
         <h2>🏆 Casal com mais tempo de casado</h2>
-        <div id="top1">
-          <div class="muted">Carregando…</div>
-        </div>
+        <div id="top1"><div class="muted">Carregando…</div></div>
       </div>
 
       <div class="card">
         <h2>💍 Casal mais novo</h2>
-        <div id="youngest">
-          <div class="muted">Carregando…</div>
-        </div>
+        <div id="youngest"><div class="muted">Carregando…</div></div>
       </div>
 
       <div class="card">
         <h2>📈 Média de tempo de casamento</h2>
-        <div id="avg">
-          <div class="muted">Carregando…</div>
-        </div>
+        <div id="avg"><div class="muted">Carregando…</div></div>
       </div>
 
       <div class="card">
         <h2>👥 Presença</h2>
-        <div id="presence">
-          <div class="muted">Carregando…</div>
-        </div>
+        <div id="presence"><div class="muted">Carregando…</div></div>
+      </div>
+
+      <div class="card">
+        <h2>🎂 Aniversário mais próximo do evento</h2>
+        <div id="anniversary"><div class="muted">Carregando…</div></div>
       </div>
 
       <div class="card" style="grid-column:1 / -1">
@@ -299,13 +246,12 @@
     <div>Fonte: Supabase • view <span class="badge">registrations_checkin</span></div>
   </div>
 
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.3/+esm";
 
-     const SUPABASE_URL = "https://nuqcefxwarrjehvhdoug.supabase.co";
+    const SUPABASE_URL = "https://nuqcefxwarrjehvhdoug.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51cWNlZnh3YXJyamVodmhkb3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NzE1NzUsImV4cCI6MjA4NjM0NzU3NX0.xLugRmdl6UKVsMZnDepBlFndh4vGVMnptuloFZC28Mc";
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -325,6 +271,7 @@
     const youngestEl = document.getElementById("youngest");
     const avgEl = document.getElementById("avg");
     const presenceEl = document.getElementById("presence");
+    const anniversaryEl = document.getElementById("anniversary");
     const top5El = document.getElementById("top5");
 
     const chartEl = document.getElementById("chart");
@@ -333,15 +280,13 @@
     chipMode.textContent = ONLY_PRESENT ? "Modo: Presentes" : "Modo: Inscritos";
 
     function escapeHtml(s){
-      return (s ?? "").toString().replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      return (s ?? "").toString().replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
     }
-
     function parseISODate(iso) {
       const [y,m,d] = iso.split("-").map(Number);
       return new Date(y, m-1, d);
     }
 
-    // Diferença exata em anos, meses, dias (sem aproximação)
     function diffYMD(fromDate, toDate) {
       let start = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
       let end = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate());
@@ -362,21 +307,10 @@
       }
       return { years, months, days };
     }
+    function score(ymd){ return ymd.years * 10000 + ymd.months * 100 + ymd.days; }
+    function fmtYMD(ymd){ return `${ymd.years}a ${ymd.months}m ${ymd.days}d`; }
 
-    // Métrica total para ordenar (anos > meses > dias)
-    function score(ymd){
-      return ymd.years * 10000 + ymd.months * 100 + ymd.days;
-    }
-
-    function fmtYMD(ymd){
-      return `${ymd.years}a ${ymd.months}m ${ymd.days}d`;
-    }
-
-    // Média: converte tudo para dias (aprox) só para média, e volta para y/m/d
-    // (média exata em y/m/d é complexa; essa é uma aproximação consistente para painel)
-    function ymdToDays(ymd){
-      return ymd.years * 365 + ymd.months * 30 + ymd.days;
-    }
+    function ymdToDays(ymd){ return ymd.years * 365 + ymd.months * 30 + ymd.days; }
     function daysToYMD(days){
       const years = Math.floor(days / 365);
       days -= years * 365;
@@ -410,16 +344,11 @@
 
       chart = new Chart(chartEl, {
         type: "bar",
-        data: {
-          labels,
-          datasets: [{ label: "Casais", data: counts }]
-        },
+        data: { labels, datasets: [{ label: "Casais", data: counts }] },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false }
-          },
+          plugins: { legend: { display: false } },
           scales: {
             x: { ticks: { color: "rgba(234,240,255,.85)" }, grid: { color: "rgba(255,255,255,.06)" } },
             y: { beginAtZero: true, ticks: { precision: 0, color: "rgba(234,240,255,.85)" }, grid: { color: "rgba(255,255,255,.06)" } }
@@ -494,6 +423,66 @@
       `).join("");
     }
 
+    function closestAnniversary(rows, eventDateISO){
+      if (!eventDateISO) return null;
+
+      const eventDate = parseISODate(eventDateISO);
+      const eventYear = eventDate.getFullYear();
+
+      let best = null;
+
+      for (const r of rows){
+        if (!r.wedding_date) continue;
+        const [wy, wm, wd] = r.wedding_date.split("-").map(Number);
+
+        const annThisYear = new Date(eventYear, wm-1, wd);
+        const diffDaysSigned = Math.round((annThisYear - eventDate) / (1000*60*60*24));
+        const diffAbs = Math.abs(diffDaysSigned);
+
+        const yearsCompleting = eventYear - wy;
+
+        if (!best || diffAbs < best.diffAbs){
+          best = {
+            ...r,
+            anniversaryDate: annThisYear,
+            diffDaysSigned,
+            diffAbs,
+            yearsCompleting
+          };
+        }
+      }
+
+      return best;
+    }
+
+    function renderAnniversary(best, eventDateISO){
+      if (!best){
+        anniversaryEl.innerHTML = `<div class="muted">Sem data do evento ou sem casamentos válidos.</div>`;
+        return;
+      }
+
+      const d = best.diffDaysSigned;
+      let label = "";
+      if (d === 0) label = `🎉 É hoje!`;
+      else if (d > 0) label = `Faltam <b style="color:var(--accent)">${d} dias</b>`;
+      else label = `Foi há <b style="color:var(--warn)">${Math.abs(d)} dias</b>`;
+
+      anniversaryEl.innerHTML = `
+        <div class="value">
+          <div class="big">${escapeHtml(best.couple_name)}</div>
+          <span class="badge">${best.wedding_date}</span>
+        </div>
+        <div class="muted" style="margin-top:8px">
+          <span class="badge">Data do evento: ${eventDateISO}</span>
+          <span class="badge">Aniversário (ano do evento): ${best.anniversaryDate.toISOString().slice(0,10)}</span>
+        </div>
+        <div class="muted" style="margin-top:10px;line-height:1.5">
+          ${label} para completar
+          <b style="color:var(--good)">${best.yearsCompleting} anos</b>.
+        </div>
+      `;
+    }
+
     async function load(){
       if (!EVENT_ID){
         statusEl.textContent = "Erro: faltou ?event=UUID";
@@ -504,19 +493,29 @@
 
       statusEl.textContent = "Atualizando…";
 
-      const { data, error } = await supabase
-        .from("registrations_checkin")
-        .select("id,event_id,couple_name,wedding_date,is_present,checked_in_at,created_at")
-        .eq("event_id", EVENT_ID);
+      const [regsRes, eventRes] = await Promise.all([
+        supabase
+          .from("registrations_checkin")
+          .select("id,event_id,couple_name,wedding_date,is_present,checked_in_at,created_at")
+          .eq("event_id", EVENT_ID),
+        supabase
+          .from("events")
+          .select("id,event_date")
+          .eq("id", EVENT_ID)
+          .maybeSingle()
+      ]);
 
-      if (error){
+      if (regsRes.error){
         statusEl.textContent = "Erro ao carregar";
         chipCounts.className = "err";
         chipCounts.textContent = "Verifique view/RLS";
         return;
       }
 
-      let rows = (data ?? []).filter(r => r.wedding_date);
+      const data = regsRes.data ?? [];
+      const eventDateISO = eventRes.data?.event_date ?? null;
+
+      let rows = data.filter(r => r.wedding_date);
       if (ONLY_PRESENT) rows = rows.filter(r => r.is_present === true);
 
       const today = new Date();
@@ -526,18 +525,23 @@
         return { ...r, ymd, _score: score(ymd) };
       });
 
-      const totalAll = (data ?? []).length;
-      const presentAll = (data ?? []).filter(r => r.is_present === true).length;
+      const totalAll = data.length;
+      const presentAll = data.filter(r => r.is_present === true).length;
 
       chipCounts.textContent = `Inscritos: ${totalAll} • Presentes: ${presentAll}`;
       lastUpdated.textContent = `Atualizado: ${new Date().toLocaleTimeString()}`;
+
+      renderPresence(totalAll, presentAll);
+
+      // Aniversário: usa TODOS (ou filtro presentes, se present=1)
+      const ann = closestAnniversary(rows, eventDateISO);
+      renderAnniversary(ann, eventDateISO ?? "—");
 
       if (rows.length === 0){
         statusEl.textContent = "Sem dados no filtro";
         top1El.innerHTML = `<div class="muted">Nenhum casal com data de casamento (ou filtro vazio).</div>`;
         youngestEl.innerHTML = `<div class="muted">—</div>`;
         avgEl.innerHTML = `<div class="muted">—</div>`;
-        renderPresence(totalAll, presentAll);
         renderTop5([]);
         renderChart([]);
         return;
@@ -545,17 +549,12 @@
 
       rows.sort((a,b) => b._score - a._score);
 
-      const best = rows[0];
-      const youngest = rows[rows.length - 1];
+      renderTop1(rows[0]);
+      renderYoungest(rows[rows.length - 1]);
 
-      renderTop1(best);
-      renderYoungest(youngest);
-
-      // Média (aprox)
       const avgDays = Math.round(rows.reduce((s,r) => s + ymdToDays(r.ymd), 0) / rows.length);
       renderAvg(daysToYMD(avgDays));
 
-      renderPresence(totalAll, presentAll);
       renderTop5(rows.slice(0,5));
       renderChart(rows);
 
