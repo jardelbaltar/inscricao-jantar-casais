@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>🎁 Sorteio — Jantar de Casais</title>
+
+<style>
+:root{
+  --bg1:#0b1220;
+  --bg2:#0a1a2f;
+  --accent:#6ae4ff;
+  --accent2:#8b5cf6;
+  --good:#2cff9a;
+  --text:#ffffff;
+}
+
+body{
+  margin:0;
+  font-family:system-ui,Arial;
+  color:var(--text);
+  background:
+    radial-gradient(circle at 20% 20%, rgba(106,228,255,.25), transparent 40%),
+    radial-gradient(circle at 80% 30%, rgba(139,92,246,.25), transparent 40%),
+    linear-gradient(180deg,var(--bg1),var(--bg2));
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
+  overflow:hidden;
+  text-align:center;
+}
+
+h1{
+  font-size:28px;
+  margin-bottom:20px;
+}
+
+#winner{
+  font-size:48px;
+  font-weight:900;
+  letter-spacing:1px;
+  margin:20px 0;
+  min-height:70px;
+  text-shadow:0 0 20px var(--accent);
+}
+
+.controls{
+  position:absolute;
+  bottom:30px;
+  display:flex;
+  gap:20px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+button{
+  padding:12px 20px;
+  font-size:16px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  color:white;
+  font-weight:bold;
+}
+
+button:disabled{
+  opacity:.5;
+}
+
+label{
+  font-size:14px;
+}
+
+.checkbox{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.confetti{
+  position:fixed;
+  width:8px;
+  height:8px;
+  background:white;
+  top:-10px;
+  animation:fall linear forwards;
+}
+
+@keyframes fall{
+  to{
+    transform:translateY(110vh) rotate(720deg);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<h1>🎁 Momento do Sorteio!</h1>
+
+<div id="winner">Prepare-se...</div>
+
+<div class="controls">
+  <div class="checkbox">
+    <input type="checkbox" id="onlyPresent">
+    <label>Apenas presentes</label>
+  </div>
+
+  <div class="checkbox">
+    <input type="checkbox" id="noRepeat" checked>
+    <label>Não repetir vencedores</label>
+  </div>
+
+  <button id="drawBtn">Sortear 🎉</button>
+</div>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.3/+esm";
+
+const SUPABASE_URL = "https://nuqcefxwarrjehvhdoug.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51cWNlZnh3YXJyamVodmhkb3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NzE1NzUsImV4cCI6MjA4NjM0NzU3NX0.xLugRmdl6UKVsMZnDepBlFndh4vGVMnptuloFZC28Mc";
+
+const supabase=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
+  auth:{persistSession:false}
+});
+
+const params=new URLSearchParams(location.search);
+const EVENT_ID=params.get("event");
+
+const winnerEl=document.getElementById("winner");
+const drawBtn=document.getElementById("drawBtn");
+const onlyPresent=document.getElementById("onlyPresent");
+const noRepeat=document.getElementById("noRepeat");
+
+let allRows=[];
+let winners=new Set();
+
+async function load(){
+  const {data}=await supabase
+    .from("registrations_checkin")
+    .select("id,couple_name,is_present")
+    .eq("event_id",EVENT_ID);
+
+  allRows=data||[];
+}
+
+function randomConfetti(){
+  for(let i=0;i<120;i++){
+    const c=document.createElement("div");
+    c.className="confetti";
+    c.style.left=Math.random()*100+"vw";
+    c.style.background=`hsl(${Math.random()*360},100%,60%)`;
+    c.style.animationDuration=(2+Math.random()*3)+"s";
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),4000);
+  }
+}
+
+async function draw(){
+  drawBtn.disabled=true;
+
+  let pool=[...allRows];
+
+  if(onlyPresent.checked)
+    pool=pool.filter(r=>r.is_present);
+
+  if(noRepeat.checked)
+    pool=pool.filter(r=>!winners.has(r.id));
+
+  if(pool.length===0){
+    winnerEl.textContent="Sem participantes disponíveis 😢";
+    drawBtn.disabled=false;
+    return;
+  }
+
+  // Suspense animation
+  let speed=50;
+  let cycles=40;
+  let index=0;
+
+  const interval=setInterval(()=>{
+    const r=pool[Math.floor(Math.random()*pool.length)];
+    winnerEl.textContent=r.couple_name;
+    index++;
+    if(index>cycles){
+      clearInterval(interval);
+      const final=pool[Math.floor(Math.random()*pool.length)];
+      winnerEl.textContent="🎉 "+final.couple_name+" 🎉";
+      winners.add(final.id);
+      randomConfetti();
+      drawBtn.disabled=false;
+    }
+  },speed);
+}
+
+drawBtn.addEventListener("click",draw);
+
+await load();
+</script>
+
+</body>
+</html>
