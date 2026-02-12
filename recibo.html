@@ -144,6 +144,64 @@
       line-height:1.45;
     }
 
+    /* ===== QR SECTION (embaixo) ===== */
+    .qrWrap{
+      margin-top:12px;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:16px;
+      background: rgba(255,255,255,.04);
+      padding:12px;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .qrLeft{
+      min-width: 220px;
+      flex: 1;
+    }
+    .qrTitle{
+      font-weight:1000;
+      font-size:13px;
+      letter-spacing:.2px;
+      margin:0;
+    }
+    .qrSubtitle{
+      margin:6px 0 0;
+      color: rgba(234,240,255,.82);
+      font-size:12.5px;
+      line-height:1.4;
+    }
+    .qrCodeBox{
+      width: 132px;
+      height: 132px;
+      border-radius: 14px;
+      background: #fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      border: 1px solid rgba(255,255,255,.25);
+    }
+    .qrCodeBox canvas, .qrCodeBox img{
+      width: 122px;
+      height: 122px;
+      image-rendering: pixelated;
+    }
+    .ridMini{
+      margin-top:8px;
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      color: rgba(234,240,255,.85);
+      font-size:12px;
+    }
+
     .actions{
       padding:12px;
       display:flex;
@@ -162,6 +220,10 @@
       cursor:pointer;
       font-weight:900;
       font-size:13px;
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
+      justify-content:center;
     }
     .btnPrimary{
       border-color: rgba(45,212,191,.35);
@@ -230,6 +292,22 @@
         <div class="note" id="note">
           Guarde este recibo. Caso necessário, apresente este comprovante no check-in.
         </div>
+
+        <!-- QR EMBAIXO -->
+        <div class="qrWrap">
+          <div class="qrLeft">
+            <p class="qrTitle">Escaneie no check-in</p>
+            <p class="qrSubtitle">
+              A equipe vai apontar a câmera e marcar sua presença automaticamente.
+              <br/>Se preferir, você também pode mostrar este recibo na tela.
+            </p>
+            <div class="ridMini">Código: <span id="ridMiniText">—</span></div>
+          </div>
+
+          <div class="qrCodeBox" aria-label="QR Code do check-in">
+            <div id="qrcode"></div>
+          </div>
+        </div>
       </div>
 
       <div class="actions">
@@ -242,8 +320,11 @@
     <div id="err" class="err"></div>
   </div>
 
-  <!-- biblioteca para salvar como imagem -->
+  <!-- Salvar como imagem -->
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <!-- QR Code -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
 
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.3/+esm";
@@ -269,6 +350,7 @@
     const dish    = document.getElementById("dish");
     const dishHint= document.getElementById("dishHint");
     const ridEl   = document.getElementById("rid");
+    const ridMiniText = document.getElementById("ridMiniText");
 
     const btnCopy = document.getElementById("btnCopy");
     const btnPng  = document.getElementById("btnPng");
@@ -308,7 +390,7 @@
       const node = document.getElementById("receiptShot");
       const canvas = await html2canvas(node, {
         backgroundColor: null,
-        scale: Math.min(window.devicePixelRatio || 2, 2) // bom e leve
+        scale: Math.min(window.devicePixelRatio || 2, 2)
       });
       return new Promise(resolve => canvas.toBlob(resolve, "image/png", 1));
     }
@@ -367,10 +449,21 @@
         statusEl.textContent = "Link copiado ✅";
         setTimeout(()=> statusEl.textContent = "Pronto", 1200);
       }catch{
-        // cancelado pelo usuário -> ok
         statusEl.textContent = "Pronto";
       }
     });
+
+    function renderQr(ridValue){
+      const target = document.getElementById("qrcode");
+      target.innerHTML = "";
+      const payload = `rid:${ridValue}`;
+      // QRCode.toCanvas (biblioteca qrcode)
+      QRCode.toCanvas(payload, { width: 122, margin: 1 }, (err, canvas) => {
+        if (err) return;
+        target.appendChild(canvas);
+      });
+      ridMiniText.textContent = payload;
+    }
 
     async function load(){
       if (!rid){
@@ -378,7 +471,6 @@
         return;
       }
 
-      // Inscrição
       const { data: reg, error: regErr } = await supabase
         .from("registrations")
         .select("id,event_id,couple_name,wedding_date,phone,dish_id,created_at")
@@ -404,6 +496,7 @@
       dishHint.textContent = reg.dish_id ? "Obrigado por contribuir com o jantar 💜" : "—";
       ridEl.textContent = reg.id;
 
+      renderQr(reg.id);
       statusEl.textContent = "Pronto";
     }
 
