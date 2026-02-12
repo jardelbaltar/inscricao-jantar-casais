@@ -24,9 +24,7 @@
       --radius: 18px;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -39,10 +37,7 @@
       background: radial-gradient(circle at top right, #312e81 0%, var(--bg) 40%, #020617 100%);
     }
 
-    .app {
-      width: 100%;
-      max-width: 760px;
-    }
+    .app { width: 100%; max-width: 760px; }
 
     .hero {
       color: #f8fafc;
@@ -59,17 +54,9 @@
       margin-bottom: 8px;
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-    }
+    .brand { display: flex; align-items: center; justify-content: flex-start; }
 
-    .brandMark img {
-      width: 52px;
-      height: 52px;
-      object-fit: contain;
-    }
+    .brandMark img { width: 52px; height: 52px; object-fit: contain; }
 
     .hero h1 {
       margin: 0;
@@ -97,10 +84,7 @@
       background: rgba(15, 23, 42, 0.4);
     }
 
-    .home-link svg {
-      width: 20px;
-      height: 20px;
-    }
+    .home-link svg { width: 20px; height: 20px; }
 
     .hero p {
       margin: 8px 0 0;
@@ -109,9 +93,7 @@
       line-height: 1.45;
     }
 
-    .hero p + p {
-      margin-top: 4px;
-    }
+    .hero p + p { margin-top: 4px; }
 
     .hero-link {
       display: inline-flex;
@@ -132,10 +114,7 @@
       background: rgba(15, 23, 42, 0.4);
     }
 
-    .hero-link svg {
-      width: 20px;
-      height: 20px;
-    }
+    .hero-link svg { width: 20px; height: 20px; }
 
     .card {
       background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
@@ -153,9 +132,7 @@
       color: #334155;
     }
 
-    input,
-    select,
-    button {
+    input, select, button {
       display: block;
       width: 100%;
       max-width: 100%;
@@ -170,17 +147,13 @@
       transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
     }
 
-    input:focus,
-    select:focus {
+    input:focus, select:focus {
       outline: none;
       border-color: color-mix(in srgb, var(--primary) 65%, white);
       box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.15);
     }
 
-    input[type="date"] {
-      -webkit-appearance: none;
-      appearance: none;
-    }
+    input[type="date"] { -webkit-appearance: none; appearance: none; }
 
     button {
       margin-top: 20px;
@@ -191,35 +164,15 @@
       cursor: pointer;
     }
 
-    button:hover {
-      transform: translateY(-1px);
-      filter: brightness(1.03);
-    }
+    button:hover { transform: translateY(-1px); filter: brightness(1.03); }
 
-    button:disabled {
-      cursor: not-allowed;
-      opacity: 0.7;
-      transform: none;
-    }
+    button:disabled { cursor: not-allowed; opacity: 0.7; transform: none; }
 
-    .row {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-    }
+    .row { display: flex; flex-direction: column; gap: 0; }
 
-    .muted {
-      color: var(--muted);
-      font-size: 0.91rem;
-      margin: 8px 0 0;
-      line-height: 1.45;
-    }
+    .muted { color: var(--muted); font-size: 0.91rem; margin: 8px 0 0; line-height: 1.45; }
 
-    #msg {
-      margin: 14px 0 0;
-      font-weight: 700;
-      min-height: 24px;
-    }
+    #msg { margin: 14px 0 0; font-weight: 700; min-height: 24px; }
 
     .ok {
       color: var(--success-text);
@@ -253,51 +206,50 @@
       font-size: 1rem;
     }
 
-    .success-box.show {
-      display: block;
+    .success-box.show { display: block; }
+
+    /* ===== NOVO: ações do recibo ===== */
+    .receipt-actions{
+      margin-top:12px;
+      display:none;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .receipt-actions.show{ display:flex; }
+    .receipt-actions a, .receipt-actions button{
+      width:auto;
+      min-height: 44px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(22,101,52,.25);
+      background: rgba(255,255,255,.65);
+      color: #14532d;
+      font-weight: 900;
+      text-decoration:none;
+      cursor:pointer;
+    }
+    .receipt-actions a.primary{
+      border-color: rgba(37,99,235,.22);
+      background: linear-gradient(135deg, rgba(37,99,235,.18) 0%, rgba(124,58,237,.14) 100%);
+      color:#0f172a;
     }
 
     @media (min-width: 680px) {
-      body {
-        padding: 30px 20px;
-      }
-
-      .card {
-        padding: 24px;
-      }
-
-      .row {
-        flex-direction: row;
-        gap: 12px;
-      }
-
-      .row > div {
-        flex: 1;
-        min-width: 220px;
-      }
+      body { padding: 30px 20px; }
+      .card { padding: 24px; }
+      .row { flex-direction: row; gap: 12px; }
+      .row > div { flex: 1; min-width: 220px; }
     }
 
     @media (max-width: 420px) {
-      .hero-link {
-        margin-top: 12px;
-        font-size: 0.96rem;
-      }
-
-      .card {
-        padding: 14px;
-        border-radius: 14px;
-      }
-
-      label {
-        margin-top: 12px;
-      }
-
-      button {
-        margin-top: 16px;
-      }
+      .hero-link { margin-top: 12px; font-size: 0.96rem; }
+      .card { padding: 14px; border-radius: 14px; }
+      label { margin-top: 12px; }
+      button { margin-top: 16px; }
     }
   </style>
 </head>
+
 <body>
   <main class="app">
     <section class="hero">
@@ -353,9 +305,17 @@
       </form>
 
       <p id="msg"></p>
+
       <div id="successBox" class="success-box" role="status" aria-live="polite">
         <strong id="successBoxTitle">✅ Inscrição confirmada com sucesso!</strong>
         <span id="successBoxText">Sua participação foi registrada. Nos vemos no jantar!</span>
+
+        <!-- NOVO -->
+        <div id="receiptActions" class="receipt-actions">
+          <a id="receiptLink" class="primary" href="#" target="_blank" rel="noopener">Ver recibo</a>
+          <button id="shareBtn" type="button">Compartilhar</button>
+          <a id="saveImgLink" href="#" target="_blank" rel="noopener">Salvar imagem</a>
+        </div>
       </div>
     </div>
   </main>
@@ -363,16 +323,11 @@
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.3/+esm";
 
-    // COLE AQUI:
     const SUPABASE_URL = "https://nuqcefxwarrjehvhdoug.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51cWNlZnh3YXJyamVodmhkb3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NzE1NzUsImV4cCI6MjA4NjM0NzU3NX0.xLugRmdl6UKVsMZnDepBlFndh4vGVMnptuloFZC28Mc";
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-        detectSessionInUrl: false
-      }
+      auth: { persistSession:false, autoRefreshToken:false, detectSessionInUrl:false }
     });
 
     const params = new URLSearchParams(location.search);
@@ -397,14 +352,18 @@
     const WAITLIST_MESSAGE = "Não há mais vagas disponíveis. Incluímos você na lista de espera. Nossa equipe entrará em contato com você em caso de desistências.";
     const REGULAR_SUCCESS_MESSAGE = "Inscrição confirmada! 🙌";
 
+    // NOVO: ações do recibo
+    const receiptActions = document.getElementById("receiptActions");
+    const receiptLink = document.getElementById("receiptLink");
+    const shareBtn = document.getElementById("shareBtn");
+    const saveImgLink = document.getElementById("saveImgLink");
+
     function formatPhone(value) {
       const digits = value.replace(/\D/g, "").slice(0, 11);
-
       if (digits.length === 0) return "";
       if (digits.length < 3) return `(${digits}`;
       if (digits.length < 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
       if (digits.length < 11) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
-
       return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
     }
 
@@ -457,25 +416,15 @@
       const date = new Date(value);
       if (Number.isNaN(date.getTime())) return "--";
       return new Intl.DateTimeFormat("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
+        day: "2-digit", month: "2-digit", year: "numeric",
+        hour: "2-digit", minute: "2-digit"
       }).format(date);
     }
 
     async function loadEventSummary() {
       const [eventRes, countRes] = await Promise.all([
-        supabase
-          .from("events")
-          .select("title,event_date,max_couples")
-          .eq("id", EVENT_ID)
-          .maybeSingle(),
-        supabase
-          .from("registrations")
-          .select("id", { count: "exact", head: true })
-          .eq("event_id", EVENT_ID)
+        supabase.from("events").select("title,event_date,max_couples").eq("id", EVENT_ID).maybeSingle(),
+        supabase.from("registrations").select("id", { count: "exact", head: true }).eq("event_id", EVENT_ID)
       ]);
 
       if (eventRes.error || !eventRes.data) {
@@ -498,28 +447,20 @@
 
     await loadEventSummary();
 
-    function delay(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
-    }
+    function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
     async function withRetry(operation, retries = 2, delayMs = 400) {
       let lastError = null;
-
       for (let attempt = 0; attempt <= retries; attempt += 1) {
         try {
           const result = await operation();
-          if (result?.error) {
-            throw result.error;
-          }
+          if (result?.error) throw result.error;
           return result;
         } catch (error) {
           lastError = error;
-          if (attempt < retries) {
-            await delay(delayMs);
-          }
+          if (attempt < retries) await delay(delayMs);
         }
       }
-
       throw lastError;
     }
 
@@ -527,6 +468,7 @@
       msg.textContent = "";
       if (clearFeedback) {
         successBox.classList.remove("show");
+        receiptActions.classList.remove("show");
       }
       dishSelect.innerHTML = "<option value=''>Carregando...</option>";
 
@@ -575,15 +517,8 @@
       }
 
       const [eventRes, countRes] = await Promise.all([
-        supabase
-          .from("events")
-          .select("max_couples")
-          .eq("id", EVENT_ID)
-          .maybeSingle(),
-        supabase
-          .from("registrations")
-          .select("id", { count: "exact", head: true })
-          .eq("event_id", EVENT_ID)
+        supabase.from("events").select("max_couples").eq("id", EVENT_ID).maybeSingle(),
+        supabase.from("registrations").select("id", { count: "exact", head: true }).eq("event_id", EVENT_ID)
       ]);
 
       const eventLimit = Number(eventRes.data?.max_couples ?? 0);
@@ -596,18 +531,96 @@
       };
     }
 
+    // NOVO: construir URL base para recibo
+    function getReceiptUrl(registrationId){
+      const url = new URL(window.location.href);
+      const path = url.pathname;
+
+      // troca index.html -> recibo.html (ou adiciona)
+      if (/index\.html$/i.test(path)) {
+        url.pathname = path.replace(/index\.html$/i, "recibo.html");
+      } else if (path.endsWith("/")) {
+        url.pathname = `${path}recibo.html`;
+      } else {
+        const lastSegment = path.split("/").pop() ?? "";
+        const looksLikeFile = /\.[a-z0-9]+$/i.test(lastSegment);
+        if (looksLikeFile) {
+          const basePath = path.substring(0, path.lastIndexOf("/") + 1);
+          url.pathname = `${basePath}recibo.html`;
+        } else {
+          url.pathname = `${path}/recibo.html`;
+        }
+      }
+
+      url.search = "";
+      url.hash = "";
+      url.searchParams.set("rid", registrationId);
+      return url.toString();
+    }
+
+    // NOVO: obter o id da inscrição recém-criada usando phone + event_id
+    async function findRegistrationIdByPhone(phone){
+      const res = await withRetry(() => supabase
+        .from("registrations")
+        .select("id,created_at")
+        .eq("event_id", EVENT_ID)
+        .eq("phone", phone)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      );
+      return res.data?.id ?? null;
+    }
+
+    // NOVO: configurar botões do recibo
+    async function setupReceiptActions({ phone, eventTitle, eventDateText }){
+      const rid = await findRegistrationIdByPhone(phone);
+      if (!rid) return;
+
+      const receiptUrl = getReceiptUrl(rid);
+      receiptLink.href = receiptUrl;
+      saveImgLink.href = receiptUrl; // usuário abre e salva de lá
+
+      receiptActions.classList.add("show");
+
+      shareBtn.onclick = async () => {
+        const text =
+          `Recibo da inscrição — ${eventTitle}\n` +
+          `${eventDateText}\n` +
+          `Telefone: ${phone}\n` +
+          `Link: ${receiptUrl}`;
+
+        try{
+          if (navigator.share){
+            await navigator.share({ title: "Recibo de Inscrição", text, url: receiptUrl });
+          } else {
+            await navigator.clipboard.writeText(receiptUrl);
+            msg.className = "ok";
+            msg.textContent = "Link do recibo copiado ✅";
+          }
+        }catch{
+          // usuário cancelou
+        }
+      };
+    }
+
     document.getElementById("f").addEventListener("submit", async (e) => {
       e.preventDefault();
       msg.textContent = "";
       msg.className = "";
       successBox.classList.remove("show");
+      receiptActions.classList.remove("show");
       btn.disabled = true;
+
+      const coupleName = document.getElementById("couple_name").value.trim();
+      const weddingDate = document.getElementById("wedding_date").value;
+      const phone = document.getElementById("phone").value.trim();
 
       const payload = {
         p_event_id: EVENT_ID,
-        p_couple_name: document.getElementById("couple_name").value.trim(),
-        p_wedding_date: document.getElementById("wedding_date").value,
-        p_phone: document.getElementById("phone").value.trim(),
+        p_couple_name: coupleName,
+        p_wedding_date: weddingDate,
+        p_phone: phone,
         p_dish_id: dishSelect.value
       };
 
@@ -630,21 +643,28 @@
 
       if (!data?.ok) {
         if (data?.error === "EVENT_FULL") {
-          const { error: waitlistError } = await supabase
+          const { data: inserted, error: waitlistError } = await supabase
             .from("registrations")
             .insert({
               event_id: EVENT_ID,
-              couple_name: payload.p_couple_name,
-              wedding_date: payload.p_wedding_date,
-              phone: payload.p_phone,
+              couple_name: coupleName,
+              wedding_date: weddingDate,
+              phone,
               dish_id: payload.p_dish_id || null
-            });
+            })
+            .select("id")
+            .single();
 
           if (!waitlistError) {
-            showSubmissionFeedback({
-              enteredWaitlist: true,
-              message: WAITLIST_MESSAGE
+            showSubmissionFeedback({ enteredWaitlist:true, message: WAITLIST_MESSAGE });
+
+            // ações do recibo (lista de espera também tem recibo)
+            await setupReceiptActions({
+              phone,
+              eventTitle: eventName.textContent || "Evento",
+              eventDateText: eventDate.textContent || ""
             });
+
             e.target.reset();
             await loadDishes({ clearFeedback: false });
             return;
@@ -666,6 +686,14 @@
 
       const registrationResult = await resolveRegistrationResult(data);
       showSubmissionFeedback(registrationResult);
+
+      // NOVO: habilita recibo (após sucesso)
+      await setupReceiptActions({
+        phone,
+        eventTitle: eventName.textContent || "Evento",
+        eventDateText: eventDate.textContent || ""
+      });
+
       e.target.reset();
       await loadDishes({ clearFeedback: false });
     });
