@@ -3,118 +3,119 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>🎁 Sorteio — Jantar de Casais</title>
+<title>🎬 Grande Sorteio</title>
 
 <style>
 :root{
   --bg1:#0b1220;
-  --bg2:#0a1a2f;
+  --bg2:#090f1c;
+  --gold:#ffd700;
   --accent:#6ae4ff;
-  --accent2:#8b5cf6;
-  --good:#2cff9a;
   --text:#ffffff;
 }
 
 body{
   margin:0;
   font-family:system-ui,Arial;
-  color:var(--text);
   background:
-    radial-gradient(circle at 20% 20%, rgba(106,228,255,.25), transparent 40%),
-    radial-gradient(circle at 80% 30%, rgba(139,92,246,.25), transparent 40%),
+    radial-gradient(circle at 50% 20%, rgba(255,215,0,.15), transparent 40%),
+    radial-gradient(circle at 50% 80%, rgba(106,228,255,.15), transparent 40%),
     linear-gradient(180deg,var(--bg1),var(--bg2));
+  color:white;
   display:flex;
-  flex-direction:column;
-  align-items:center;
   justify-content:center;
+  align-items:center;
   height:100vh;
   overflow:hidden;
+}
+
+.container{
   text-align:center;
+  width:100%;
+  max-width:1000px;
 }
 
 h1{
-  font-size:28px;
-  margin-bottom:20px;
+  font-size:34px;
+  margin-bottom:10px;
+  letter-spacing:1px;
+}
+
+.countdown{
+  font-size:120px;
+  font-weight:900;
+  height:150px;
 }
 
 #winner{
-  font-size:48px;
+  font-size:60px;
   font-weight:900;
-  letter-spacing:1px;
   margin:20px 0;
-  min-height:70px;
-  text-shadow:0 0 20px var(--accent);
+  min-height:80px;
+  text-shadow:0 0 30px var(--gold);
 }
 
-.controls{
+.history{
   position:absolute;
-  bottom:30px;
-  display:flex;
-  gap:20px;
-  flex-wrap:wrap;
-  justify-content:center;
+  right:20px;
+  top:20px;
+  width:260px;
+  background:rgba(0,0,0,.5);
+  padding:15px;
+  border-radius:12px;
 }
 
-button{
-  padding:12px 20px;
+.history h3{
+  margin-top:0;
   font-size:16px;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
-  background:linear-gradient(90deg,var(--accent),var(--accent2));
-  color:white;
-  font-weight:bold;
+  color:var(--gold);
 }
 
-button:disabled{
-  opacity:.5;
-}
-
-label{
+.history ul{
+  padding-left:18px;
   font-size:14px;
 }
 
-.checkbox{
+.controls{
+  margin-top:30px;
   display:flex;
-  align-items:center;
-  gap:8px;
+  gap:20px;
+  justify-content:center;
+  flex-wrap:wrap;
 }
 
-.confetti{
-  position:fixed;
-  width:8px;
-  height:8px;
-  background:white;
-  top:-10px;
-  animation:fall linear forwards;
+button{
+  padding:14px 24px;
+  font-size:18px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  background:linear-gradient(90deg,#ffd700,#ff8c00);
+  color:black;
+  font-weight:bold;
 }
 
-@keyframes fall{
-  to{
-    transform:translateY(110vh) rotate(720deg);
-  }
-}
+button:disabled{opacity:.5}
 </style>
 </head>
 
 <body>
 
-<h1>🎁 Momento do Sorteio!</h1>
+<div class="history">
+  <h3>🏆 Vencedores</h3>
+  <ul id="historyList"></ul>
+</div>
 
-<div id="winner">Prepare-se...</div>
+<div class="container">
+  <h1>🎬 GRANDE MOMENTO DO SORTEIO 🎁</h1>
 
-<div class="controls">
-  <div class="checkbox">
-    <input type="checkbox" id="onlyPresent">
-    <label>Apenas presentes</label>
+  <div class="countdown" id="countdown"></div>
+  <div id="winner">Preparem-se...</div>
+
+  <div class="controls">
+    <button id="drawBtn">🎉 Sortear Agora</button>
+    <button id="resetBtn">🔄 Resetar</button>
   </div>
-
-  <div class="checkbox">
-    <input type="checkbox" id="noRepeat" checked>
-    <label>Não repetir vencedores</label>
-  </div>
-
-  <button id="drawBtn">Sortear 🎉</button>
 </div>
 
 <script type="module">
@@ -123,20 +124,19 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = "https://nuqcefxwarrjehvhdoug.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51cWNlZnh3YXJyamVodmhkb3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NzE1NzUsImV4cCI6MjA4NjM0NzU3NX0.xLugRmdl6UKVsMZnDepBlFndh4vGVMnptuloFZC28Mc";
 
-const supabase=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
-  auth:{persistSession:false}
-});
+const supabase=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:false}});
 
 const params=new URLSearchParams(location.search);
 const EVENT_ID=params.get("event");
 
 const winnerEl=document.getElementById("winner");
 const drawBtn=document.getElementById("drawBtn");
-const onlyPresent=document.getElementById("onlyPresent");
-const noRepeat=document.getElementById("noRepeat");
+const resetBtn=document.getElementById("resetBtn");
+const countdownEl=document.getElementById("countdown");
+const historyList=document.getElementById("historyList");
 
-let allRows=[];
-let winners=new Set();
+let participants=[];
+let winners=[];
 
 async function load(){
   const {data}=await supabase
@@ -144,57 +144,76 @@ async function load(){
     .select("id,couple_name,is_present")
     .eq("event_id",EVENT_ID);
 
-  allRows=data||[];
+  participants=data||[];
 }
 
-function randomConfetti(){
-  for(let i=0;i<120;i++){
-    const c=document.createElement("div");
-    c.className="confetti";
-    c.style.left=Math.random()*100+"vw";
-    c.style.background=`hsl(${Math.random()*360},100%,60%)`;
-    c.style.animationDuration=(2+Math.random()*3)+"s";
-    document.body.appendChild(c);
-    setTimeout(()=>c.remove(),4000);
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+async function startCountdown(){
+  for(let i=3;i>0;i--){
+    countdownEl.textContent=i;
+    await sleep(1000);
+  }
+  countdownEl.textContent="";
+}
+
+function confetti(){
+  for(let i=0;i<150;i++){
+    const el=document.createElement("div");
+    el.style.position="fixed";
+    el.style.width="6px";
+    el.style.height="6px";
+    el.style.background=`hsl(${Math.random()*360},100%,60%)`;
+    el.style.left=Math.random()*100+"vw";
+    el.style.top="-10px";
+    el.style.animation=`fall ${2+Math.random()*3}s linear`;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),5000);
   }
 }
+
+const style=document.createElement("style");
+style.innerHTML=`@keyframes fall{to{transform:translateY(110vh) rotate(720deg);}}`;
+document.head.appendChild(style);
 
 async function draw(){
+  if(participants.length===0)return;
+
   drawBtn.disabled=true;
 
-  let pool=[...allRows];
+  await startCountdown();
 
-  if(onlyPresent.checked)
-    pool=pool.filter(r=>r.is_present);
+  let pool=participants.filter(p=>!winners.includes(p.id));
+  if(pool.length===0) pool=[...participants];
 
-  if(noRepeat.checked)
-    pool=pool.filter(r=>!winners.has(r.id));
-
-  if(pool.length===0){
-    winnerEl.textContent="Sem participantes disponíveis 😢";
-    drawBtn.disabled=false;
-    return;
-  }
-
-  // Suspense animation
   let speed=50;
-  let cycles=40;
-  let index=0;
+  let loops=40;
 
-  const interval=setInterval(()=>{
+  for(let i=0;i<loops;i++){
     const r=pool[Math.floor(Math.random()*pool.length)];
     winnerEl.textContent=r.couple_name;
-    index++;
-    if(index>cycles){
-      clearInterval(interval);
-      const final=pool[Math.floor(Math.random()*pool.length)];
-      winnerEl.textContent="🎉 "+final.couple_name+" 🎉";
-      winners.add(final.id);
-      randomConfetti();
-      drawBtn.disabled=false;
-    }
-  },speed);
+    await sleep(speed);
+    speed+=10; // desaceleração progressiva
+  }
+
+  const final=pool[Math.floor(Math.random()*pool.length)];
+  winnerEl.textContent="🏆 "+final.couple_name+" 🏆";
+  winners.push(final.id);
+
+  const li=document.createElement("li");
+  li.textContent=final.couple_name;
+  historyList.appendChild(li);
+
+  confetti();
+
+  drawBtn.disabled=false;
 }
+
+resetBtn.addEventListener("click",()=>{
+  winners=[];
+  historyList.innerHTML="";
+  winnerEl.textContent="Pronto para novo sorteio!";
+});
 
 drawBtn.addEventListener("click",draw);
 
