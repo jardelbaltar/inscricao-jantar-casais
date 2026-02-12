@@ -22,10 +22,8 @@
       --border: #e2e8f0;
       --shadow: 0 20px 45px rgba(15, 23, 42, 0.24);
       --radius: 18px;
-
       --overlay: rgba(2,6,23,.72);
     }
-
     * { box-sizing: border-box; }
 
     body {
@@ -59,24 +57,14 @@
       margin-bottom: 8px;
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-    }
-
-    .brandMark img {
-      width: 52px;
-      height: 52px;
-      object-fit: contain;
-    }
+    .brand { display: flex; align-items: center; justify-content: flex-start; }
+    .brandMark img { width: 52px; height: 52px; object-fit: contain; }
 
     .hero h1 {
       margin: 0;
       font-size: clamp(1.55rem, 5vw, 2.3rem);
       line-height: 1.2;
     }
-
     .hero p {
       margin: 8px 0 0;
       color: #cbd5e1;
@@ -97,18 +85,13 @@
       border: 1px solid rgba(191, 219, 254, 0.45);
       background: rgba(15, 23, 42, 0.25);
     }
-
     .home-link:hover,
     .home-link:focus-visible {
       color: #dbeafe;
       border-color: rgba(219, 234, 254, 0.85);
       background: rgba(15, 23, 42, 0.4);
     }
-
-    .home-link svg {
-      width: 20px;
-      height: 20px;
-    }
+    .home-link svg { width: 20px; height: 20px; }
 
     .card {
       background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
@@ -125,8 +108,7 @@
       color: #334155;
     }
 
-    input,
-    button {
+    input, button {
       width: 100%;
       min-height: 46px;
       margin-top: 7px;
@@ -136,7 +118,6 @@
       font-size: 16px;
       transition: border-color .2s, box-shadow .2s, transform .2s;
     }
-
     input:focus {
       outline: none;
       border-color: color-mix(in srgb, var(--primary) 65%, white);
@@ -155,7 +136,6 @@
       justify-content: center;
       gap: 10px;
     }
-
     button:hover {
       transform: translateY(-1px);
       background: linear-gradient(135deg, var(--primary-hover) 0%, #2563eb 100%);
@@ -166,21 +146,10 @@
       color: #0f172a;
       border: 1px solid rgba(148, 163, 184, 0.55);
     }
-    .btnSecondary:hover{
-      background: rgba(15, 23, 42, 0.14);
-      transform: translateY(-1px);
-    }
+    .btnSecondary:hover{ background: rgba(15, 23, 42, 0.14); }
 
-    .row {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .row > div {
-      flex: 1;
-      min-width: 220px;
-    }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .row > div { flex: 1; min-width: 220px; }
 
     .table-wrap {
       margin-top: 10px;
@@ -190,9 +159,7 @@
       border-radius: 12px;
       background: #fff;
     }
-
     table { width: 100%; border-collapse: collapse; }
-
     th, td {
       border-bottom: 1px solid #edf2f7;
       padding: 10px;
@@ -200,7 +167,6 @@
       vertical-align: middle;
       white-space: nowrap;
     }
-
     th {
       font-size: .85rem;
       color: #334155;
@@ -208,16 +174,11 @@
       letter-spacing: .02em;
       background: #f8fafc;
     }
-
     tr:last-child td { border-bottom: 0; }
 
     .muted { color: var(--muted); font-size: 14px; }
 
-    #msg {
-      min-height: 24px;
-      margin: 0;
-      font-weight: 700;
-    }
+    #msg { min-height: 24px; margin: 0; font-weight: 700; }
 
     .err {
       color: var(--danger);
@@ -226,7 +187,6 @@
       border-radius: 10px;
       padding: 8px 10px;
     }
-
     .ok {
       color: var(--success);
       background: #ccfbf1;
@@ -244,7 +204,6 @@
       margin-right: 6px;
       background: #fff;
     }
-
     .present { background: #ecfdf5; border-color: #86efac; }
     .absent { background: #fef2f2; border-color: #fecaca; }
 
@@ -266,7 +225,7 @@
     .overlay.show{ display:flex; }
 
     .modal{
-      width: min(820px, 100%);
+      width: min(860px, 100%);
       border-radius: 18px;
       border: 1px solid rgba(255,255,255,.12);
       background: rgba(15,23,42,.82);
@@ -283,29 +242,18 @@
       border-bottom: 1px solid rgba(255,255,255,.10);
       color: #e5e7eb;
     }
-    .modalHeader .title{
-      display:flex;
-      flex-direction:column;
-      gap:4px;
-    }
-    .modalHeader .title strong{
-      font-size: 14px;
-      letter-spacing:.2px;
-    }
-    .modalHeader .title span{
-      font-size: 12px;
-      color: rgba(229,231,235,.72);
-    }
+    .modalHeader .title{ display:flex; flex-direction:column; gap:4px; }
+    .modalHeader .title strong{ font-size: 14px; letter-spacing:.2px; }
+    .modalHeader .title span{ font-size: 12px; color: rgba(229,231,235,.72); }
+
     .modalBody{
       padding: 12px;
       display:grid;
-      grid-template-columns: 1.2fr .8fr;
+      grid-template-columns: 1.15fr .85fr;
       gap: 12px;
       align-items: start;
     }
-    @media (max-width: 860px){
-      .modalBody{ grid-template-columns: 1fr; }
-    }
+    @media (max-width: 860px){ .modalBody{ grid-template-columns: 1fr; } }
 
     .scannerBox{
       border-radius: 16px;
@@ -317,12 +265,14 @@
 
     #qrReader{
       width:100%;
-      min-height: 280px; /* IMPORTANTÍSSIMO no iPhone */
+      min-height: 300px;
       display:flex;
       align-items:center;
       justify-content:center;
+      border-radius: 14px;
+      background: rgba(0,0,0,.15);
+      position: relative;
     }
-
     #qrReader video{
       width:100% !important;
       height:auto !important;
@@ -347,18 +297,8 @@
       padding: 12px;
       color: #e5e7eb;
     }
-    .sideBox .k{
-      color: rgba(229,231,235,.70);
-      font-size:12px;
-      font-weight:800;
-      letter-spacing:.2px;
-    }
-    .sideBox .v{
-      margin-top:6px;
-      font-weight:1000;
-      font-size:14px;
-      line-height:1.25;
-    }
+    .sideBox .k{ color: rgba(229,231,235,.70); font-size:12px; font-weight:800; letter-spacing:.2px; }
+    .sideBox .v{ margin-top:6px; font-weight:1000; font-size:14px; line-height:1.25; word-break: break-word; }
     .sideBox .status{
       margin-top:10px;
       padding:10px 12px;
@@ -372,6 +312,20 @@
       white-space: pre-wrap;
     }
 
+    .debug{
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      font-size: 12px;
+      line-height: 1.35;
+      color: rgba(229,231,235,.88);
+      max-height: 180px;
+      overflow:auto;
+      white-space: pre-wrap;
+    }
+
     .modalFooter{
       display:flex;
       justify-content:flex-end;
@@ -379,6 +333,7 @@
       padding: 12px 14px;
       border-top: 1px solid rgba(255,255,255,.10);
       background: rgba(0,0,0,.18);
+      flex-wrap: wrap;
     }
 
     .btnGhost{
@@ -480,7 +435,7 @@
           <div id="qrReader"></div>
           <div class="scannerHint">
             Funciona com QR contendo <b>rid:UUID</b> ou um link do tipo <b>recibo.html?rid=UUID</b>.
-            <br/>Dica: no iPhone: toque em <b>aA</b> → <b>Ajustes do Site</b> → <b>Câmera: Permitir</b>.
+            <br/>No iPhone: toque em <b>aA</b> → <b>Ajustes do Site</b> → <b>Câmera: Permitir</b>.
           </div>
         </div>
 
@@ -490,23 +445,27 @@
 
           <div class="k" style="margin-top:12px">Status</div>
           <div class="status" id="scanStatus">Abra o leitor e aponte para o QR Code do recibo.</div>
+
+          <div class="k" style="margin-top:12px">DEBUG</div>
+          <div class="debug" id="debugLog">—</div>
         </div>
       </div>
 
       <div class="modalFooter">
+        <button id="btnTest" class="btnGhost" type="button">Testar câmera</button>
         <button id="btnStop" class="btnGhost" type="button">Parar câmera</button>
       </div>
     </div>
   </div>
 
-  <!-- Lib do scanner (fallback) -->
+  <!-- fallback lib -->
   <script src="https://unpkg.com/html5-qrcode@2.3.10/minified/html5-qrcode.min.js"></script>
 
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.3/+esm";
 
     const SUPABASE_URL = "https://nuqcefxwarrjehvhdoug.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51cWNlZnh3YXJyamVodmhkb3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NzE1NzUsImV4cCI6MjA4NjM0NzU3NX0.xLugRmdl6UKVsMZnDepBlFndh4vGVMnptuloFZC28Mc";
+    const SUPABASE_ANON_KEY = "SUA_ANON_KEY_AQUI"; // mantenha a sua
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
@@ -526,23 +485,29 @@
     const overlay = document.getElementById("overlay");
     const btnClose = document.getElementById("btnClose");
     const btnStop = document.getElementById("btnStop");
+    const btnTest = document.getElementById("btnTest");
     const scanValueEl = document.getElementById("scanValue");
     const scanStatusEl = document.getElementById("scanStatus");
+    const debugLogEl = document.getElementById("debugLog");
 
     const params = new URLSearchParams(location.search);
     const EVENT_ID = params.get("event");
 
     let allRows = [];
-    let scanning = false;
     let scanLockUntil = 0;
 
     function setMsg(text, kind="") {
       msg.className = kind ? kind : "";
       msg.textContent = text || "";
     }
-
     function escapeHtml(s){
       return (s ?? "").toString().replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    function logDbg(line){
+      const now = new Date().toLocaleTimeString();
+      const prev = debugLogEl.textContent === "—" ? "" : debugLogEl.textContent + "\n";
+      debugLogEl.textContent = prev + `[${now}] ${line}`;
     }
 
     function renderStats(rows) {
@@ -580,7 +545,6 @@
         return `
           <tr class="click ${cls}" data-id="${r.id}" data-present="${r.is_present}">
             <td><strong>${escapeHtml(r.couple_name)}</strong></td>
-            <td>${escapeHtml(r.wedding_date ?? "—")}</td>
             <td>${status}<br/><span class="muted small">Check-in: ${checkedAt}</span></td>
           </tr>
         `;
@@ -591,12 +555,11 @@
           <thead>
             <tr>
               <th>Casal</th>
-              <th>Data casamento</th>
               <th>Presença</th>
             </tr>
           </thead>
           <tbody>
-            ${htmlRows || "<tr><td colspan='3' class='muted'>Nenhum resultado.</td></tr>"}
+            ${htmlRows || "<tr><td colspan='2' class='muted'>Nenhum resultado.</td></tr>"}
           </tbody>
         </table>
       `;
@@ -659,7 +622,7 @@
 
       const { data, error } = await supabase
         .from("registrations_checkin")
-        .select("id,event_id,couple_name,wedding_date,is_present,checked_in_at,created_at")
+        .select("id,event_id,couple_name,is_present,checked_in_at,created_at")
         .eq("event_id", EVENT_ID)
         .order("couple_name", { ascending: true });
 
@@ -672,35 +635,30 @@
       renderTable();
     }
 
-    function isUuid36(s){
-      return /^[0-9a-fA-F-]{36}$/.test((s||"").trim());
-    }
+    function isUuid36(s){ return /^[0-9a-fA-F-]{36}$/.test((s||"").trim()); }
 
     function tryExtractRidFromAny(text){
       const raw = (text || "").trim();
-
       const m1 = raw.match(/^rid:\s*([0-9a-fA-F-]{36})$/);
       if (m1) return m1[1];
-
       try{
         const u = new URL(raw);
         const rid = u.searchParams.get("rid");
         if (rid && isUuid36(rid)) return rid;
       }catch{}
-
       const m2 = raw.match(/rid=([0-9a-fA-F-]{36})/);
       if (m2) return m2[1];
-
       return null;
     }
 
     async function setPresenceByRid(rid){
       const now = Date.now();
       if (now < scanLockUntil) return;
-      scanLockUntil = now + 1800;
+      scanLockUntil = now + 1600;
 
       scanValueEl.textContent = rid;
       scanStatusEl.textContent = "Validando inscrição…";
+      logDbg(`Validando rid=${rid}`);
 
       const { data: reg, error: regErr } = await supabase
         .from("registrations")
@@ -710,16 +668,19 @@
 
       if (regErr || !reg){
         scanStatusEl.textContent = "❌ Não encontrei esta inscrição.";
+        logDbg("Não encontrado / erro no select registrations.");
         return;
       }
 
       if (EVENT_ID && reg.event_id !== EVENT_ID){
         scanStatusEl.textContent = "⚠️ Este QR é de outro evento.";
+        logDbg(`Evento divergente: reg.event_id=${reg.event_id} vs EVENT_ID=${EVENT_ID}`);
         return;
       }
 
       if (reg.is_present){
         scanStatusEl.textContent = `✅ Já estava presente: ${reg.couple_name || "Casal"}`;
+        logDbg("Já estava presente.");
         const row = allRows.find(x => x.id === reg.id);
         if (row){
           row.is_present = true;
@@ -736,6 +697,7 @@
 
       if (error || !data?.ok){
         scanStatusEl.textContent = "❌ Falha ao marcar presença. Tente novamente.";
+        logDbg(`Falha RPC set_presence_public: ${error?.message || data?.error || "?"}`);
         return;
       }
 
@@ -744,29 +706,23 @@
         row.is_present = true;
         row.checked_in_at = new Date().toISOString();
       }
-
       renderTable();
       highlightRow(reg.id);
 
       scanStatusEl.textContent = `🎉 Check-in OK: ${reg.couple_name || "Casal"}`;
+      logDbg("Check-in OK.");
       setMsg(`Check-in OK: ${reg.couple_name || "Casal"}`, "ok");
       setTimeout(() => setMsg(""), 1200);
     }
 
-    // ===== Scanner (iPhone-friendly: BarcodeDetector + fallback html5-qrcode) =====
+    // ===== Scanner: BarcodeDetector (primário) + fallback html5-qrcode =====
+    let scanning = false;
     let stream = null;
-    let bd = null;                 // BarcodeDetector
-    let scanTimer = null;          // loop
-    let qrFallback = null;         // Html5Qrcode fallback
+    let bd = null;
+    let rafId = null;
+    let qrFallback = null;
 
-    function showScanError(prefix, err){
-      const msg = (err && (err.name || err.message)) ? `${err.name || ""} ${err.message || ""}`.trim() : String(err || "");
-      scanStatusEl.textContent =
-        `${prefix}\n\nDetalhe: ${msg}\n\nNo iPhone: toque em aA → Ajustes do Site → Câmera: Permitir.`;
-      console.error(prefix, err);
-    }
-
-    function ensureVideoElement(){
+    function ensureVideo(){
       const wrap = document.getElementById("qrReader");
       let video = wrap.querySelector("video");
       if (!video){
@@ -774,46 +730,65 @@
         video.setAttribute("playsinline", "true");
         video.muted = true;
         video.autoplay = true;
-        video.style.width = "100%";
-        video.style.borderRadius = "14px";
         wrap.innerHTML = "";
         wrap.appendChild(video);
       }
       return video;
     }
 
-    async function startNativeScanner(){
+    function stopStream(){
+      if (stream){
+        for (const t of stream.getTracks()) t.stop();
+        stream = null;
+      }
+    }
+
+    async function startBarcodeDetector(){
+      logDbg(`secureContext=${window.isSecureContext}`);
+      logDbg(`hasMediaDevices=${!!navigator.mediaDevices}`);
+      logDbg(`hasGetUserMedia=${!!navigator.mediaDevices?.getUserMedia}`);
+      logDbg(`hasBarcodeDetector=${"BarcodeDetector" in window}`);
+
       if (!("BarcodeDetector" in window)) return false;
 
       try{
         bd = new BarcodeDetector({ formats: ["qr_code"] });
+        logDbg("BarcodeDetector inicializado.");
       }catch(err){
-        console.warn("BarcodeDetector init error:", err);
+        logDbg("BarcodeDetector falhou ao inicializar.");
+        scanStatusEl.textContent = "❌ BarcodeDetector indisponível neste iPhone.";
         return false;
       }
 
-      const video = ensureVideoElement();
+      const video = ensureVideo();
 
       try{
         stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: { ideal: "environment" } },
           audio: false
         });
+        logDbg("getUserMedia OK (stream recebida).");
       }catch(err){
-        showScanError("❌ Não consegui abrir a câmera (getUserMedia).", err);
+        logDbg(`getUserMedia ERRO: ${err?.name || ""} ${err?.message || ""}`.trim());
+        scanStatusEl.textContent =
+          "❌ Sem acesso à câmera.\n\nNo iPhone: aA → Ajustes do Site → Câmera: Permitir.\nE verifique Ajustes do iPhone → Safari → Câmera.";
         return false;
       }
 
       video.srcObject = stream;
-
-      try{ await video.play(); }catch(err){ console.warn("video.play failed:", err); }
+      try{
+        await video.play();
+        logDbg("video.play OK.");
+      }catch(err){
+        logDbg(`video.play ERRO: ${err?.name || ""} ${err?.message || ""}`.trim());
+      }
 
       scanStatusEl.textContent = "Aponte para o QR do recibo…";
 
       const tick = async () => {
         if (!overlay.classList.contains("show")) return;
         if (!video || video.readyState < 2) {
-          scanTimer = requestAnimationFrame(tick);
+          rafId = requestAnimationFrame(tick);
           return;
         }
 
@@ -822,41 +797,40 @@
           if (codes && codes.length){
             const raw = codes[0].rawValue || "";
             scanValueEl.textContent = raw;
+            logDbg(`QR lido: ${raw}`);
 
             const rid = tryExtractRidFromAny(raw);
             if (rid){
               await setPresenceByRid(rid);
             } else {
               scanStatusEl.textContent = "⚠️ QR inválido. Precisa conter rid:UUID ou recibo.html?rid=UUID";
+              logDbg("QR inválido (não extraiu rid).");
             }
-            await new Promise(r => setTimeout(r, 1200));
+            await new Promise(r => setTimeout(r, 1100));
           }
         }catch(err){
-          console.warn("BarcodeDetector detect error:", err);
+          logDbg(`bd.detect ERRO: ${err?.name || ""} ${err?.message || ""}`.trim());
         }
 
-        scanTimer = requestAnimationFrame(tick);
+        rafId = requestAnimationFrame(tick);
       };
 
-      scanTimer = requestAnimationFrame(tick);
+      rafId = requestAnimationFrame(tick);
       return true;
     }
 
-    async function startFallbackHtml5Qrcode(){
+    async function startHtml5QrcodeFallback(){
+      logDbg("Iniciando fallback html5-qrcode…");
       const wrap = document.getElementById("qrReader");
-      wrap.innerHTML = "";
+      wrap.innerHTML = "<div class='muted' style='color:#e5e7eb'>Inicializando…</div>";
 
       if (!qrFallback) qrFallback = new Html5Qrcode("qrReader");
 
-      const config = {
-        fps: 12,
-        qrbox: { width: 260, height: 260 },
-        aspectRatio: 1.0,
-        disableFlip: true
-      };
+      const config = { fps: 12, qrbox: { width: 260, height: 260 }, aspectRatio: 1.0, disableFlip: true };
 
       const onScanSuccess = async (decodedText) => {
         scanValueEl.textContent = decodedText;
+        logDbg(`QR lido (fallback): ${decodedText}`);
         const rid = tryExtractRidFromAny(decodedText);
         if (!rid){
           scanStatusEl.textContent = "⚠️ QR inválido. Precisa conter rid:UUID ou recibo.html?rid=UUID";
@@ -868,14 +842,18 @@
       try{
         await qrFallback.start({ facingMode: "environment" }, config, onScanSuccess, () => {});
         scanStatusEl.textContent = "Aponte para o QR do recibo…";
+        logDbg("Fallback iniciado (environment).");
         return true;
       }catch(e1){
+        logDbg(`Fallback ERRO env: ${e1?.name || ""} ${e1?.message || ""}`.trim());
         try{
           await qrFallback.start({ facingMode: "user" }, config, onScanSuccess, () => {});
           scanStatusEl.textContent = "Aponte para o QR do recibo…";
+          logDbg("Fallback iniciado (user).");
           return true;
         }catch(e2){
-          showScanError("❌ Não consegui iniciar o leitor (fallback).", e2 || e1);
+          logDbg(`Fallback ERRO user: ${e2?.name || ""} ${e2?.message || ""}`.trim());
+          scanStatusEl.textContent = "❌ Não consegui iniciar o leitor. Verifique permissões da câmera.";
           return false;
         }
       }
@@ -883,36 +861,39 @@
 
     async function openScanner(){
       if (scanning) return;
-      overlay.classList.add("show");
       scanning = true;
 
+      overlay.classList.add("show");
+      debugLogEl.textContent = "—";
       scanValueEl.textContent = "—";
       scanStatusEl.textContent = "Solicitando acesso à câmera…";
 
       if (!window.isSecureContext){
-        scanning = false;
+        logDbg("ERRO: não é HTTPS/secureContext.");
         scanStatusEl.textContent = "❌ A câmera só funciona em HTTPS (ou localhost).";
+        scanning = false;
         return;
       }
 
-      const okNative = await startNativeScanner();
-      if (okNative) return;
+      const ok = await startBarcodeDetector();
+      if (ok) {
+        logDbg("Scanner ativo: BarcodeDetector.");
+        return;
+      }
 
-      await startFallbackHtml5Qrcode();
+      const ok2 = await startHtml5QrcodeFallback();
+      if (ok2) logDbg("Scanner ativo: html5-qrcode (fallback).");
     }
 
     async function stopScanner(){
       overlay.classList.remove("show");
 
-      if (scanTimer){
-        cancelAnimationFrame(scanTimer);
-        scanTimer = null;
+      if (rafId){
+        cancelAnimationFrame(rafId);
+        rafId = null;
       }
 
-      if (stream){
-        for (const t of stream.getTracks()) t.stop();
-        stream = null;
-      }
+      stopStream();
 
       try{
         if (qrFallback){
@@ -923,18 +904,33 @@
 
       scanning = false;
       scanStatusEl.textContent = "Leitor fechado.";
+      logDbg("Scanner parado.");
     }
-
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden) stopScanner();
-    });
 
     btnScan.addEventListener("click", openScanner);
     btnClose.addEventListener("click", stopScanner);
     btnStop.addEventListener("click", stopScanner);
 
+    btnTest.addEventListener("click", async () => {
+      logDbg("Teste manual: tentando getUserMedia…");
+      try{
+        const s = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        logDbg("Teste getUserMedia OK.");
+        for (const t of s.getTracks()) t.stop();
+        scanStatusEl.textContent = "✅ Teste OK: a câmera respondeu ao navegador.";
+      }catch(err){
+        logDbg(`Teste getUserMedia ERRO: ${err?.name || ""} ${err?.message || ""}`.trim());
+        scanStatusEl.textContent =
+          "❌ Teste falhou: sem permissão de câmera.\n\nNo iPhone: aA → Ajustes do Site → Câmera: Permitir.\nAjustes do iPhone → Safari → Câmera.";
+      }
+    });
+
     overlay.addEventListener("click", (e) => {
       if (e.target === overlay) stopScanner();
+    });
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) stopScanner();
     });
 
     searchInput.addEventListener("input", renderTable);
