@@ -187,6 +187,28 @@ input{
   transition:.2s ease;
 }
 
+.cardHead{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.cardIcon{
+  width:38px;
+  height:38px;
+  stroke:#7dd3fc;
+  fill:none;
+  stroke-width:1.9;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  filter:drop-shadow(0 0 10px rgba(56,189,248,.35));
+  flex-shrink:0;
+}
+
+.cardIcon.fill{
+  fill:rgba(125,211,252,.15);
+}
+
 .card:hover{
   transform:translateY(-3px);
   box-shadow:var(--shadow2);
@@ -246,32 +268,77 @@ input{
 
 <div class="grid">
   <div class="card" onclick="go('index.html')">
-    <h3 class="cardTitle">Inscrição</h3>
+    <div class="cardHead">
+      <svg class="cardIcon" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="6" y="3" width="12" height="18" rx="2"></rect>
+        <path d="M9 3.5h6"></path>
+        <path d="M9 8h6"></path>
+        <path d="M9 12h6"></path>
+        <path d="M9 16h4"></path>
+      </svg>
+      <h3 class="cardTitle">Inscrição</h3>
+    </div>
     <p class="cardDesc">Formulário público via QR Code.</p>
   </div>
 
   <div class="card" onclick="go('painel.html')">
-    <h3 class="cardTitle">Acompanhamento</h3>
+    <div class="cardHead">
+      <svg class="cardIcon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 20h16"></path>
+        <rect x="6" y="11" width="2.5" height="7"></rect>
+        <rect x="11" y="8" width="2.5" height="10"></rect>
+        <rect x="16" y="5" width="2.5" height="13"></rect>
+      </svg>
+      <h3 class="cardTitle">Acompanhamento</h3>
+    </div>
     <p class="cardDesc">Visualize inscrições em tempo real.</p>
   </div>
 
   <div class="card" onclick="go('admin.html')">
-    <h3 class="cardTitle">Administração</h3>
+    <div class="cardHead">
+      <svg class="cardIcon fill" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M10.8 2.4h2.4l.5 2.1c.5.1 1 .3 1.5.6l1.9-1.1 1.7 1.7-1.1 1.9c.3.5.5 1 .6 1.5l2.1.5v2.4l-2.1.5c-.1.5-.3 1-.6 1.5l1.1 1.9-1.7 1.7-1.9-1.1c-.5.3-1 .5-1.5.6l-.5 2.1h-2.4l-.5-2.1c-.5-.1-1-.3-1.5-.6l-1.9 1.1-1.7-1.7 1.1-1.9c-.3-.5-.5-1-.6-1.5l-2.1-.5V9.8l2.1-.5c.1-.5.3-1 .6-1.5L5.2 5.9 6.9 4.2l1.9 1.1c.5-.3 1-.5 1.5-.6z"></path>
+        <circle cx="12" cy="11" r="2.8"></circle>
+      </svg>
+      <h3 class="cardTitle">Administração</h3>
+    </div>
     <p class="cardDesc">Gerencie vagas e pratos.</p>
   </div>
 
   <div class="card" onclick="go('checkin.html')">
-    <h3 class="cardTitle">Check-in</h3>
+    <div class="cardHead">
+      <svg class="cardIcon" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M8.5 12.5l2.3 2.3 4.8-5.2"></path>
+      </svg>
+      <h3 class="cardTitle">Check-in</h3>
+    </div>
     <p class="cardDesc">Controle de presença.</p>
   </div>
 
   <div class="card" onclick="go('stats.html')">
-    <h3 class="cardTitle">Estatísticas</h3>
+    <div class="cardHead">
+      <svg class="cardIcon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 20V4"></path>
+        <path d="M4 20h16"></path>
+        <path d="M8 15l3-3 3 1 3-5"></path>
+      </svg>
+      <h3 class="cardTitle">Estatísticas</h3>
+    </div>
     <p class="cardDesc">Dashboard completo do evento.</p>
   </div>
 
   <div class="card" onclick="go('sorteio.html')">
-    <h3 class="cardTitle">Sorteio</h3>
+    <div class="cardHead">
+      <svg class="cardIcon" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="4" y="10" width="16" height="10" rx="2"></rect>
+        <path d="M12 10v10"></path>
+        <path d="M4 14h16"></path>
+        <path d="M8.5 7.8A2.3 2.3 0 0 1 12 10"></path>
+        <path d="M15.5 7.8A2.3 2.3 0 0 0 12 10"></path>
+      </svg>
+      <h3 class="cardTitle">Sorteio</h3>
+    </div>
     <p class="cardDesc">Momento show de TV.</p>
   </div>
 </div>
