@@ -256,6 +256,8 @@
     .small { font-size: 13px; }
     .right { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
 
+    .status-label-mobile { display: none; }
+
     /* ===== Modal do scanner ===== */
     .overlay{
       position: fixed;
@@ -386,9 +388,45 @@
     }
 
     @media (max-width: 640px) {
+      body { padding-left: 8px; padding-right: 8px; }
+      .hero-top {
+        grid-template-columns: 42px 1fr 42px;
+        gap: 8px;
+      }
+      .brandMark img { width: 42px; height: 42px; }
+      .home-link { width: 38px; height: 38px; }
+      .hero p { font-size: 0.9rem; }
       .card { padding: 14px; border-radius: 14px; }
       .right { justify-content: stretch; }
       button { width: 100%; }
+      .table-wrap {
+        border: 0;
+        background: transparent;
+        overflow: visible;
+      }
+      table, thead, tbody, tr, td { display: block; width: 100%; }
+      thead { display: none; }
+      tr.click {
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        background: #fff;
+        margin-bottom: 10px;
+      }
+      td {
+        white-space: normal;
+        border-bottom: 0;
+        padding: 8px 10px;
+      }
+      td:first-child { padding-top: 10px; }
+      td:last-child { padding-bottom: 10px; }
+      .status-label-mobile {
+        display: block;
+        font-size: .72rem;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        color: #64748b;
+        margin-bottom: 2px;
+      }
     }
   </style>
 </head>
@@ -570,8 +608,7 @@
         return `
           <tr class="click ${cls}" data-id="${r.id}" data-present="${r.is_present}">
             <td><strong>${escapeHtml(r.couple_name)}</strong></td>
-            <td>${escapeHtml(r.wedding_date ?? "—")}</td>
-            <td>${status}<br/><span class="muted small">Check-in: ${checkedAt}</span></td>
+            <td><span class="status-label-mobile">Presença</span>${status}<br/><span class="muted small">Check-in: ${checkedAt}</span></td>
           </tr>
         `;
       }).join("");
@@ -581,12 +618,11 @@
           <thead>
             <tr>
               <th>Casal</th>
-              <th>Data casamento</th>
               <th>Presença</th>
             </tr>
           </thead>
           <tbody>
-            ${htmlRows || "<tr><td colspan='3' class='muted'>Nenhum resultado.</td></tr>"}
+            ${htmlRows || "<tr><td colspan='2' class='muted'>Nenhum resultado.</td></tr>"}
           </tbody>
         </table>
       `;
