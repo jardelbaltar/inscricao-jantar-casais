@@ -1,206 +1,175 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Estatísticas — Jantar de Casais</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Painel Estatístico - Jantar de Casais</title>
 
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
+<meta http-equiv="Cache-Control" content="no-cache"/>
 
-  <style>
-    body{font-family:system-ui,Segoe UI,Roboto,Arial;max-width:1100px;margin:24px auto;padding:0 16px}
-    h1{margin:0 0 6px}
-    .muted{color:#666;font-size:14px}
-    .err{color:#b00020;font-weight:700}
-    .ok{color:#0a7a2f;font-weight:700}
-    .grid{display:grid;grid-template-columns: 1fr;gap:14px}
-    .card{border:1px solid #ddd;border-radius:14px;padding:14px}
-    .row{display:flex;gap:12px;flex-wrap:wrap}
-    .row > div{flex:1;min-width:240px}
-    label{display:block;font-weight:700;margin-top:10px}
-    input,button{width:100%;padding:10px;margin-top:6px;font-size:16px}
-    button{cursor:pointer}
-    .pill{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid #ddd;font-size:12px;margin-right:6px}
-    .big{font-size:22px;font-weight:800;margin:6px 0}
-    .sub{font-size:14px;color:#555;margin:0}
-    canvas{max-height:360px}
-    .right{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;align-items:end}
-    .btn2{width:auto}
-  </style>
+<style>
+body{
+  font-family: system-ui, Arial;
+  background:#111;
+  color:#fff;
+  margin:0;
+  padding:20px;
+}
+h1{margin:0 0 10px;font-size:28px}
+h2{margin:0 0 6px}
+.grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:20px;
+}
+.card{
+  background:#1c1c1c;
+  border-radius:14px;
+  padding:18px;
+}
+.big{font-size:26px;font-weight:800}
+.highlight{color:#00ff99}
+.small{color:#bbb;font-size:14px}
+.list-item{
+  display:flex;
+  justify-content:space-between;
+  margin:6px 0;
+}
+.bar{
+  height:8px;
+  background:#00ff99;
+  border-radius:4px;
+}
+.percent{
+  font-size:22px;
+  font-weight:bold;
+}
+.footer{
+  position:fixed;
+  bottom:10px;
+  right:20px;
+  font-size:12px;
+  color:#777;
+}
+</style>
 </head>
 
 <body>
-  <h1>Estatísticas — Participantes</h1>
-  <p class="muted">Painel de tempo de casamento e distribuição por faixas.</p>
 
-  <div id="msg"></div>
+<h1>📊 Painel do Jantar de Casais</h1>
+
+<div class="grid">
+  <div class="card">
+    <h2>🏆 Top 5 mais tempo de casado</h2>
+    <div id="top5"></div>
+  </div>
 
   <div class="card">
-    <div class="row">
-      <div>
-        <label>Buscar (nome)</label>
-        <input id="search" placeholder="Ex: Ana" />
-      </div>
-      <div>
-        <label>Filtro</label>
-        <div style="display:flex;gap:10px;align-items:center;margin-top:10px">
-          <input id="onlyPresent" type="checkbox" style="width:auto;margin:0" />
-          <span>Somente presentes (check-in)</span>
-        </div>
-      </div>
-      <div class="right">
-        <button id="btnReload" class="btn2">Recarregar</button>
-      </div>
-    </div>
-    <div style="margin-top:10px">
-      <span class="pill" id="pillTotal">Total: —</span>
-      <span class="pill" id="pillFiltered">Filtrados: —</span>
-    </div>
+    <h2>💍 Casal mais novo</h2>
+    <div id="youngest"></div>
   </div>
 
-  <div class="grid">
-    <div class="card">
-      <h2 style="margin:0 0 6px">Casal com mais tempo de casado</h2>
-      <div id="topBox">
-        <p class="muted">Carregando...</p>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2 style="margin:0 0 6px">Distribuição por tempo de casado</h2>
-      <p class="muted" style="margin:0 0 10px">Faixas em anos (bins).</p>
-      <canvas id="chart"></canvas>
-    </div>
+  <div class="card">
+    <h2>📈 Média de tempo de casamento</h2>
+    <div id="average"></div>
   </div>
 
-  <!-- Chart.js (CDN) -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <div class="card">
+    <h2>👥 Presença</h2>
+    <div id="presence"></div>
+  </div>
+</div>
 
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.3/+esm";
+<div class="footer">
+Auto atualização a cada 30s
+</div>
 
-   const SUPABASE_URL = "https://nuqcefxwarrjehvhdoug.supabase.co";
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.3/+esm";
+
+ const SUPABASE_URL = "https://nuqcefxwarrjehvhdoug.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51cWNlZnh3YXJyamVodmhkb3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NzE1NzUsImV4cCI6MjA4NjM0NzU3NX0.xLugRmdl6UKVsMZnDepBlFndh4vGVMnptuloFZC28Mc";
 
 
-    // Público: sem sessão
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
-    });
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY,{
+  auth:{persistSession:false}
+});
 
-    const params = new URLSearchParams(location.search);
-    const EVENT_ID = params.get("event");
+const params = new URLSearchParams(location.search);
+const EVENT_ID = params.get("event");
 
-    const msg = document.getElementById("msg");
-    const searchInput = document.getElementById("search");
-    const onlyPresent = document.getElementById("onlyPresent");
-    const btnReload = document.getElementById("btnReload");
-    const pillTotal = document.getElementById("pillTotal");
-    const pillFiltered = document.getElementById("pillFiltered");
-    const topBox = document.getElementById("topBox");
-    const chartEl = document.getElementById("chart");
+function parseDate(iso){
+  const [y,m,d]=iso.split("-").map(Number);
+  return new Date(y,m-1,d);
+}
 
-    let allRows = [];
-    let chart = null;
+function diffYears(date){
+  const today=new Date();
+  let y=today.getFullYear()-date.getFullYear();
+  if(
+    today.getMonth()<date.getMonth() ||
+    (today.getMonth()===date.getMonth() && today.getDate()<date.getDate())
+  ) y--;
+  return y;
+}
 
-    function setMsg(text, kind="") {
-      msg.className = kind ? kind : "";
-      msg.textContent = text || "";
-    }
+async function load(){
+  const {data,error}=await supabase
+    .from("registrations_checkin")
+    .select("couple_name,wedding_date,is_present")
+    .eq("event_id",EVENT_ID);
 
-    function escapeHtml(s){
-      return (s ?? "").toString().replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    }
+  if(error)return;
 
-    function parseISODate(iso) {
-      // iso: "YYYY-MM-DD"
-      const [y,m,d] = iso.split("-").map(Number);
-      return new Date(y, m-1, d); // local midnight
-    }
+  const rows=data.filter(r=>r.wedding_date);
 
-    // Diferença exata em anos, meses e dias (sem aproximação)
-    function diffYMD(fromDate, toDate) {
-      // garante ordem
-      let start = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
-      let end = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate());
+  // Calcula anos
+  rows.forEach(r=>{
+    r.years=diffYears(parseDate(r.wedding_date));
+  });
 
-      if (end < start) [start, end] = [end, start];
+  // Ordena
+  const sorted=[...rows].sort((a,b)=>b.years-a.years);
 
-      let years = end.getFullYear() - start.getFullYear();
-      let months = end.getMonth() - start.getMonth();
-      let days = end.getDate() - start.getDate();
+  // TOP 5
+  const top5=sorted.slice(0,5);
+  document.getElementById("top5").innerHTML=
+    top5.map((r,i)=>`
+      <div class="list-item">
+        <span>${i+1}. ${r.couple_name}</span>
+        <span class="highlight">${r.years} anos</span>
+      </div>
+    `).join("");
 
-      if (days < 0) {
-        // pega dias do mês anterior ao "end"
-        const prevMonth = new Date(end.getFullYear(), end.getMonth(), 0); // dia 0 => último dia do mês anterior
-        days += prevMonth.getDate();
-        months -= 1;
-      }
+  // MAIS NOVO
+  const youngest=sorted[sorted.length-1];
+  document.getElementById("youngest").innerHTML=
+    youngest?`
+      <div class="big highlight">${youngest.couple_name}</div>
+      <div>${youngest.years} anos de casamento</div>
+    `:"—";
 
-      if (months < 0) {
-        months += 12;
-        years -= 1;
-      }
+  // MÉDIA
+  const avg=rows.reduce((s,r)=>s+r.years,0)/rows.length||0;
+  document.getElementById("average").innerHTML=
+    `<div class="big highlight">${avg.toFixed(1)} anos</div>`;
 
-      return { years, months, days };
-    }
+  // PRESENÇA
+  const total=rows.length;
+  const present=rows.filter(r=>r.is_present).length;
+  const percent=total?((present/total)*100).toFixed(0):0;
 
-    function totalMonths(ymd) {
-      return ymd.years * 12 + ymd.months + (ymd.days > 0 ? 0.01 : 0); // só para desempate leve
-    }
+  document.getElementById("presence").innerHTML=`
+    <div class="percent highlight">${percent}% presentes</div>
+    <div>${present} de ${total} casais</div>
+    <div style="margin-top:8px">
+      <div class="bar" style="width:${percent}%"></div>
+    </div>
+  `;
+}
 
-    function getFilteredRows() {
-      const q = (searchInput.value || "").trim().toLowerCase();
-      let rows = allRows;
-
-      if (onlyPresent.checked) {
-        rows = rows.filter(r => r.is_present === true);
-      }
-      if (q) {
-        rows = rows.filter(r => (r.couple_name || "").toLowerCase().includes(q));
-      }
-      return rows;
-    }
-
-    function renderTop(rows) {
-      if (!rows.length) {
-        topBox.innerHTML = "<p class='muted'>Nenhum registro no filtro.</p>";
-        return;
-      }
-
-      const today = new Date();
-      let best = null;
-
-      for (const r of rows) {
-        if (!r.wedding_date) continue;
-        const wd = parseISODate(r.wedding_date);
-        const ymd = diffYMD(wd, today);
-
-        if (!best) {
-          best = { r, ymd };
-          continue;
-        }
-
-        // compara por anos, meses, dias
-        const b = best.ymd;
-        const a = ymd;
-        const aScore = a.years*10000 + a.months*100 + a.days;
-        const bScore = b.years*10000 + b.months*100 + b.days;
-        if (aScore > bScore) best = { r, ymd };
-      }
-
-      if (!best) {
-        topBox.innerHTML = "<p class='muted'>Sem datas de casamento válidas.</p>";
-        return;
-      }
-
-      topBox.innerHTML = `
-        <div class="big">${escapeHtml(best.r.couple_name)}</div>
-        <p class="sub">
-          <b>${best.ymd.years}</b> anos, <b>${best.ymd.months}</b> meses e <b>${best.ymd.days}</b> dias
-        </p>
-        <p class="muted" style="margin-top:8px">
-          Data de casamento: <b>${escapeHtml(best.r.wedding_date)}</b>
-          ${best.r.is_present ? " • ✅ P_
+await load();
+setInterval(load,30000);
+</script>
+</body>
+</html>
