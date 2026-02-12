@@ -499,8 +499,9 @@
 
     async function redirectToReceipt(phone){
       const rid = await findRegistrationIdByPhone(phone);
-      if (!rid) return;
+      if (!rid) return false;
       window.location.href = getReceiptUrl(rid);
+      return true;
     }
 
     document.getElementById("f").addEventListener("submit", async (e) => {
@@ -582,10 +583,11 @@
         return;
       }
 
-      await redirectToReceipt(phone);
-
-      msg.className = "err";
-      msg.textContent = "Inscrição confirmada, mas não foi possível abrir o recibo automaticamente.";
+      const redirectedToReceipt = await redirectToReceipt(phone);
+      if (!redirectedToReceipt) {
+        msg.className = "err";
+        msg.textContent = "Inscrição confirmada, mas não foi possível abrir o recibo automaticamente.";
+      }
     });
   </script>
 </body>
