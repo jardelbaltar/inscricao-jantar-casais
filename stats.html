@@ -46,6 +46,13 @@
       flex-wrap:wrap;
     }
     .title{display:flex;flex-direction:column;gap:6px}
+
+    .titleWrap{display:flex;align-items:center;gap:12px}
+    .brandMark img{
+      width:52px;
+      height:52px;
+      object-fit:contain;
+    }
     h1{margin:0;font-size:22px;letter-spacing:.2px;font-weight:800}
     .sub{
       color:var(--muted);
@@ -186,12 +193,17 @@
 
 <body>
   <header>
-    <div class="title">
-      <h1>📊 Painel do Jantar de Casais</h1>
-      <div class="sub">
-        <span class="chip"><span class="dot"></span><span id="status">Atualizando…</span></span>
-        <span class="chip" id="chipCounts">Carregando…</span>
-        <span class="chip" id="chipMode">Modo: Inscritos</span>
+    <div class="titleWrap">
+      <div class="brandMark">
+        <img src="logo-modern-noglow.png" alt="Casais 2 em 1">
+      </div>
+      <div class="title">
+        <h1>📊 Painel do Jantar de Casais</h1>
+        <div class="sub">
+          <span class="chip"><span class="dot"></span><span id="status">Atualizando…</span></span>
+          <span class="chip" id="chipCounts">Carregando…</span>
+          <span class="chip" id="chipMode">Modo: Inscritos</span>
+        </div>
       </div>
     </div>
     <div class="sub">
