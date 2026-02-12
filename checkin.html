@@ -225,12 +225,15 @@
 
     .modal{
       width: min(860px, 100%);
+      max-height: calc(100dvh - 32px);
       border-radius: 18px;
       border: 1px solid rgba(255,255,255,.12);
       background: rgba(15,23,42,.82);
       backdrop-filter: blur(12px);
       box-shadow: 0 24px 70px rgba(0,0,0,.55);
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
     .modalHeader{
       display:flex;
@@ -251,6 +254,7 @@
       grid-template-columns: 1.15fr .85fr;
       gap: 12px;
       align-items: start;
+      overflow-y: auto;
     }
     @media (max-width: 860px){ .modalBody{ grid-template-columns: 1fr; } }
 
@@ -320,20 +324,6 @@
       min-height: 44px;
       white-space: pre-wrap;
     }
-    .debug{
-      margin-top: 10px;
-      padding: 10px 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.18);
-      font-size: 12px;
-      line-height: 1.35;
-      color: rgba(229,231,235,.88);
-      max-height: 180px;
-      overflow:auto;
-      white-space: pre-wrap;
-    }
-
     .modalFooter{
       display:flex;
       justify-content:flex-end;
@@ -456,8 +446,6 @@
           <div class="k" style="margin-top:12px">Status</div>
           <div class="status" id="scanStatus">Abra o leitor e aponte para o QR Code do recibo.</div>
 
-          <div class="k" style="margin-top:12px">DEBUG</div>
-          <div class="debug" id="debugLog">—</div>
         </div>
       </div>
 
@@ -498,7 +486,6 @@
     const btnTest = document.getElementById("btnTest");
     const scanValueEl = document.getElementById("scanValue");
     const scanStatusEl = document.getElementById("scanStatus");
-    const debugLogEl = document.getElementById("debugLog");
 
     const params = new URLSearchParams(location.search);
     const EVENT_ID = params.get("event");
@@ -512,11 +499,6 @@
     }
     function escapeHtml(s){
       return (s ?? "").toString().replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    }
-    function logDbg(line){
-      const now = new Date().toLocaleTimeString();
-      const prev = debugLogEl.textContent === "—" ? "" : debugLogEl.textContent + "\n";
-      debugLogEl.textContent = prev + `[${now}] ${line}`;
     }
 
     function renderStats(rows) {
@@ -667,7 +649,6 @@
 
       scanValueEl.textContent = rid;
       scanStatusEl.textContent = "Validando inscrição…";
-      logDbg(`Validando rid=${rid}`);
 
       const { data: reg, error: regErr } = await supabase
         .from("registrations")
@@ -677,19 +658,16 @@
 
       if (regErr || !reg){
         scanStatusEl.textContent = "❌ Não encontrei esta inscrição.";
-        logDbg("Não encontrado / erro ao buscar registrations.");
         return;
       }
 
       if (EVENT_ID && reg.event_id !== EVENT_ID){
         scanStatusEl.textContent = "⚠️ Este QR é de outro evento.";
-        logDbg(`Evento divergente: reg.event_id=${reg.event_id}`);
         return;
       }
 
       if (reg.is_present){
         scanStatusEl.textContent = `✅ Já estava presente: ${reg.couple_name || "Casal"}`;
-        logDbg("Já estava presente.");
         const row = allRows.find(x => x.id === reg.id);
         if (row){
           row.is_present = true;
@@ -706,7 +684,6 @@
 
       if (error || !data?.ok){
         scanStatusEl.textContent = "❌ Falha ao marcar presença. Tente novamente.";
-        logDbg(`Falha RPC: ${error?.message || data?.error || "?"}`);
         return;
       }
 
@@ -720,7 +697,6 @@
       highlightRow(reg.id);
 
       scanStatusEl.textContent = `🎉 Check-in OK: ${reg.couple_name || "Casal"}`;
-      logDbg("Check-in OK.");
       setMsg(`Check-in OK: ${reg.couple_name || "Casal"}`, "ok");
       setTimeout(() => setMsg(""), 1200);
     }
@@ -761,20 +737,14 @@
     }
 
     async function startJsQr(){
-      logDbg(`secureContext=${window.isSecureContext}`);
-      logDbg(`hasMediaDevices=${!!navigator.mediaDevices}`);
-      logDbg(`hasGetUserMedia=${!!navigator.mediaDevices?.getUserMedia}`);
-      logDbg(`jsQRLoaded=${typeof window.jsQR === "function"}`);
 
       if (!window.isSecureContext){
         scanStatusEl.textContent = "❌ A câmera só funciona em HTTPS (ou localhost).";
-        logDbg("ERRO: não é HTTPS/secureContext.");
         return false;
       }
 
       if (typeof window.jsQR !== "function"){
         scanStatusEl.textContent = "❌ Biblioteca jsQR não carregou (CDN).";
-        logDbg("ERRO: jsQR não carregou.");
         return false;
       }
 
@@ -787,9 +757,7 @@
           video: { facingMode: { ideal: "environment" } },
           audio: false
         });
-        logDbg("getUserMedia OK.");
       }catch(err){
-        logDbg(`getUserMedia ERRO: ${err?.name || ""} ${err?.message || ""}`.trim());
         scanStatusEl.textContent =
           "❌ Sem acesso à câmera.\n\nNo iPhone: aA → Ajustes do Site → Câmera: Permitir.\nAjustes do iPhone → Safari → Câmera.";
         return false;
@@ -799,9 +767,7 @@
 
       try{
         await videoEl.play();
-        logDbg("video.play OK.");
       }catch(err){
-        logDbg(`video.play ERRO: ${err?.name || ""} ${err?.message || ""}`.trim());
       }
 
       scanStatusEl.textContent = "Aponte para o QR do recibo…";
@@ -835,7 +801,6 @@
           if (code?.data){
             const decodedText = code.data.trim();
             scanValueEl.textContent = decodedText;
-            logDbg(`QR lido: ${decodedText}`);
 
             const rid = extractRid(decodedText);
             if (!rid){
@@ -861,7 +826,6 @@
       scanning = true;
 
       overlay.classList.add("show");
-      debugLogEl.textContent = "—";
       scanValueEl.textContent = "—";
       scanStatusEl.textContent = "Inicializando…";
 
@@ -883,7 +847,6 @@
       const wrap = document.getElementById("qrReader");
       wrap.innerHTML = "<div class='muted' style='color:#e5e7eb'>Leitor parado.</div>";
 
-      logDbg("Scanner parado.");
     }
 
     btnScan.addEventListener("click", openScanner);
@@ -891,14 +854,11 @@
     btnStop.addEventListener("click", stopScanner);
 
     btnTest.addEventListener("click", async () => {
-      logDbg("Teste manual: tentando getUserMedia…");
       try{
         const s = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-        logDbg("Teste getUserMedia OK.");
         for (const t of s.getTracks()) t.stop();
         scanStatusEl.textContent = "✅ Teste OK: a câmera respondeu ao navegador.";
       }catch(err){
-        logDbg(`Teste getUserMedia ERRO: ${err?.name || ""} ${err?.message || ""}`.trim());
         scanStatusEl.textContent =
           "❌ Teste falhou: sem permissão de câmera.\n\nNo iPhone: aA → Ajustes do Site → Câmera: Permitir.\nAjustes do iPhone → Safari → Câmera.";
       }
