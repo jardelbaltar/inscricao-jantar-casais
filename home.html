@@ -132,7 +132,8 @@ label{
   margin-bottom:6px;
 }
 
-input{
+input,
+select{
   width:100%;
   padding:12px;
   border-radius:12px;
@@ -258,8 +259,10 @@ input{
 <div class="panel">
   <div class="controls">
     <div>
-      <label>EVENT_ID</label>
-      <input id="eventId" placeholder="Cole o UUID do evento">
+      <label>Evento</label>
+      <select id="eventId">
+        <option value="">Carregando eventos...</option>
+      </select>
     </div>
     <button class="btn btnPrimary" onclick="saveEvent()">Salvar</button>
     <button class="btn" onclick="copyInscricao()">Copiar link da inscrição</button>
@@ -350,42 +353,94 @@ input{
 
 </div>
 
-<script>
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.3/+esm";
+
 const STORAGE_KEY="EVENT_ID";
+const SUPABASE_URL = "https://nuqcefxwarrjehvhdoug.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51cWNlZnh3YXJyamVodmhkb3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NzE1NzUsImV4cCI6MjA4NjM0NzU3NX0.xLugRmdl6UKVsMZnDepBlFndh4vGVMnptuloFZC28Mc";
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const eventSelect = document.getElementById("eventId");
+
+function setEventChip(id){
+  document.getElementById("eventChip").textContent = "EVENT_ID: " + (id || "—");
+}
 
 function saveEvent(){
-  const id=document.getElementById("eventId").value.trim();
-  if(!id){ alert("Informe o EVENT_ID"); return; }
+  const id = eventSelect.value;
+  if(!id){ alert("Selecione um evento"); return; }
   localStorage.setItem(STORAGE_KEY,id);
-  document.getElementById("eventChip").textContent="EVENT_ID: "+id;
+  setEventChip(id);
   document.getElementById("statusText").textContent="Evento configurado";
 }
 
-function copyInscricao(){
+async function copyInscricao(){
   const id=localStorage.getItem(STORAGE_KEY);
-  if(!id){ alert("Defina o EVENT_ID primeiro"); return; }
+  if(!id){ alert("Defina o evento primeiro"); return; }
   const base=location.href.replace(/[^\/]*$/,"");
-  navigator.clipboard.writeText(base+"index.html?event="+id);
+  await navigator.clipboard.writeText(base+"index.html?event="+id);
   alert("Link copiado!");
 }
 
 function go(page){
   const id=localStorage.getItem(STORAGE_KEY);
-  if(!id){ alert("Defina o EVENT_ID primeiro"); return; }
+  if(!id){ alert("Defina o evento primeiro"); return; }
   location.href=page+"?event="+id;
 }
 
-(function(){
+async function loadEvents(preferredId){
+  eventSelect.innerHTML = "<option value=''>Carregando eventos...</option>";
+
+  const { data, error } = await supabase
+    .from("events")
+    .select("id,title,event_date,created_at")
+    .order("created_at", { ascending: false });
+
+  if(error){
+    eventSelect.innerHTML = "<option value=''>Erro ao carregar eventos</option>";
+    document.getElementById("statusText").textContent="Erro ao carregar eventos";
+    return;
+  }
+
+  if(!data || data.length === 0){
+    eventSelect.innerHTML = "<option value=''>Nenhum evento encontrado</option>";
+    document.getElementById("statusText").textContent="Nenhum evento encontrado";
+    return;
+  }
+
+  eventSelect.innerHTML = "<option value=''>Selecione um evento</option>";
+  for (const event of data){
+    const option = document.createElement("option");
+    option.value = event.id;
+    const dateLabel = event.event_date ? " — " + new Date(event.event_date).toLocaleString("pt-BR") : "";
+    option.textContent = `${event.title}${dateLabel}`;
+    eventSelect.appendChild(option);
+  }
+
+  if(preferredId && data.some((event)=> event.id === preferredId)){
+    eventSelect.value = preferredId;
+    saveEvent();
+    return;
+  }
+
+  document.getElementById("statusText").textContent="Selecione um evento";
+}
+
+window.saveEvent = saveEvent;
+window.copyInscricao = copyInscricao;
+window.go = go;
+
+(async function(){
   const params=new URLSearchParams(location.search);
   const q=params.get("event");
   if(q){
     localStorage.setItem(STORAGE_KEY,q);
   }
+
   const saved=localStorage.getItem(STORAGE_KEY);
-  if(saved){
-    document.getElementById("eventId").value=saved;
-    document.getElementById("eventChip").textContent="EVENT_ID: "+saved;
-  }
+  setEventChip(saved);
+  await loadEvents(saved || q);
 })();
 </script>
 
