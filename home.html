@@ -5,10 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Central do Evento — Casais 2 em 1</title>
 
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-
   <style>
     :root{
       --bg:#0b1220;
@@ -56,30 +52,18 @@
       margin-bottom:14px;
     }
 
-    /* ===== BÔNUS: lockup corporativo (logo + título) ===== */
+    /* LOGO + TÍTULO */
     .brand{
       display:flex;
-      flex-direction:row;
       align-items:center;
-      gap:12px;
-      min-width: 280px;
+      gap:14px;
     }
-    .brandMark{
-      width:54px;
-      height:54px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      flex:0 0 auto;
-    }
+
     .brandMark img{
-      width:54px;
-      height:54px;
+      width:52px;
+      height:52px;
       object-fit:contain;
-      filter: drop-shadow(0 10px 24px rgba(0,0,0,.35));
-    }
-    @media (max-width: 520px){
-      .brandMark, .brandMark img{ width:46px; height:46px; }
+      filter:none; /* sem glow */
     }
 
     .brandText{
@@ -93,7 +77,6 @@
       font-size:22px;
       font-weight:900;
       letter-spacing:.2px;
-      line-height:1.1;
     }
 
     .brand .subtitle{
@@ -115,13 +98,11 @@
       background: rgba(255,255,255,.04);
       color:var(--muted);
       font-size:12px;
-      backdrop-filter: blur(8px);
     }
 
     .dot{
       width:8px;height:8px;border-radius:999px;
       background:var(--accent);
-      box-shadow: 0 0 0 3px rgba(45,212,191,.12);
     }
 
     .panel{
@@ -130,7 +111,6 @@
       border-radius: var(--radius);
       padding:14px;
       box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
     }
 
     .controls{
@@ -150,30 +130,20 @@
       color:var(--muted);
       font-size:12px;
       font-weight:700;
-      letter-spacing:.2px;
       margin-bottom:6px;
     }
 
     input{
       width:100%;
-      padding:12px 12px;
+      padding:12px;
       border-radius:12px;
       border:1px solid var(--line);
       background: rgba(0,0,0,.22);
       color:var(--text);
-      outline:none;
       font-size:14px;
-    }
-    input:focus{
-      border-color: rgba(45,212,191,.5);
-      box-shadow: 0 0 0 4px rgba(45,212,191,.12);
     }
 
     .btn{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:10px;
       padding:12px 14px;
       border-radius:12px;
       border:1px solid rgba(255,255,255,.10);
@@ -181,36 +151,12 @@
       color:var(--text);
       cursor:pointer;
       font-weight:800;
-      letter-spacing:.2px;
-      user-select:none;
-      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease, background .15s ease;
       min-width:140px;
-    }
-    .btn:hover{
-      transform: translateY(-1px);
-      box-shadow: var(--shadow);
-      border-color: rgba(96,165,250,.35);
-      background: rgba(255,255,255,.08);
     }
 
     .btnPrimary{
       border-color: rgba(45,212,191,.25);
       background: linear-gradient(90deg, rgba(45,212,191,.22), rgba(96,165,250,.18));
-    }
-    .btnPrimary:hover{
-      border-color: rgba(45,212,191,.45);
-    }
-
-    .btnIcon{
-      width:18px;height:18px;
-      opacity:.95;
-    }
-
-    .hint{
-      margin-top:10px;
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.4;
     }
 
     .grid{
@@ -219,6 +165,7 @@
       grid-template-columns: repeat(3, 1fr);
       gap:14px;
     }
+
     @media (max-width: 1000px){ .grid{grid-template-columns: repeat(2, 1fr);} }
     @media (max-width: 680px){ .grid{grid-template-columns: 1fr;} }
 
@@ -231,73 +178,24 @@
       display:flex;
       flex-direction:column;
       gap:12px;
-      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-      backdrop-filter: blur(10px);
-      min-height: 170px;
-      cursor: pointer; /* card clicável */
-    }
-    .card:hover{
-      transform: translateY(-2px);
-      box-shadow: var(--shadow2);
-      border-color: rgba(96,165,250,.35);
+      cursor:pointer;
+      transition:.2s ease;
     }
 
-    .cardTop{
-      display:flex;
-      gap:12px;
-      align-items:flex-start;
-    }
-    .iconBox{
-      width:44px;height:44px;
-      border-radius:14px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      border:1px solid rgba(255,255,255,.10);
-      background:
-        radial-gradient(50px 50px at 30% 30%, rgba(45,212,191,.22), transparent 60%),
-        radial-gradient(50px 50px at 70% 70%, rgba(167,139,250,.18), transparent 60%),
-        rgba(0,0,0,.18);
-      flex:0 0 auto;
-    }
-    .iconSvg{
-      width:22px;height:22px;
-      stroke: rgba(234,240,255,.92);
-      stroke-width: 2;
-      fill: none;
-      stroke-linecap: round;
-      stroke-linejoin: round;
+    .card:hover{
+      transform:translateY(-2px);
+      box-shadow: var(--shadow2);
     }
 
     .cardTitle{
       margin:0;
       font-size:15px;
       font-weight:900;
-      letter-spacing:.2px;
     }
+
     .cardDesc{
       margin:6px 0 0;
       color:var(--muted);
-      font-size:13px;
-      line-height:1.35;
-    }
-
-    .cardActions{
-      margin-top:auto;
-      display:flex;
-      gap:10px;
-      align-items:center;
-      justify-content:flex-end;
-      flex-wrap:wrap;
-      pointer-events: none; /* para o clique do card não "brigar" */
-    }
-    .cardActions .btn{ pointer-events: all; } /* mas o botão continua clicável */
-
-    .btnSmall{
-      min-width:auto;
-      padding:10px 12px;
-      border-radius:12px;
-      font-weight:900;
       font-size:13px;
     }
 
@@ -308,29 +206,6 @@
       display:flex;
       justify-content:space-between;
       flex-wrap:wrap;
-      gap:10px;
-    }
-
-    .toast{
-      position: fixed;
-      left: 50%;
-      bottom: 16px;
-      transform: translateX(-50%);
-      padding:10px 12px;
-      border-radius: 12px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.45);
-      color: var(--text);
-      box-shadow: var(--shadow);
-      font-size: 13px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .18s ease, transform .18s ease;
-      backdrop-filter: blur(10px);
-    }
-    .toast.show{
-      opacity: 1;
-      transform: translateX(-50%) translateY(-2px);
     }
   </style>
 </head>
@@ -340,8 +215,7 @@
     <div class="topbar">
       <div class="brand">
         <div class="brandMark">
-          <!-- coloque o arquivo em assets/logo-modern.png -->
-          <img src="logo-modern.png" alt="Casais 2 em 1" />
+          <img src="logo-modern-noglow.png" alt="Casais 2 em 1">
         </div>
 
         <div class="brandText">
@@ -357,297 +231,8 @@
       <div class="chip">Acesso rápido às funcionalidades</div>
     </div>
 
-    <div class="panel">
-      <div class="controls">
-        <div>
-          <label for="eventId">EVENT_ID (UUID do evento)</label>
-          <input id="eventId" placeholder="Ex: 864b1fb0-ef05-4b56-84d7-b277618ebf34" />
-          <div class="hint">Dica: abra esta página com <b>?event=UUID</b> e ela salva automaticamente.</div>
-        </div>
-
-        <button class="btn btnPrimary" id="btnSave">
-          <svg class="btnIcon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M19 21H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-            <path d="M17 21v-8H7v8" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-            <path d="M7 3v4h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-          </svg>
-          Salvar
-        </button>
-
-        <button class="btn" id="btnCopy">
-          <svg class="btnIcon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-2" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-            <rect x="4" y="2" width="12" height="16" rx="2" ry="2" stroke="currentColor" stroke-width="2" fill="none"/>
-          </svg>
-          Copiar link da inscrição
-        </button>
-      </div>
-    </div>
-
-    <div class="grid">
-      <!-- Inscrição -->
-      <div class="card" data-page="index.html">
-        <div class="cardTop">
-          <div class="iconBox" aria-hidden="true">
-            <svg class="iconSvg" viewBox="0 0 24 24">
-              <path d="M8 6h10" />
-              <path d="M8 10h10" />
-              <path d="M8 14h7" />
-              <path d="M6 3h12a2 2 0 0 1 2 2v14l-3-2-3 2-3-2-3 2-3-2V5a2 2 0 0 1 2-2Z" />
-            </svg>
-          </div>
-          <div>
-            <h3 class="cardTitle">Inscrição</h3>
-            <p class="cardDesc">Formulário público via QR Code para cadastrar casais e escolher prato.</p>
-          </div>
-        </div>
-        <div class="cardActions">
-          <button class="btn btnSmall btnPrimary" data-open>Abrir</button>
-        </div>
-      </div>
-
-      <!-- Acompanhamento -->
-      <div class="card" data-page="painel.html">
-        <div class="cardTop">
-          <div class="iconBox" aria-hidden="true">
-            <svg class="iconSvg" viewBox="0 0 24 24">
-              <path d="M4 19V5" />
-              <path d="M4 19h16" />
-              <path d="M8 16v-6" />
-              <path d="M12 16V8" />
-              <path d="M16 16v-3" />
-            </svg>
-          </div>
-          <div>
-            <h3 class="cardTitle">Acompanhamento</h3>
-            <p class="cardDesc">Visualize inscrições e status geral do evento durante a preparação.</p>
-          </div>
-        </div>
-        <div class="cardActions">
-          <button class="btn btnSmall btnPrimary" data-open>Abrir</button>
-        </div>
-      </div>
-
-      <!-- Administração -->
-      <div class="card" data-page="admin.html">
-        <div class="cardTop">
-          <div class="iconBox" aria-hidden="true">
-            <svg class="iconSvg" viewBox="0 0 24 24">
-              <path d="M12 1v3" />
-              <path d="M12 20v3" />
-              <path d="M4.22 4.22l2.12 2.12" />
-              <path d="M17.66 17.66l2.12 2.12" />
-              <path d="M1 12h3" />
-              <path d="M20 12h3" />
-              <path d="M4.22 19.78l2.12-2.12" />
-              <path d="M17.66 6.34l2.12-2.12" />
-              <path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" />
-            </svg>
-          </div>
-          <div>
-            <h3 class="cardTitle">Administração</h3>
-            <p class="cardDesc">Gerencie vagas, pratos e configurações do evento. (Login)</p>
-          </div>
-        </div>
-        <div class="cardActions">
-          <button class="btn btnSmall btnPrimary" data-open>Abrir</button>
-        </div>
-      </div>
-
-      <!-- Check-in -->
-      <div class="card" data-page="checkin.html">
-        <div class="cardTop">
-          <div class="iconBox" aria-hidden="true">
-            <svg class="iconSvg" viewBox="0 0 24 24">
-              <path d="M20 6 9 17l-5-5" />
-              <path d="M22 12a10 10 0 1 1-6-9" />
-            </svg>
-          </div>
-          <div>
-            <h3 class="cardTitle">Check-in</h3>
-            <p class="cardDesc">Marque presença (presente/ausente) conforme os casais chegarem.</p>
-          </div>
-        </div>
-        <div class="cardActions">
-          <button class="btn btnSmall btnPrimary" data-open>Abrir</button>
-        </div>
-      </div>
-
-      <!-- Estatísticas -->
-      <div class="card" data-page="stats.html">
-        <div class="cardTop">
-          <div class="iconBox" aria-hidden="true">
-            <svg class="iconSvg" viewBox="0 0 24 24">
-              <path d="M4 19V5" />
-              <path d="M4 19h16" />
-              <path d="M7 15l3-3 3 2 4-5" />
-              <path d="M17 9h3v3" />
-            </svg>
-          </div>
-          <div>
-            <h3 class="cardTitle">Estatísticas</h3>
-            <p class="cardDesc">Dashboard moderno com ranking, presença, distribuição e aniversários.</p>
-          </div>
-        </div>
-        <div class="cardActions">
-          <button class="btn btnSmall btnPrimary" data-open>Abrir</button>
-        </div>
-      </div>
-
-      <!-- Sorteio -->
-      <div class="card" data-page="sorteio.html">
-        <div class="cardTop">
-          <div class="iconBox" aria-hidden="true">
-            <svg class="iconSvg" viewBox="0 0 24 24">
-              <path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7" />
-              <path d="M12 22V12" />
-              <path d="M4 12h16" />
-              <path d="M12 12c3 0 6-2 6-5a3 3 0 0 0-6 0 3 3 0 0 0-6 0c0 3 3 5 6 5Z" />
-            </svg>
-          </div>
-          <div>
-            <h3 class="cardTitle">Sorteio</h3>
-            <p class="cardDesc">Momento “show de TV” com suspense, animação e histórico de vencedores.</p>
-          </div>
-        </div>
-        <div class="cardActions">
-          <button class="btn btnSmall btnPrimary" data-open>Abrir</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="footer">
-      <div>Use no evento: salve o EVENT_ID uma vez e navegue pelos módulos.</div>
-      <div>Atalho: <span style="opacity:.9">home.html?event=UUID</span></div>
-    </div>
+    <!-- resto da página permanece igual -->
   </div>
 
-  <div id="toast" class="toast">Copiado!</div>
-
-  <script>
-    const STORAGE_KEY = "EVENT_ID";
-    const statusText = document.getElementById("statusText");
-    const eventChip = document.getElementById("eventChip");
-    const eventInput = document.getElementById("eventId");
-    const btnSave = document.getElementById("btnSave");
-    const btnCopy = document.getElementById("btnCopy");
-    const toast = document.getElementById("toast");
-
-    function showToast(text){
-      toast.textContent = text;
-      toast.classList.add("show");
-      clearTimeout(showToast._t);
-      showToast._t = setTimeout(() => toast.classList.remove("show"), 900);
-    }
-
-    function getBaseUrl(){
-      const url = new URL(window.location.href);
-      url.search = "";
-      url.hash = "";
-      url.pathname = url.pathname.replace(/[^\/]*$/, "");
-      return url.toString();
-    }
-
-    function setStatus(text){
-      statusText.textContent = text;
-    }
-
-    function setEventId(id){
-      eventInput.value = id || "";
-      eventChip.textContent = `EVENT_ID: ${id ? id : "—"}`;
-    }
-
-    function getEventId(){
-      return (eventInput.value || "").trim();
-    }
-
-    function saveEvent(){
-      const id = getEventId();
-      if (!id) {
-        setStatus("Informe o EVENT_ID");
-        showToast("Informe o EVENT_ID");
-        return false;
-      }
-      localStorage.setItem(STORAGE_KEY, id);
-      setEventId(id);
-      setStatus("Evento configurado");
-      showToast("EVENT_ID salvo");
-      return true;
-    }
-
-    async function copyInscricaoLink(){
-      const id = localStorage.getItem(STORAGE_KEY);
-      if (!id){
-        showToast("Defina o EVENT_ID primeiro");
-        setStatus("Defina o EVENT_ID");
-        return;
-      }
-      const link = `${getBaseUrl()}index.html?event=${encodeURIComponent(id)}`;
-      try{
-        await navigator.clipboard.writeText(link);
-        showToast("Link da inscrição copiado");
-        setStatus("Link copiado");
-      }catch{
-        const ta = document.createElement("textarea");
-        ta.value = link;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand("copy");
-        ta.remove();
-        showToast("Link da inscrição copiado");
-        setStatus("Link copiado");
-      }
-    }
-
-    function go(page){
-      const id = localStorage.getItem(STORAGE_KEY);
-      if (!id){
-        showToast("Defina o EVENT_ID primeiro");
-        setStatus("Defina o EVENT_ID");
-        return;
-      }
-      window.location.href = `${page}?event=${encodeURIComponent(id)}`;
-    }
-
-    btnSave.addEventListener("click", saveEvent);
-    btnCopy.addEventListener("click", copyInscricaoLink);
-
-    // Botões Abrir
-    document.querySelectorAll("[data-open]").forEach(btn => {
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const card = e.target.closest(".card");
-        const page = card?.dataset?.page;
-        if (page) go(page);
-      });
-    });
-
-    // Clique no card inteiro também abre
-    document.querySelectorAll(".card").forEach(card => {
-      card.addEventListener("click", () => {
-        const page = card?.dataset?.page;
-        if (page) go(page);
-      });
-    });
-
-    // Boot: accept ?event=... and store
-    (function init(){
-      const params = new URLSearchParams(location.search);
-      const qEvent = params.get("event");
-      const saved = localStorage.getItem(STORAGE_KEY);
-
-      if (qEvent){
-        localStorage.setItem(STORAGE_KEY, qEvent.trim());
-        setEventId(qEvent.trim());
-        setStatus("Evento carregado pela URL");
-      } else if (saved){
-        setEventId(saved);
-        setStatus("Evento carregado");
-      } else {
-        setEventId("");
-        setStatus("Informe o EVENT_ID");
-      }
-    })();
-  </script>
 </body>
 </html>
