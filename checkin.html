@@ -22,6 +22,8 @@
       --border: #e2e8f0;
       --shadow: 0 20px 45px rgba(15, 23, 42, 0.24);
       --radius: 18px;
+
+      --overlay: rgba(2,6,23,.72);
     }
 
     * { box-sizing: border-box; }
@@ -148,11 +150,25 @@
       color: #fff;
       font-weight: 700;
       background: linear-gradient(135deg, var(--primary) 0%, #3b82f6 100%);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
     }
 
     button:hover {
       transform: translateY(-1px);
       background: linear-gradient(135deg, var(--primary-hover) 0%, #2563eb 100%);
+    }
+
+    .btnSecondary{
+      background: rgba(15, 23, 42, 0.10);
+      color: #0f172a;
+      border: 1px solid rgba(148, 163, 184, 0.55);
+    }
+    .btnSecondary:hover{
+      background: rgba(15, 23, 42, 0.14);
+      transform: translateY(-1px);
     }
 
     .row {
@@ -233,33 +249,152 @@
       background: #fff;
     }
 
-    .present {
-      background: #ecfdf5;
-      border-color: #86efac;
-    }
-
-    .absent {
-      background: #fef2f2;
-      border-color: #fecaca;
-    }
+    .present { background: #ecfdf5; border-color: #86efac; }
+    .absent { background: #fef2f2; border-color: #fecaca; }
 
     .click { cursor: pointer; }
     .small { font-size: 13px; }
     .right { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
 
+    /* ===== Modal do scanner ===== */
+    .overlay{
+      position: fixed;
+      inset: 0;
+      background: var(--overlay);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 9999;
+    }
+    .overlay.show{ display:flex; }
+
+    .modal{
+      width: min(820px, 100%);
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(15,23,42,.82);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 24px 70px rgba(0,0,0,.55);
+      overflow: hidden;
+    }
+    .modalHeader{
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+      color: #e5e7eb;
+    }
+    .modalHeader .title{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    .modalHeader .title strong{
+      font-size: 14px;
+      letter-spacing:.2px;
+    }
+    .modalHeader .title span{
+      font-size: 12px;
+      color: rgba(229,231,235,.72);
+    }
+    .modalBody{
+      padding: 12px;
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 12px;
+      align-items: start;
+    }
+    @media (max-width: 860px){
+      .modalBody{ grid-template-columns: 1fr; }
+    }
+
+    .scannerBox{
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.20);
+      padding: 10px;
+      overflow: hidden;
+    }
+    #qrReader{
+      width:100%;
+    }
+    .scannerHint{
+      margin-top: 10px;
+      color: rgba(229,231,235,.78);
+      font-size: 12.5px;
+      line-height:1.45;
+      border: 1px dashed rgba(255,255,255,.18);
+      border-radius: 14px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,.04);
+    }
+
+    .sideBox{
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      padding: 12px;
+      color: #e5e7eb;
+    }
+    .sideBox .k{
+      color: rgba(229,231,235,.70);
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+    .sideBox .v{
+      margin-top:6px;
+      font-weight:1000;
+      font-size:14px;
+      line-height:1.25;
+    }
+    .sideBox .status{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      font-size: 13px;
+      line-height: 1.4;
+      color: rgba(229,231,235,.92);
+      min-height: 44px;
+    }
+
+    .modalFooter{
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      padding: 12px 14px;
+      border-top: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+    }
+
+    .btnGhost{
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.06);
+      color: #e5e7eb;
+    }
+    .btnGhost:hover{
+      background: rgba(255,255,255,.10);
+    }
+
+    .flash{
+      animation: flashRow 800ms ease;
+    }
+    @keyframes flashRow{
+      0%{ box-shadow: 0 0 0 0 rgba(45,212,191,.0); }
+      20%{ box-shadow: 0 0 0 4px rgba(45,212,191,.22); }
+      70%{ box-shadow: 0 0 0 4px rgba(45,212,191,.10); }
+      100%{ box-shadow: 0 0 0 0 rgba(45,212,191,.0); }
+    }
+
     @media (max-width: 640px) {
-      .card {
-        padding: 14px;
-        border-radius: 14px;
-      }
-
-      .right {
-        justify-content: stretch;
-      }
-
-      button {
-        width: 100%;
-      }
+      .card { padding: 14px; border-radius: 14px; }
+      .right { justify-content: stretch; }
+      button { width: 100%; }
     }
   </style>
 </head>
@@ -281,7 +416,7 @@
           </svg>
         </a>
       </div>
-      <p>Clique no casal para marcar como presente/ausente.</p>
+      <p>Clique no casal para marcar como presente/ausente ou use o leitor de QR Code.</p>
     </section>
 
     <p id="msg"></p>
@@ -295,7 +430,18 @@
         <div>
           <label>&nbsp;</label>
           <div class="right">
-            <button id="btnReload">Recarregar</button>
+            <button id="btnScan" type="button">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+                <path d="M4 7V5a2 2 0 0 1 2-2h2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M20 7V5a2 2 0 0 0-2-2h-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M4 17v2a2 2 0 0 0 2 2h2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M20 17v2a2 2 0 0 1-2 2h-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M7 12h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              Ler QR Code
+            </button>
+
+            <button id="btnReload" type="button" class="btnSecondary">Recarregar</button>
           </div>
         </div>
       </div>
@@ -313,13 +459,50 @@
     </div>
   </main>
 
+  <!-- MODAL SCANNER -->
+  <div id="overlay" class="overlay" role="dialog" aria-modal="true" aria-label="Leitor de QR Code">
+    <div class="modal">
+      <div class="modalHeader">
+        <div class="title">
+          <strong>Leitor de QR Code</strong>
+          <span>Aponte para o QR do recibo para marcar presença automaticamente.</span>
+        </div>
+        <button id="btnClose" class="btnGhost" type="button">Fechar</button>
+      </div>
+
+      <div class="modalBody">
+        <div class="scannerBox">
+          <div id="qrReader"></div>
+          <div class="scannerHint">
+            Funciona com QR contendo <b>rid:UUID</b> ou um link do tipo <b>recibo.html?rid=UUID</b>.
+            <br/>Dica: no celular, permita acesso à câmera.
+          </div>
+        </div>
+
+        <div class="sideBox">
+          <div class="k">Última leitura</div>
+          <div class="v" id="scanValue">—</div>
+
+          <div class="k" style="margin-top:12px">Status</div>
+          <div class="status" id="scanStatus">Abra o leitor e aponte para o QR Code do recibo.</div>
+        </div>
+      </div>
+
+      <div class="modalFooter">
+        <button id="btnStop" class="btnGhost" type="button">Parar câmera</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lib do scanner -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.10/minified/html5-qrcode.min.js"></script>
+
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.3/+esm";
 
     const SUPABASE_URL = "https://nuqcefxwarrjehvhdoug.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51cWNlZnh3YXJyamVodmhkb3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NzE1NzUsImV4cCI6MjA4NjM0NzU3NX0.xLugRmdl6UKVsMZnDepBlFndh4vGVMnptuloFZC28Mc";
 
-    // Público: sem sessão
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
     });
@@ -332,13 +515,22 @@
     const pillTotal = document.getElementById("pillTotal");
     const pillPresent = document.getElementById("pillPresent");
     const pillAbsent = document.getElementById("pillAbsent");
-
     const tableWrap = document.getElementById("tableWrap");
+
+    const btnScan = document.getElementById("btnScan");
+    const overlay = document.getElementById("overlay");
+    const btnClose = document.getElementById("btnClose");
+    const btnStop = document.getElementById("btnStop");
+    const scanValueEl = document.getElementById("scanValue");
+    const scanStatusEl = document.getElementById("scanStatus");
 
     const params = new URLSearchParams(location.search);
     const EVENT_ID = params.get("event");
 
     let allRows = [];
+    let qr = null;
+    let scanning = false;
+    let scanLockUntil = 0;
 
     function setMsg(text, kind="") {
       msg.className = kind ? kind : "";
@@ -362,6 +554,14 @@
       const q = (searchInput.value || "").trim().toLowerCase();
       if (!q) return allRows;
       return allRows.filter(r => (r.couple_name || "").toLowerCase().includes(q));
+    }
+
+    function highlightRow(id){
+      const tr = tableWrap.querySelector(`tr[data-id="${CSS.escape(id)}"]`);
+      if (!tr) return;
+      tr.classList.add("flash");
+      tr.scrollIntoView({ behavior: "smooth", block: "center" });
+      setTimeout(()=> tr.classList.remove("flash"), 900);
     }
 
     function renderTable() {
@@ -412,18 +612,13 @@
           }
           renderTable();
 
-          // Atualiza no banco via RPC pública
           const { data, error } = await supabase.rpc("set_presence_public", {
             p_registration_id: id,
             p_is_present: newPresent
           });
 
           if (error || !data?.ok) {
-            // desfaz se falhar
-            if (row) {
-              row.is_present = wasPresent;
-              // não sabemos o checked_in_at anterior sem recarregar, então só volta o boolean
-            }
+            if (row) row.is_present = wasPresent;
             renderTable();
             setMsg("Falha ao atualizar. Recarregue e tente novamente.", "err");
           } else {
@@ -461,7 +656,7 @@
 
       const { data, error } = await supabase
         .from("registrations_checkin")
-        .select("id,couple_name,wedding_date,is_present,checked_in_at,created_at")
+        .select("id,event_id,couple_name,wedding_date,is_present,checked_in_at,created_at")
         .eq("event_id", EVENT_ID)
         .order("couple_name", { ascending: true });
 
@@ -473,6 +668,158 @@
       allRows = data ?? [];
       renderTable();
     }
+
+    function extractRid(text){
+      const raw = (text || "").trim();
+
+      // Caso "rid:UUID"
+      const m1 = raw.match(/^rid:\s*([0-9a-fA-F-]{36})$/);
+      if (m1) return m1[1];
+
+      // Caso URL com ?rid=UUID
+      try{
+        const u = new URL(raw);
+        const rid = u.searchParams.get("rid");
+        if (rid && /^[0-9a-fA-F-]{36}$/.test(rid)) return rid;
+      }catch{}
+
+      // Caso tenha "rid=" perdido no texto
+      const m2 = raw.match(/rid=([0-9a-fA-F-]{36})/);
+      if (m2) return m2[1];
+
+      return null;
+    }
+
+    async function setPresenceByRid(rid){
+      // lock anti-spam (2s)
+      const now = Date.now();
+      if (now < scanLockUntil) return;
+      scanLockUntil = now + 2000;
+
+      scanValueEl.textContent = rid;
+      scanStatusEl.textContent = "Validando inscrição…";
+
+      // Puxar a inscrição para validar event_id e pegar o nome
+      const { data: reg, error: regErr } = await supabase
+        .from("registrations")
+        .select("id,event_id,couple_name,is_present")
+        .eq("id", rid)
+        .maybeSingle();
+
+      if (regErr || !reg){
+        scanStatusEl.textContent = "❌ Não encontrei esta inscrição.";
+        return;
+      }
+
+      if (EVENT_ID && reg.event_id !== EVENT_ID){
+        scanStatusEl.textContent = "⚠️ Este QR é de outro evento.";
+        return;
+      }
+
+      if (reg.is_present){
+        scanStatusEl.textContent = `✅ Já estava presente: ${reg.couple_name || "Casal"}`;
+        // ainda assim destaca
+        const row = allRows.find(x => x.id === reg.id);
+        if (row){
+          row.is_present = true;
+          renderTable();
+          highlightRow(reg.id);
+        }
+        return;
+      }
+
+      // marcar presente via RPC pública
+      const { data, error } = await supabase.rpc("set_presence_public", {
+        p_registration_id: reg.id,
+        p_is_present: true
+      });
+
+      if (error || !data?.ok){
+        scanStatusEl.textContent = "❌ Falha ao marcar presença. Tente novamente.";
+        return;
+      }
+
+      // Atualiza cache local
+      const row = allRows.find(x => x.id === reg.id);
+      if (row){
+        row.is_present = true;
+        row.checked_in_at = new Date().toISOString();
+      }
+
+      renderTable();
+      highlightRow(reg.id);
+
+      scanStatusEl.textContent = `🎉 Check-in OK: ${reg.couple_name || "Casal"}`;
+      setMsg(`Check-in OK: ${reg.couple_name || "Casal"}`, "ok");
+      setTimeout(() => setMsg(""), 1200);
+    }
+
+    async function openScanner(){
+      if (scanning) return;
+      overlay.classList.add("show");
+      scanStatusEl.textContent = "Inicializando câmera…";
+
+      if (!qr){
+        qr = new Html5Qrcode("qrReader");
+      }
+
+      scanning = true;
+
+      try{
+        const cameras = await Html5Qrcode.getCameras();
+        const cameraId = cameras?.[0]?.id;
+
+        await qr.start(
+          { deviceId: { exact: cameraId } },
+          {
+            fps: 12,
+            qrbox: { width: 260, height: 260 },
+            aspectRatio: 1.0
+          },
+          async (decodedText) => {
+            // tenta extrair rid
+            const rid = extractRid(decodedText);
+            scanValueEl.textContent = decodedText;
+
+            if (!rid){
+              scanStatusEl.textContent = "⚠️ QR inválido. Precisa conter rid:UUID ou recibo.html?rid=UUID";
+              return;
+            }
+
+            await setPresenceByRid(rid);
+          },
+          () => {
+            // ignore scan errors frame a frame
+          }
+        );
+
+        scanStatusEl.textContent = "Aponte para o QR do recibo…";
+      }catch(err){
+        scanning = false;
+        scanStatusEl.textContent = "❌ Não consegui acessar a câmera. Verifique permissões do navegador.";
+      }
+    }
+
+    async function stopScanner(){
+      if (!qr || !scanning) {
+        overlay.classList.remove("show");
+        return;
+      }
+      try{
+        await qr.stop();
+        await qr.clear();
+      }catch{}
+      scanning = false;
+      overlay.classList.remove("show");
+    }
+
+    btnScan.addEventListener("click", openScanner);
+    btnClose.addEventListener("click", stopScanner);
+    btnStop.addEventListener("click", stopScanner);
+
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) stopScanner();
+    });
 
     searchInput.addEventListener("input", renderTable);
     btnReload.addEventListener("click", loadRegistrations);
