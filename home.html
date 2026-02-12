@@ -356,9 +356,17 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const eventSelect = document.getElementById("eventId");
+const eventChip = document.getElementById("eventChip");
+const statusText = document.getElementById("statusText");
 
 function setEventChip(id){
-  document.getElementById("eventChip").textContent = "EVENT_ID: " + (id || "—");
+  if(!eventChip) return;
+  eventChip.textContent = "EVENT_ID: " + (id || "—");
+}
+
+function setStatus(text){
+  if(!statusText) return;
+  statusText.textContent = text;
 }
 
 function saveEvent(){
@@ -366,7 +374,7 @@ function saveEvent(){
   if(!id){ alert("Selecione um evento"); return; }
   localStorage.setItem(STORAGE_KEY,id);
   setEventChip(id);
-  document.getElementById("statusText").textContent="Evento configurado";
+  setStatus("Evento configurado");
 }
 
 async function copyInscricao(){
@@ -393,13 +401,13 @@ async function loadEvents(preferredId){
 
   if(error){
     eventSelect.innerHTML = "<option value=''>Erro ao carregar eventos</option>";
-    document.getElementById("statusText").textContent="Erro ao carregar eventos";
+    setStatus("Erro ao carregar eventos");
     return;
   }
 
   if(!data || data.length === 0){
     eventSelect.innerHTML = "<option value=''>Nenhum evento encontrado</option>";
-    document.getElementById("statusText").textContent="Nenhum evento encontrado";
+    setStatus("Nenhum evento encontrado");
     return;
   }
 
@@ -418,7 +426,7 @@ async function loadEvents(preferredId){
     return;
   }
 
-  document.getElementById("statusText").textContent="Selecione um evento";
+  setStatus("Selecione um evento");
 }
 
 window.saveEvent = saveEvent;
