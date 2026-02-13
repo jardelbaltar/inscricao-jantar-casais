@@ -270,8 +270,12 @@
           <input id="maxCouples" type="number" min="0" />
         </div>
         <div>
+          <label>Local</label>
+          <input id="eventLocal" type="text" placeholder="Ex: Salão Paroquial" />
+        </div>
+        <div>
           <label>&nbsp;</label>
-          <button id="btnSaveEvent">Salvar limite</button>
+          <button id="btnSaveEvent">Salvar evento</button>
         </div>
       </div>
 
@@ -362,6 +366,7 @@
     const eventSelect = document.getElementById("eventSelect");
     const publicLink = document.getElementById("publicLink");
     const maxCouples = document.getElementById("maxCouples");
+    const eventLocal = document.getElementById("eventLocal");
     const btnSaveEvent = document.getElementById("btnSaveEvent");
     const statsPill = document.getElementById("statsPill");
 
@@ -490,7 +495,7 @@
       try {
         const response = await withRetry(() => supabase
           .from("events")
-          .select("id,title,event_date,max_couples,created_at")
+          .select("id,title,event_date,max_couples,local,created_at")
           .order("created_at", { ascending: false }));
         data = response.data;
       } catch (error) {
@@ -511,6 +516,7 @@
         const d = e.event_date ? ` — ${formatDateTime(e.event_date)}` : "";
         opt.textContent = `${e.title}${d}`;
         opt.dataset.max = e.max_couples;
+        opt.dataset.local = e.local ?? "";
         eventSelect.appendChild(opt);
       }
 
@@ -523,6 +529,7 @@
 
       currentEventId = eventSelect.value;
       maxCouples.value = eventSelect.selectedOptions[0]?.dataset.max ?? "";
+      eventLocal.value = eventSelect.selectedOptions[0]?.dataset.local ?? "";
       publicLink.value = `${pageBaseUrl()}?event=${currentEventId}`;
     }
 
@@ -825,6 +832,7 @@
     eventSelect.addEventListener("change", async () => {
       currentEventId = eventSelect.value;
       maxCouples.value = eventSelect.selectedOptions[0]?.dataset.max ?? "";
+      eventLocal.value = eventSelect.selectedOptions[0]?.dataset.local ?? "";
       publicLink.value = `${pageBaseUrl()}?event=${currentEventId}`;
 
       // Atualiza ?event= na URL
@@ -839,9 +847,10 @@
 
     btnSaveEvent.addEventListener("click", async () => {
       const n = parseInt(maxCouples.value || "0", 10);
+      const local = eventLocal.value.trim();
       const { error } = await supabase
         .from("events")
-        .update({ max_couples: n })
+        .update({ max_couples: n, local: local || null })
         .eq("id", currentEventId);
 
       if (error) {
@@ -849,7 +858,8 @@
         return;
       }
       eventSelect.selectedOptions[0].dataset.max = n;
-      setMsg("Limite do evento atualizado.", "ok");
+      eventSelect.selectedOptions[0].dataset.local = local;
+      setMsg("Dados do evento atualizados.", "ok");
       await refreshStats();
     });
 
