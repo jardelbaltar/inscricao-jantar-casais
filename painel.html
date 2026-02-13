@@ -477,7 +477,7 @@
       try {
         const { data: eventData, error: eventError } = await supabase
           .from("events")
-          .select("id,title,event_date,max_couples")
+          .select("id,title,event_at,max_couples")
           .eq("id", eventId)
           .maybeSingle();
 
@@ -542,7 +542,7 @@
 
           document.title = `Inscrições - ${eventData.title}`;
           heroTitle.textContent = eventData.title;
-          heroSubtitle.textContent = `${formatDateTime(eventData.event_date)} - ${hasFiniteLimit ? `${limite} casais` : "Sem limite de casais"}`;
+          heroSubtitle.textContent = `${formatDateTime(eventData.event_at)} - ${hasFiniteLimit ? `${limite} casais` : "Sem limite de casais"}`;
           totalRegistered.textContent = inscritos;
           remainingSlots.textContent = vagas;
           waitlistTotal.textContent = emEspera;

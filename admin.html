@@ -495,7 +495,7 @@
       try {
         const response = await withRetry(() => supabase
           .from("events")
-          .select("id,title,event_date,max_couples,local,created_at")
+          .select("id,title,event_at,max_couples,local,created_at")
           .order("created_at", { ascending: false }));
         data = response.data;
       } catch (error) {
@@ -513,7 +513,7 @@
       for (const e of data) {
         const opt = document.createElement("option");
         opt.value = e.id;
-        const d = e.event_date ? ` — ${formatDateTime(e.event_date)}` : "";
+        const d = e.event_at ? ` — ${formatDateTime(e.event_at)}` : "";
         opt.textContent = `${e.title}${d}`;
         opt.dataset.max = e.max_couples;
         opt.dataset.local = e.local ?? "";

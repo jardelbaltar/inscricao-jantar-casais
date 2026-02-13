@@ -396,7 +396,7 @@ async function loadEvents(preferredId){
 
   const { data, error } = await supabase
     .from("events")
-    .select("id,title,event_date,created_at")
+    .select("id,title,event_at,created_at")
     .order("created_at", { ascending: false });
 
   if(error){
@@ -415,7 +415,7 @@ async function loadEvents(preferredId){
   for (const event of data){
     const option = document.createElement("option");
     option.value = event.id;
-    const dateLabel = event.event_date ? " — " + new Date(event.event_date).toLocaleString("pt-BR") : "";
+    const dateLabel = event.event_at ? " — " + new Date(event.event_at).toLocaleString("pt-BR") : "";
     option.textContent = `${event.title}${dateLabel}`;
     eventSelect.appendChild(option);
   }

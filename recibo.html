@@ -375,7 +375,7 @@ async function load(){
 
   const {data:ev}=await supabase
     .from("events")
-    .select("title,event_date,local")
+    .select("title,event_at,local")
     .eq("id",reg.event_id)
     .maybeSingle();
 
@@ -385,7 +385,7 @@ async function load(){
 
   evTitle.textContent=ev?.title??"Evento";
   const eventLocal=(ev?.local??"").trim();
-  evDate.textContent=`${formatDateTime(ev?.event_date)}${eventLocal ? ` • ${eventLocal}` : ""}`;
+  evDate.textContent=`${formatDateTime(ev?.event_at)}${eventLocal ? ` • ${eventLocal}` : ""}`;
   couple.textContent=reg.couple_name??"—";
   phone.textContent=reg.phone??"—";
   wedding.textContent=formatDate(reg.wedding_date);
