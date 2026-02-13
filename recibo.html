@@ -317,6 +317,7 @@ const wedding=document.getElementById("wedding");
 const dish=document.getElementById("dish");
 const qrBox=document.getElementById("qrBox");
 const btnShare=document.getElementById("btnShare");
+const newRegistrationLink=document.getElementById("newRegistrationLink");
 
 function formatDateTime(v){
   if(!v)return "—";
@@ -367,6 +368,10 @@ async function load(){
     .maybeSingle();
 
   if(!reg)return;
+
+  const indexUrl=new URL("index.html",window.location.href);
+  indexUrl.searchParams.set("event",reg.event_id);
+  newRegistrationLink.href=indexUrl.toString();
 
   const {data:ev}=await supabase
     .from("events")
