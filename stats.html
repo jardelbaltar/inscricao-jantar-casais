@@ -302,8 +302,25 @@
     }
 
     function parseISODate(iso) {
-      const [y,m,d] = iso.split("-").map(Number);
-      return new Date(y, m-1, d);
+      if (!iso) return null;
+      const value = String(iso).trim();
+      const onlyDate = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (onlyDate) {
+        const y = Number(onlyDate[1]);
+        const m = Number(onlyDate[2]);
+        const d = Number(onlyDate[3]);
+        return new Date(y, m - 1, d);
+      }
+      const dt = new Date(value);
+      return Number.isNaN(dt.getTime()) ? null : new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+    }
+
+    function formatDateISO(dateObj) {
+      if (!(dateObj instanceof Date) || Number.isNaN(dateObj.getTime())) return "—";
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2, "0");
+      const d = String(dateObj.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
     }
 
     function diffYMD(fromDate, toDate) {
@@ -446,15 +463,22 @@
       if (!eventDateISO) return null;
 
       const eventDate = parseISODate(eventDateISO);
+      if (!eventDate) return null;
       const eventYear = eventDate.getFullYear();
 
       let best = null;
 
       for (const r of rows){
         if (!r.wedding_date) continue;
-        const [wy, wm, wd] = r.wedding_date.split("-").map(Number);
+        const weddingDate = parseISODate(r.wedding_date);
+        if (!weddingDate) continue;
 
-        const annThisYear = new Date(eventYear, wm-1, wd);
+        const wy = weddingDate.getFullYear();
+        const wm = weddingDate.getMonth() + 1;
+        const wd = weddingDate.getDate();
+
+        const annThisYear = new Date(eventYear, wm - 1, wd);
+        if (Number.isNaN(annThisYear.getTime())) continue;
         const diffDaysSigned = Math.round((annThisYear - eventDate) / (1000*60*60*24));
         const diffAbs = Math.abs(diffDaysSigned);
 
@@ -492,8 +516,8 @@
           <span class="badge">${best.wedding_date}</span>
         </div>
         <div class="muted" style="margin-top:8px">
-          <span class="badge">Data do evento: ${eventDateISO}</span>
-          <span class="badge">Aniversário (ano do evento): ${best.anniversaryDate.toISOString().slice(0,10)}</span>
+          <span class="badge">Data do evento: ${escapeHtml(eventDateISO)}</span>
+          <span class="badge">Aniversário (ano do evento): ${formatDateISO(best.anniversaryDate)}</span>
         </div>
         <div class="muted" style="margin-top:10px;line-height:1.5">
           ${label} para completar
@@ -540,9 +564,10 @@
       const today = new Date();
       rows = rows.map(r => {
         const wd = parseISODate(r.wedding_date);
+        if (!wd) return null;
         const ymd = diffYMD(wd, today);
         return { ...r, ymd, _score: score(ymd) };
-      });
+      }).filter(Boolean);
 
       const totalAll = data.length;
       const presentAll = data.filter(r => r.is_present === true).length;
