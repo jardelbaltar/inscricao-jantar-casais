@@ -324,6 +324,20 @@
       min-height: 44px;
       white-space: pre-wrap;
     }
+
+    .scan-confirmation{
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(110,231,183,.28);
+      background: rgba(16,185,129,.18);
+      color: #d1fae5;
+      font-size: 13px;
+      line-height: 1.4;
+      display: none;
+    }
+    .scan-confirmation.show{ display: block; }
+    .scan-confirmation strong{ display:block; font-size: 13.5px; margin-bottom: 4px; }
     .modalFooter{
       display:flex;
       justify-content:flex-end;
@@ -445,6 +459,7 @@
 
           <div class="k" style="margin-top:12px">Status</div>
           <div class="status" id="scanStatus">Abra o leitor e aponte para o QR Code do recibo.</div>
+          <div class="scan-confirmation" id="scanConfirmation" aria-live="polite"></div>
 
         </div>
       </div>
@@ -486,12 +501,25 @@
     const btnTest = document.getElementById("btnTest");
     const scanValueEl = document.getElementById("scanValue");
     const scanStatusEl = document.getElementById("scanStatus");
+    const scanConfirmationEl = document.getElementById("scanConfirmation");
 
     const params = new URLSearchParams(location.search);
     const EVENT_ID = params.get("event");
 
     let allRows = [];
     let scanLockUntil = 0;
+
+
+    function showScanConfirmation(text = "") {
+      if (!text) {
+        scanConfirmationEl.classList.remove("show");
+        scanConfirmationEl.textContent = "";
+        return;
+      }
+
+      scanConfirmationEl.innerHTML = `<strong>✅ Leitura confirmada com sucesso</strong>${escapeHtml(text)}`;
+      scanConfirmationEl.classList.add("show");
+    }
 
     function setMsg(text, kind="") {
       msg.className = kind ? kind : "";
@@ -649,6 +677,7 @@
 
       scanValueEl.textContent = rid;
       scanStatusEl.textContent = "Validando inscrição…";
+      showScanConfirmation("");
 
       const { data: reg, error: regErr } = await supabase
         .from("registrations")
@@ -668,6 +697,7 @@
 
       if (reg.is_present){
         scanStatusEl.textContent = `✅ Já estava presente: ${reg.couple_name || "Casal"}`;
+        showScanConfirmation(`${reg.couple_name || "Casal"} já estava com presença registrada.`);
         const row = allRows.find(x => x.id === reg.id);
         if (row){
           row.is_present = true;
@@ -697,6 +727,7 @@
       highlightRow(reg.id);
 
       scanStatusEl.textContent = `🎉 Check-in OK: ${reg.couple_name || "Casal"}`;
+      showScanConfirmation(`${reg.couple_name || "Casal"} foi marcado(a) como presente agora.`);
       setMsg(`Check-in OK: ${reg.couple_name || "Casal"}`, "ok");
       setTimeout(() => setMsg(""), 1200);
     }
@@ -828,6 +859,7 @@
       overlay.classList.add("show");
       scanValueEl.textContent = "—";
       scanStatusEl.textContent = "Inicializando…";
+      showScanConfirmation("");
 
       const ok = await startJsQr();
       if (!ok) scanning = false;
