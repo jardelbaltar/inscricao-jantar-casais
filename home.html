@@ -364,6 +364,18 @@ function setEventChip(id){
   eventChip.textContent = "EVENT_ID: " + (id || "—");
 }
 
+function formatDateTime(value) {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  const pad = (n) => String(n).padStart(2, "0");
+  const minutes = d.getMinutes();
+  const timeLabel = minutes === 0
+    ? `${pad(d.getHours())}h`
+    : `${pad(d.getHours())}h${pad(minutes)}`;
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${timeLabel}`;
+}
+
 function setStatus(text){
   if(!statusText) return;
   statusText.textContent = text;
@@ -415,7 +427,7 @@ async function loadEvents(preferredId){
   for (const event of data){
     const option = document.createElement("option");
     option.value = event.id;
-    const dateLabel = event.event_at ? " — " + new Date(event.event_at).toLocaleString("pt-BR") : "";
+    const dateLabel = event.event_at ? ` — ${formatDateTime(event.event_at)}` : "";
     option.textContent = `${event.title}${dateLabel}`;
     eventSelect.appendChild(option);
   }

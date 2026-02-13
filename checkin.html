@@ -647,6 +647,18 @@
       osc.start(now);
       osc.stop(now + 0.15);
     }
+    function formatDateTime(value) {
+      if (!value) return "—";
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "—";
+      const pad = (n) => String(n).padStart(2, "0");
+      const minutes = d.getMinutes();
+      const timeLabel = minutes === 0
+        ? `${pad(d.getHours())}h`
+        : `${pad(d.getHours())}h${pad(minutes)}`;
+      return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${timeLabel}`;
+    }
+
     function escapeHtml(s){
       return (s ?? "").toString().replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     }
@@ -681,7 +693,7 @@
       const htmlRows = rows.map(r => {
         const status = r.is_present ? "✅ Presente" : "⬜ Ausente";
         const cls = r.is_present ? "present" : "absent";
-        const checkedAt = r.checked_in_at ? new Date(r.checked_in_at).toLocaleString() : "—";
+        const checkedAt = r.checked_in_at ? formatDateTime(r.checked_in_at) : "—";
 
         return `
           <tr class="click ${cls}" data-id="${r.id}" data-present="${r.is_present}">
