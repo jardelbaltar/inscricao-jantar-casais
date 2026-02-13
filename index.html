@@ -359,7 +359,7 @@
 
     async function loadEventSummary() {
       const [eventRes, countRes] = await Promise.all([
-        supabase.from("events").select("title,event_date,max_couples").eq("id", EVENT_ID).maybeSingle(),
+        supabase.from("events").select("title,event_date,local,max_couples").eq("id", EVENT_ID).maybeSingle(),
         supabase.from("registrations").select("id", { count: "exact", head: true }).eq("event_id", EVENT_ID)
       ]);
 
@@ -375,7 +375,9 @@
 
       eventName.textContent = eventData.title || "Evento";
       document.title = eventData.title || "Inscrição";
-      eventDate.textContent = `${formatDateTime(eventData.event_date)}`;
+      const eventLocal = (eventData.local ?? "").trim();
+      const localText = eventLocal ? ` • ${eventLocal}` : "";
+      eventDate.textContent = `${formatDateTime(eventData.event_date)}${localText}`;
       eventSlots.textContent = totalSlots > 0
         ? `Vagas: ${availableSlots}/${totalSlots}`
         : "Vagas: ilimitadas";
