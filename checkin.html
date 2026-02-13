@@ -545,6 +545,7 @@
 
     let allRows = [];
     let scanLockUntil = 0;
+    let successMsgTimeoutId = null;
 
 
     function showScanConfirmation(text = "") {
@@ -561,6 +562,15 @@
     function setMsg(text, kind="") {
       msg.className = kind ? kind : "";
       msg.textContent = text || "";
+    }
+
+    function showTemporarySuccessMessage() {
+      if (successMsgTimeoutId) clearTimeout(successMsgTimeoutId);
+      setMsg("Check-in realizado!", "ok");
+      successMsgTimeoutId = setTimeout(() => {
+        setMsg("");
+        successMsgTimeoutId = null;
+      }, 2000);
     }
     function escapeHtml(s){
       return (s ?? "").toString().replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -765,8 +775,7 @@
 
       scanStatusEl.textContent = `🎉 Check-in OK: ${reg.couple_name || "Casal"}`;
       showScanConfirmation(`${reg.couple_name || "Casal"} foi marcado(a) como presente agora.`);
-      setMsg(`Check-in OK: ${reg.couple_name || "Casal"}`, "ok");
-      setTimeout(() => setMsg(""), 1200);
+      showTemporarySuccessMessage();
     }
 
     // ===== Scanner via getUserMedia + jsQR =====
