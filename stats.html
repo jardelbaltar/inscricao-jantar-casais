@@ -294,6 +294,13 @@
     function escapeHtml(s){
       return (s ?? "").toString().replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
     }
+    function formatTimeNow() {
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, "0");
+      const minutes = now.getMinutes();
+      return minutes === 0 ? `${pad(now.getHours())}h` : `${pad(now.getHours())}h${pad(minutes)}`;
+    }
+
     function parseISODate(iso) {
       const [y,m,d] = iso.split("-").map(Number);
       return new Date(y, m-1, d);
@@ -541,7 +548,7 @@
       const presentAll = data.filter(r => r.is_present === true).length;
 
       chipCounts.textContent = `Inscritos: ${totalAll} • Presentes: ${presentAll}`;
-      lastUpdated.textContent = `Atualizado: ${new Date().toLocaleTimeString()}`;
+      lastUpdated.textContent = `Atualizado: ${formatTimeNow()}`;
 
       renderPresence(totalAll, presentAll);
 

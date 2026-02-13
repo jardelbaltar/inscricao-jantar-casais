@@ -404,7 +404,11 @@
       const d = new Date(value);
       if (Number.isNaN(d.getTime())) return "—";
       const pad = (n) => String(n).padStart(2, "0");
-      return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      const minutes = d.getMinutes();
+      const timeLabel = minutes === 0
+        ? `${pad(d.getHours())}h`
+        : `${pad(d.getHours())}h${pad(minutes)}`;
+      return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${timeLabel}`;
     }
 
     function formatDate(value) {

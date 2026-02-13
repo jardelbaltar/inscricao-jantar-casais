@@ -322,7 +322,10 @@ const newRegistrationLink=document.getElementById("newRegistrationLink");
 function formatDateTime(v){
   if(!v)return "—";
   const d=new Date(v);
-  return new Intl.DateTimeFormat("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}).format(d);
+  const pad=(n)=>String(n).padStart(2,"0");
+  const minutes=d.getMinutes();
+  const timeLabel=minutes===0 ? `${pad(d.getHours())}h` : `${pad(d.getHours())}h${pad(minutes)}`;
+  return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${timeLabel}`;
 }
 
 function formatDate(v){
