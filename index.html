@@ -210,19 +210,14 @@
 
     <div class="card">
       <form id="f">
+        <label>Telefone</label>
+        <input id="phone" required placeholder="Ex: (61) 99999-9999" inputmode="tel" maxlength="15" />
+
         <label>Nome do casal</label>
         <input id="couple_name" required placeholder="Ex: João e Maria" />
 
-        <div class="row">
-          <div>
-            <label>Data de casamento</label>
-            <input id="wedding_date" type="date" required />
-          </div>
-          <div>
-            <label>Telefone</label>
-            <input id="phone" required placeholder="Ex: (61) 99999-9999" inputmode="tel" maxlength="15" />
-          </div>
-        </div>
+        <label>Data de casamento</label>
+        <input id="wedding_date" type="date" required />
 
         <label>Escolha o prato que irá trazer</label>
         <select id="dish" required>
@@ -264,7 +259,12 @@
     const eventDate = document.getElementById("eventDate");
     const eventSlots = document.getElementById("eventSlots");
     const phoneInput = document.getElementById("phone");
+    const coupleNameInput = document.getElementById("couple_name");
+    const weddingDateInput = document.getElementById("wedding_date");
     const WAITLIST_MESSAGE = "Não há mais vagas disponíveis. Incluímos você na lista de espera. Nossa equipe entrará em contato com você em caso de desistências.";
+    const PHONE_FULL_LENGTH = 15;
+    let lastSearchedPhone = "";
+    let phoneLookupRequestId = 0;
 
     function formatPhone(value) {
       const digits = value.replace(/\D/g, "").slice(0, 11);
@@ -277,7 +277,45 @@
 
     phoneInput.addEventListener("input", (event) => {
       event.target.value = formatPhone(event.target.value);
+
+      const formattedPhone = event.target.value;
+      if (formattedPhone.length < PHONE_FULL_LENGTH) {
+        lastSearchedPhone = "";
+        return;
+      }
+
+      if (formattedPhone === lastSearchedPhone) return;
+      lastSearchedPhone = formattedPhone;
+      void lookupCoupleByPhone(formattedPhone);
     });
+
+    async function lookupCoupleByPhone(phone) {
+      const currentRequestId = ++phoneLookupRequestId;
+
+      let data;
+      try {
+        const response = await withRetry(() => supabase
+          .from("registrations")
+          .select("couple_name,wedding_date")
+          .eq("phone", phone)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle());
+        data = response.data;
+      } catch (_error) {
+        return;
+      }
+
+      if (currentRequestId !== phoneLookupRequestId) return;
+
+      if (data) {
+        coupleNameInput.value = data.couple_name ?? "";
+        weddingDateInput.value = data.wedding_date ?? "";
+        return;
+      }
+
+      coupleNameInput.focus();
+    }
 
     function showSubmissionFeedback({ message }) {
       msg.className = "ok";
