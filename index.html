@@ -95,27 +95,6 @@
 
     .hero p + p { margin-top: 4px; }
 
-    .hero-link {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: 10px;
-      color: #bfdbfe;
-      text-decoration: none;
-      padding: 6px;
-      border-radius: 999px;
-      border: 1px solid rgba(191, 219, 254, 0.45);
-      background: rgba(15, 23, 42, 0.25);
-    }
-
-    .hero-link:hover {
-      color: #dbeafe;
-      border-color: rgba(219, 234, 254, 0.85);
-      background: rgba(15, 23, 42, 0.4);
-    }
-
-    .hero-link svg { width: 20px; height: 20px; }
-
     .card {
       background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
       border: 1px solid rgba(148, 163, 184, 0.25);
@@ -199,7 +178,6 @@
     }
 
     @media (max-width: 420px) {
-      .hero-link { margin-top: 12px; font-size: 0.96rem; }
       .card { padding: 14px; border-radius: 14px; }
       label { margin-top: 12px; }
       button { margin-top: 16px; }
@@ -217,23 +195,17 @@
           </div>
         </div>
         <h1 id="eventName">Carregando evento...</h1>
-        <a class="home-link" href="home.html" aria-label="Voltar para a página inicial" title="Voltar para home">
+        <a id="panelLink" class="home-link" href="#" aria-label="Abrir painel público de inscrições" title="Abrir painel público de inscrições">
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M3 11.5 12 4l9 7.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
-            <path d="M6.5 10.5V20h11v-9.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+            <rect x="3" y="3" width="8" height="8" rx="2" stroke="currentColor" stroke-width="1.7"></rect>
+            <rect x="13" y="3" width="8" height="5" rx="2" stroke="currentColor" stroke-width="1.7"></rect>
+            <rect x="13" y="10" width="8" height="11" rx="2" stroke="currentColor" stroke-width="1.7"></rect>
+            <rect x="3" y="13" width="8" height="8" rx="2" stroke="currentColor" stroke-width="1.7"></rect>
           </svg>
         </a>
       </div>
       <p id="eventDate">--</p>
       <p id="eventSlots">Vagas: --/--</p>
-      <a id="panelLink" class="hero-link" href="#" aria-label="Abrir painel público de inscrições" title="Abrir painel público de inscrições">
-        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <rect x="3" y="3" width="8" height="8" rx="2" stroke="currentColor" stroke-width="1.7"></rect>
-          <rect x="13" y="3" width="8" height="5" rx="2" stroke="currentColor" stroke-width="1.7"></rect>
-          <rect x="13" y="10" width="8" height="11" rx="2" stroke="currentColor" stroke-width="1.7"></rect>
-          <rect x="3" y="13" width="8" height="8" rx="2" stroke="currentColor" stroke-width="1.7"></rect>
-        </svg>
-      </a>
     </section>
 
     <div class="card">
