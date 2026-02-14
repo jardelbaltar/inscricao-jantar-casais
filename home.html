@@ -115,7 +115,7 @@ body{
 
 .controls{
   display:grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: 1fr auto auto auto;
   gap:10px;
   align-items:end;
 }
@@ -161,6 +161,90 @@ select{
 .btnPrimary{
   background: linear-gradient(90deg, rgba(45,212,191,.22), rgba(96,165,250,.18));
   border-color: rgba(45,212,191,.35);
+}
+
+.btnIconLabel{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+}
+
+.btnIconLabel svg{
+  width:18px;
+  height:18px;
+  stroke:currentColor;
+  fill:none;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+
+.modalBackdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(2, 10, 20, .72);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+  z-index:1000;
+}
+
+.modalBackdrop.open{ display:flex; }
+
+.modalCard{
+  width:min(92vw, 480px);
+  border:1px solid var(--line);
+  background: linear-gradient(180deg, rgba(13,23,41,.96), rgba(9,18,32,.96));
+  border-radius: var(--radius);
+  box-shadow: var(--shadow2);
+  padding:18px;
+}
+
+.modalHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:14px;
+}
+
+.modalTitle{
+  margin:0;
+  font-size:17px;
+  font-weight:900;
+}
+
+.iconClose{
+  width:36px;
+  height:36px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  background: rgba(255,255,255,.03);
+  color:var(--text);
+  cursor:pointer;
+  font-size:18px;
+  line-height:1;
+}
+
+.qrFrame{
+  width:100%;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.12);
+  background:white;
+  padding:12px;
+}
+
+.qrFrame img{
+  display:block;
+  width:100%;
+  height:auto;
+}
+
+.modalHint{
+  margin:12px 0 0;
+  color:var(--muted);
+  font-size:13px;
 }
 
 /* ===== Cards ===== */
@@ -260,6 +344,32 @@ select{
     </div>
     <button class="btn btnPrimary" onclick="saveEvent()">Salvar</button>
     <button class="btn" onclick="copyInscricao()">Copiar link da inscrição</button>
+    <button class="btn btnIconLabel" onclick="openInscricaoQr()" aria-label="Apresentar QR Code da inscrição">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3" y="3" width="7" height="7"></rect>
+        <rect x="14" y="3" width="7" height="7"></rect>
+        <rect x="3" y="14" width="7" height="7"></rect>
+        <path d="M14 14h3"></path>
+        <path d="M17 14v3"></path>
+        <path d="M21 17h-2"></path>
+        <path d="M14 19h2"></path>
+        <path d="M18 21h3"></path>
+      </svg>
+      Apresentar QR Code da inscrição
+    </button>
+  </div>
+</div>
+
+<div id="qrModal" class="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="qrModalTitle" onclick="handleModalClick(event)">
+  <div class="modalCard">
+    <div class="modalHeader">
+      <h2 id="qrModalTitle" class="modalTitle">QR Code da inscrição</h2>
+      <button class="iconClose" onclick="closeInscricaoQr()" aria-label="Fechar modal">×</button>
+    </div>
+    <div class="qrFrame">
+      <img id="inscricaoQrImage" alt="QR Code do link da inscrição">
+    </div>
+    <p class="modalHint">Peça para os convidados escanearem este QR Code para abrir a inscrição.</p>
   </div>
 </div>
 
@@ -358,6 +468,15 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const eventSelect = document.getElementById("eventId");
 const eventChip = document.getElementById("eventChip");
 const statusText = document.getElementById("statusText");
+const qrModal = document.getElementById("qrModal");
+const inscricaoQrImage = document.getElementById("inscricaoQrImage");
+
+function getInscricaoLink(){
+  const id=localStorage.getItem(STORAGE_KEY);
+  if(!id) return null;
+  const base=location.href.replace(/[^\/]*$/,"");
+  return base+"index.html?event="+id;
+}
 
 function setEventChip(id){
   if(!eventChip) return;
@@ -390,11 +509,28 @@ function saveEvent(){
 }
 
 async function copyInscricao(){
-  const id=localStorage.getItem(STORAGE_KEY);
-  if(!id){ alert("Defina o evento primeiro"); return; }
-  const base=location.href.replace(/[^\/]*$/,"");
-  await navigator.clipboard.writeText(base+"index.html?event="+id);
+  const inscricaoLink=getInscricaoLink();
+  if(!inscricaoLink){ alert("Defina o evento primeiro"); return; }
+  await navigator.clipboard.writeText(inscricaoLink);
   alert("Link copiado!");
+}
+
+function openInscricaoQr(){
+  const inscricaoLink=getInscricaoLink();
+  if(!inscricaoLink){ alert("Defina o evento primeiro"); return; }
+  const encodedLink=encodeURIComponent(inscricaoLink);
+  inscricaoQrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=420x420&data=${encodedLink}`;
+  qrModal.classList.add("open");
+}
+
+function closeInscricaoQr(){
+  qrModal.classList.remove("open");
+}
+
+function handleModalClick(event){
+  if(event.target === qrModal){
+    closeInscricaoQr();
+  }
 }
 
 function go(page){
@@ -443,6 +579,9 @@ async function loadEvents(preferredId){
 
 window.saveEvent = saveEvent;
 window.copyInscricao = copyInscricao;
+window.openInscricaoQr = openInscricaoQr;
+window.closeInscricaoQr = closeInscricaoQr;
+window.handleModalClick = handleModalClick;
 window.go = go;
 
 (async function(){
