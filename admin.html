@@ -122,7 +122,7 @@ async function refreshEvents(){
     .order("created_at",{ascending:false});
 
   eventSelect.innerHTML="";
-  data.forEach(e=>{
+  (data||[]).forEach(e=>{
     const opt=document.createElement("option");
     opt.value=e.id;
     opt.textContent=e.title;
@@ -131,9 +131,18 @@ async function refreshEvents(){
     eventSelect.appendChild(opt);
   });
 
+  const selected=eventSelect.selectedOptions[0];
+  if(!selected){
+    currentEventId = null;
+    maxCouples.value = "";
+    eventLocal.value = "";
+    regsTableWrap.innerHTML = "<p>Nenhum evento cadastrado.</p>";
+    return;
+  }
+
   currentEventId=eventSelect.value;
-  maxCouples.value=eventSelect.selectedOptions[0].dataset.max;
-  eventLocal.value=eventSelect.selectedOptions[0].dataset.local;
+  maxCouples.value=selected.dataset.max;
+  eventLocal.value=selected.dataset.local;
 }
 
 async function ensureQueuePos(rows){
@@ -148,6 +157,11 @@ async function ensureQueuePos(rows){
 }
 
 async function refreshRegistrations(){
+  if(!currentEventId){
+    regsTableWrap.innerHTML = "<p>Selecione um evento para carregar as inscrições.</p>";
+    return;
+  }
+
   const { data } = await supabase
     .from("registrations")
     .select("*")
@@ -228,8 +242,8 @@ btnLogin.addEventListener("click",async()=>{
     await requireAdmin(data.session);
     loginCard.style.display="none";
     app.style.display="";
-    refreshEvents();
-    refreshRegistrations();
+    await refreshEvents();
+    await refreshRegistrations();
   }catch{
     await supabase.auth.signOut();
     setMsg("Usuário não autorizado","err");
