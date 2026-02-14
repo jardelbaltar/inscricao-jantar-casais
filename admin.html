@@ -6,90 +6,237 @@
 <title>Admin - Jantar de Casais</title>
 
 <style>
-body{font-family:Inter,Arial;margin:0;background:#0f172a;color:#0f172a;padding:20px}
-.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:14px}
-button{cursor:pointer;padding:8px 12px;border-radius:8px;border:0;background:#7c3aed;color:#fff;font-weight:600}
-button.danger{background:#b91c1c}
-button.secondary{background:#334155}
-input,select{padding:8px;border-radius:8px;border:1px solid #ccc;width:100%}
-.row{display:flex;gap:10px;flex-wrap:wrap}
-.row>div{flex:1;min-width:180px}
-table{width:100%;border-collapse:collapse;margin-top:10px}
-th,td{padding:8px;border-bottom:1px solid #e2e8f0;text-align:left}
-#msg{margin-bottom:10px;font-weight:600}
-.ok{color:#166534}
-.err{color:#b91c1c}
+:root {
+  --bg: #0f172a;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --primary: #7c3aed;
+  --primary-hover: #6d28d9;
+  --danger: #b91c1c;
+  --secondary: #334155;
+  --border: #e2e8f0;
+  --shadow: 0 18px 45px rgba(15, 23, 42, 0.25);
+  --radius: 18px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  padding: max(16px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+  color: var(--text);
+  background: radial-gradient(circle at top right, #312e81 0%, var(--bg) 40%, #020617 100%);
+}
+
+.app { width: 100%; max-width: 1180px; margin: 0 auto; }
+
+.hero {
+  color: #f8fafc;
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  line-height: 1.2;
+}
+
+.hero p {
+  margin: 8px 0 0;
+  color: #cbd5e1;
+}
+
+.card {
+  background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+h2 { margin: 0 0 8px; }
+
+label {
+  display: block;
+  margin-top: 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+input, select, button {
+  display: block;
+  width: 100%;
+  min-height: 42px;
+  margin-top: 6px;
+  padding: 10px 12px;
+  font-size: 15px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--primary) 65%, white);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.14);
+}
+
+button {
+  margin-top: 14px;
+  border: 0;
+  background: linear-gradient(135deg, var(--primary) 0%, #2563eb 100%);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:hover { filter: brightness(1.04); }
+button.secondary { background: var(--secondary); }
+button.danger { background: var(--danger); }
+button.inline-btn {
+  min-height: 34px;
+  margin-top: 0;
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+}
+
+.row { display: flex; gap: 10px; flex-wrap: wrap; }
+.row > div { flex: 1; min-width: 180px; }
+
+.table-scroll { overflow-x: auto; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  min-width: 980px;
+}
+
+th, td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+  vertical-align: middle;
+}
+
+th { color: #334155; font-size: 0.9rem; }
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.status.confirmed { color: #166534; }
+.status.waiting { color: #92400e; }
+
+.inline-input {
+  min-height: 34px;
+  margin-top: 0;
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 0.92rem;
+}
+
+#msg {
+  margin-bottom: 10px;
+  font-weight: 700;
+  min-height: 24px;
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+#msg:empty { padding: 0; margin-bottom: 0; }
+.ok { color: #166534; background: #dcfce7; border: 1px solid #86efac; }
+.err { color: #b91c1c; background: #fee2e2; border: 1px solid #fca5a5; }
+
+.muted { color: var(--muted); }
+
+@media (min-width: 680px) {
+  body { padding: 30px 20px; }
+  .card { padding: 22px; }
+}
 </style>
 </head>
 
 <body>
+<main class="app">
+  <section class="hero">
+    <h1>Administração de Inscrições</h1>
+    <p>Gerencie eventos, acompanhe a fila e edite dados dos casais.</p>
+  </section>
 
-<div id="msg"></div>
+  <div id="msg"></div>
 
-<!-- LOGIN -->
-<div id="loginCard" class="card">
-<h2>Login</h2>
-<div class="row">
-<div>
-<label>Email</label>
-<input id="email" type="email">
-</div>
-<div>
-<label>Senha</label>
-<input id="password" type="password">
-</div>
-</div>
-<br>
-<button id="btnLogin">Entrar</button>
-</div>
+  <div id="loginCard" class="card">
+    <h2>Login</h2>
+    <div class="row">
+      <div>
+        <label>Email</label>
+        <input id="email" type="email" autocomplete="username">
+      </div>
+      <div>
+        <label>Senha</label>
+        <input id="password" type="password" autocomplete="current-password">
+      </div>
+    </div>
+    <button id="btnLogin">Entrar</button>
+  </div>
 
-<!-- APP -->
-<div id="app" style="display:none">
+  <div id="app" style="display:none">
+    <div class="card">
+      <div class="row">
+        <div>
+          <h2>Evento</h2>
+          <select id="eventSelect"></select>
+        </div>
+        <div>
+          <label>Limite (max_couples)</label>
+          <input id="maxCouples" type="number" min="0">
+        </div>
+        <div>
+          <label>Local</label>
+          <input id="eventLocal">
+        </div>
+        <div style="align-self:flex-end">
+          <button id="btnSaveEvent">Salvar</button>
+        </div>
+        <div style="align-self:flex-end">
+          <button class="secondary" id="btnLogout">Sair</button>
+        </div>
+      </div>
+    </div>
 
-<div class="card">
-<div class="row">
-<div>
-<h2>Evento</h2>
-<select id="eventSelect"></select>
-</div>
-<div>
-<label>Limite (max_couples)</label>
-<input id="maxCouples" type="number">
-</div>
-<div>
-<label>Local</label>
-<input id="eventLocal">
-</div>
-<div style="align-self:flex-end">
-<button id="btnSaveEvent">Salvar</button>
-</div>
-<div style="align-self:flex-end">
-<button class="secondary" id="btnLogout">Sair</button>
-</div>
-</div>
-</div>
-
-<div class="card">
-<h2>Inscrições</h2>
-<div id="regsTableWrap"></div>
-</div>
-
-</div>
+    <div class="card">
+      <h2>Convidados</h2>
+      <p class="muted">Edite diretamente os campos <strong>Nome do casal</strong> e <strong>Data de casamento</strong>.</p>
+      <div id="regsTableWrap"></div>
+    </div>
+  </div>
+</main>
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-    const SUPABASE_URL = "https://nuqcefxwarrjehvhdoug.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51cWNlZnh3YXJyamVodmhkb3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NzE1NzUsImV4cCI6MjA4NjM0NzU3NX0.xLugRmdl6UKVsMZnDepBlFndh4vGVMnptuloFZC28Mc";
+const SUPABASE_URL = "https://nuqcefxwarrjehvhdoug.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51cWNlZnh3YXJyamVodmhkb3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NzE1NzUsImV4cCI6MjA4NjM0NzU3NX0.xLugRmdl6UKVsMZnDepBlFndh4vGVMnptuloFZC28Mc";
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
-    });
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+});
 
 const msg = document.getElementById("msg");
 const loginCard = document.getElementById("loginCard");
 const app = document.getElementById("app");
-
 const btnLogin = document.getElementById("btnLogin");
 const btnLogout = document.getElementById("btnLogout");
 const eventSelect = document.getElementById("eventSelect");
@@ -100,190 +247,252 @@ const regsTableWrap = document.getElementById("regsTableWrap");
 
 let currentEventId = null;
 
-function setMsg(text, type="") {
+function setMsg(text, type = "") {
   msg.className = type;
   msg.textContent = text;
 }
 
-async function requireAdmin(session){
+function escapeHtml(s) {
+  return (s ?? "").toString().replace(/[&<>\"']/g, (c) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+}
+
+function maskPhone(phone) {
+  const digits = (phone ?? "").replace(/\D/g, "");
+  if (!digits) return "—";
+  return `******${digits.slice(-4)}`;
+}
+
+function formatDate(value) {
+  if (!value) return "—";
+  const [y, m, d] = value.split("-");
+  if (!y || !m || !d) return value;
+  return `${d}/${m}/${y}`;
+}
+
+async function requireAdmin(session) {
   const { data } = await supabase
     .from("admins")
     .select("user_id")
     .eq("user_id", session.user.id)
     .maybeSingle();
 
-  if(!data) throw new Error("NOT_ADMIN");
+  if (!data) throw new Error("NOT_ADMIN");
 }
 
-async function refreshEvents(){
+async function refreshEvents() {
   const { data } = await supabase
     .from("events")
     .select("*")
-    .order("created_at",{ascending:false});
+    .order("created_at", { ascending: false });
 
-  eventSelect.innerHTML="";
-  (data||[]).forEach(e=>{
-    const opt=document.createElement("option");
-    opt.value=e.id;
-    opt.textContent=e.title;
-    opt.dataset.max=e.max_couples||0;
-    opt.dataset.local=e.local||"";
+  eventSelect.innerHTML = "";
+  (data || []).forEach((e) => {
+    const opt = document.createElement("option");
+    opt.value = e.id;
+    opt.textContent = e.title;
+    opt.dataset.max = e.max_couples || 0;
+    opt.dataset.local = e.local || "";
     eventSelect.appendChild(opt);
   });
 
-  const selected=eventSelect.selectedOptions[0];
-  if(!selected){
+  const selected = eventSelect.selectedOptions[0];
+  if (!selected) {
     currentEventId = null;
     maxCouples.value = "";
     eventLocal.value = "";
-    regsTableWrap.innerHTML = "<p>Nenhum evento cadastrado.</p>";
+    regsTableWrap.innerHTML = "<p class='muted'>Nenhum evento cadastrado.</p>";
     return;
   }
 
-  currentEventId=eventSelect.value;
-  maxCouples.value=selected.dataset.max;
-  eventLocal.value=selected.dataset.local;
+  currentEventId = eventSelect.value;
+  maxCouples.value = selected.dataset.max;
+  eventLocal.value = selected.dataset.local;
 }
 
-async function ensureQueuePos(rows){
-  for(let i=0;i<rows.length;i++){
-    if(rows[i].queue_pos==null){
+async function ensureQueuePos(rows) {
+  for (let i = 0; i < rows.length; i++) {
+    if (rows[i].queue_pos == null) {
       await supabase.from("registrations")
-      .update({queue_pos:i+1})
-      .eq("id",rows[i].id);
-      rows[i].queue_pos=i+1;
+        .update({ queue_pos: i + 1 })
+        .eq("id", rows[i].id);
+      rows[i].queue_pos = i + 1;
     }
   }
 }
 
-async function refreshRegistrations(){
-  if(!currentEventId){
-    regsTableWrap.innerHTML = "<p>Selecione um evento para carregar as inscrições.</p>";
+async function updateRegistrationField(id, patch) {
+  const { error } = await supabase
+    .from("registrations")
+    .update(patch)
+    .eq("id", id);
+
+  if (error) {
+    setMsg("Erro ao salvar alteração.", "err");
+    return false;
+  }
+
+  setMsg("Alteração salva.", "ok");
+  return true;
+}
+
+async function refreshRegistrations() {
+  if (!currentEventId) {
+    regsTableWrap.innerHTML = "<p class='muted'>Selecione um evento para carregar as inscrições.</p>";
     return;
   }
 
   const { data } = await supabase
     .from("registrations")
-    .select("*")
-    .eq("event_id",currentEventId)
-    .order("queue_pos",{ascending:true});
+    .select("id,couple_name,wedding_date,phone,queue_pos,dishes(name)")
+    .eq("event_id", currentEventId)
+    .order("queue_pos", { ascending: true });
 
-  const rows=data||[];
+  const rows = data || [];
   await ensureQueuePos(rows);
 
-  const limit=Number(maxCouples.value||0);
+  const limit = Number(maxCouples.value || 0);
 
-  const html=rows.map((r,idx)=>{
-    const confirmed=limit>0 && idx<limit;
+  const html = rows.map((r, idx) => {
+    const confirmed = limit > 0 ? idx < limit : true;
+    const statusText = confirmed ? "Confirmado" : "Lista de espera";
+    const statusClass = confirmed ? "confirmed" : "waiting";
+
     return `
 <tr>
-<td>${confirmed?"✅":"⏳"}</td>
-<td>${r.queue_pos}</td>
-<td>${r.couple_name}</td>
-<td>
-<button data-id="${r.id}" class="danger btnDelete">Excluir</button>
-</td>
-</tr>
-`;
+  <td><span class="status ${statusClass}">${confirmed ? "✅" : "⏳"} ${statusText}</span></td>
+  <td>${r.queue_pos ?? idx + 1}</td>
+  <td>
+    <input class="inline-input js-inline" data-id="${r.id}" data-field="couple_name" type="text" value="${escapeHtml(r.couple_name ?? "")}" />
+  </td>
+  <td>
+    <input class="inline-input js-inline" data-id="${r.id}" data-field="wedding_date" type="date" value="${escapeHtml(r.wedding_date ?? "")}" />
+  </td>
+  <td>${escapeHtml(maskPhone(r.phone))}</td>
+  <td>${escapeHtml(r.dishes?.name ?? "—")}</td>
+  <td>
+    <button data-id="${r.id}" class="danger inline-btn btnDelete">Excluir</button>
+  </td>
+</tr>`;
   }).join("");
 
-  regsTableWrap.innerHTML=`
-<table>
-<thead>
-<tr>
-<th>Status</th>
-<th>Fila</th>
-<th>Casal</th>
-<th>Ações</th>
-</tr>
-</thead>
-<tbody>${html}</tbody>
-</table>`;
+  regsTableWrap.innerHTML = `
+<div class="table-scroll">
+  <table>
+    <thead>
+      <tr>
+        <th>Status da inscrição</th>
+        <th>Ordem</th>
+        <th>Nome do casal</th>
+        <th>Data de casamento</th>
+        <th>Telefone (anonimizado)</th>
+        <th>Prato escolhido</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>${html || "<tr><td colspan='7' class='muted'>Nenhuma inscrição ainda.</td></tr>"}</tbody>
+  </table>
+</div>`;
 
-  // Excluir com promoção automática
-  document.querySelectorAll(".btnDelete").forEach(btn=>{
-    btn.addEventListener("click",async()=>{
-      const id=btn.dataset.id;
-
-      const rowsCopy=[...rows];
-      const idx=rowsCopy.findIndex(x=>x.id===id);
-      const limit=Number(maxCouples.value||0);
-
-      await supabase.from("registrations").delete().eq("id",id);
-
-      // Se era confirmado → promove primeiro da espera
-      if(limit>0 && idx<limit){
-        const updatedRows=rowsCopy.filter(x=>x.id!==id);
-        if(updatedRows.length>=limit){
-          const firstWaiting=updatedRows[limit-1];
-          if(firstWaiting){
-            await supabase.from("registrations")
-            .update({queue_pos:limit})
-            .eq("id",firstWaiting.id);
-          }
-        }
+  document.querySelectorAll(".js-inline").forEach((input) => {
+    const commit = async () => {
+      const id = input.dataset.id;
+      const field = input.dataset.field;
+      const value = field === "wedding_date" && !input.value ? null : input.value.trim();
+      const ok = await updateRegistrationField(id, { [field]: value || null });
+      if (ok) {
+        input.dataset.lastValue = input.value;
       }
+    };
 
+    input.dataset.lastValue = input.value;
+
+    input.addEventListener("change", commit);
+    input.addEventListener("keydown", async (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        input.blur();
+      }
+    });
+    input.addEventListener("blur", async () => {
+      if (input.value === input.dataset.lastValue) return;
+      await commit();
+    });
+  });
+
+  document.querySelectorAll(".btnDelete").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.id;
+      await supabase.from("registrations").delete().eq("id", id);
       setMsg("Inscrição excluída.", "ok");
       refreshRegistrations();
     });
   });
 }
 
-btnLogin.addEventListener("click",async()=>{
+btnLogin.addEventListener("click", async () => {
   setMsg("");
-  const email=document.getElementById("email").value;
-  const password=document.getElementById("password").value;
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-  const { data,error } = await supabase.auth.signInWithPassword({email,password});
-  if(error){ setMsg("Erro no login","err"); return;}
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    setMsg("Erro no login", "err");
+    return;
+  }
 
-  try{
+  try {
     await requireAdmin(data.session);
-    loginCard.style.display="none";
-    app.style.display="";
+    loginCard.style.display = "none";
+    app.style.display = "";
     await refreshEvents();
     await refreshRegistrations();
-  }catch{
+  } catch {
     await supabase.auth.signOut();
-    setMsg("Usuário não autorizado","err");
+    setMsg("Usuário não autorizado", "err");
   }
 });
 
-btnLogout.addEventListener("click",async()=>{
+btnLogout.addEventListener("click", async () => {
   await supabase.auth.signOut();
-  loginCard.style.display="";
-  app.style.display="none";
+  loginCard.style.display = "";
+  app.style.display = "none";
 });
 
-eventSelect.addEventListener("change",async()=>{
-  currentEventId=eventSelect.value;
-  maxCouples.value=eventSelect.selectedOptions[0].dataset.max;
-  eventLocal.value=eventSelect.selectedOptions[0].dataset.local;
+eventSelect.addEventListener("change", async () => {
+  currentEventId = eventSelect.value;
+  maxCouples.value = eventSelect.selectedOptions[0].dataset.max;
+  eventLocal.value = eventSelect.selectedOptions[0].dataset.local;
   refreshRegistrations();
 });
 
-btnSaveEvent.addEventListener("click",async()=>{
+btnSaveEvent.addEventListener("click", async () => {
   await supabase.from("events")
-  .update({
-    max_couples:Number(maxCouples.value||0),
-    local:eventLocal.value||null
-  })
-  .eq("id",currentEventId);
+    .update({
+      max_couples: Number(maxCouples.value || 0),
+      local: eventLocal.value || null
+    })
+    .eq("id", currentEventId);
 
-  setMsg("Evento atualizado.","ok");
+  const selected = eventSelect.selectedOptions[0];
+  if (selected) {
+    selected.dataset.max = maxCouples.value || 0;
+    selected.dataset.local = eventLocal.value || "";
+  }
+
+  setMsg("Evento atualizado.", "ok");
+  refreshRegistrations();
 });
 
-(async()=>{
+(async () => {
   const { data } = await supabase.auth.getSession();
-  if(data.session){
-    try{
+  if (data.session) {
+    try {
       await requireAdmin(data.session);
-      loginCard.style.display="none";
-      app.style.display="";
+      loginCard.style.display = "none";
+      app.style.display = "";
       await refreshEvents();
       await refreshRegistrations();
-    }catch{
+    } catch {
       await supabase.auth.signOut();
     }
   }
