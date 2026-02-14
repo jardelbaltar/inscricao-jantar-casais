@@ -219,7 +219,7 @@ th { color: #334155; font-size: 0.9rem; }
     <div class="card">
       <h2>Convidados</h2>
       <p class="muted">Edite diretamente os campos <strong>Nome do casal</strong> e <strong>Data de casamento</strong>.</p>
-      <button class="secondary" id="btnExportPdf">Exportar convidados (PDF)</button>
+      <button class="secondary" id="btnPrintList">Imprimir lista de convidados</button>
       <div id="regsTableWrap"></div>
     </div>
   </div>
@@ -244,7 +244,7 @@ const eventSelect = document.getElementById("eventSelect");
 const maxCouples = document.getElementById("maxCouples");
 const eventLocal = document.getElementById("eventLocal");
 const btnSaveEvent = document.getElementById("btnSaveEvent");
-const btnExportPdf = document.getElementById("btnExportPdf");
+const btnPrintList = document.getElementById("btnPrintList");
 const regsTableWrap = document.getElementById("regsTableWrap");
 
 let currentEventId = null;
@@ -444,62 +444,84 @@ async function refreshRegistrations() {
   });
 }
 
-async function exportRegistrationsPdf() {
+function openGuestListForPrint() {
   if (!currentEventId) {
-    setMsg("Selecione um evento para exportar.", "err");
+    setMsg("Selecione um evento para imprimir.", "err");
     return;
   }
 
   if (!currentRegistrations.length) {
-    setMsg("Não há convidados para exportar.", "err");
+    setMsg("Não há convidados para imprimir.", "err");
     return;
   }
 
-  const eventTitle = eventSelect.selectedOptions[0]?.textContent?.trim() || "evento";
+  const selectedEvent = eventSelect.selectedOptions[0];
+  const eventTitle = selectedEvent?.textContent?.trim() || "Evento";
+  const eventLocalValue = eventLocal.value?.trim() || selectedEvent?.dataset.local || "Não informado";
+  const eventMaxValue = Number(maxCouples.value || selectedEvent?.dataset.max || 0);
 
-  try {
-    const [jspdfModule, autoTableModule] = await Promise.all([
-      import("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/+esm"),
-      import("https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/+esm")
-    ]);
+  const rowsHtml = currentRegistrations.map((r, idx) => `
+    <tr>
+      <td>${r.queue_pos ?? idx + 1}</td>
+      <td>${escapeHtml(r.couple_name || "—")}</td>
+      <td>${escapeHtml(formatDate(r.wedding_date))}</td>
+      <td>${escapeHtml(r.phone || "—")}</td>
+      <td>${escapeHtml(r.dishes?.name || "—")}</td>
+    </tr>
+  `).join("");
 
-    const jsPDF = jspdfModule.jsPDF || jspdfModule.default?.jsPDF;
-    const autoTable = autoTableModule.default || autoTableModule.autoTable;
-
-    if (typeof jsPDF !== "function" || typeof autoTable !== "function") {
-      throw new Error("PDF_DEPENDENCY_LOAD_FAILED");
-    }
-
-    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-    doc.setFontSize(14);
-    doc.text(`Lista de convidados - ${eventTitle}`, 14, 16);
-
-    autoTable(doc, {
-      startY: 22,
-      head: [["Ordem", "Nome", "Data de casamento", "Telefone", "Prato escolhido"]],
-      body: currentRegistrations.map((r, idx) => [
-        r.queue_pos ?? idx + 1,
-        r.couple_name || "—",
-        formatDate(r.wedding_date),
-        r.phone || "—",
-        r.dishes?.name || "—"
-      ]),
-      styles: { fontSize: 10 }
-    });
-
-    const safeTitle = eventTitle
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-zA-Z0-9_-]+/g, "_")
-      .replace(/^_+|_+$/g, "")
-      .toLowerCase() || "evento";
-
-    doc.save(`convidados_${safeTitle}.pdf`);
-    setMsg("PDF exportado com sucesso.", "ok");
-  } catch (error) {
-    console.error(error);
-    setMsg("Não foi possível exportar o PDF.", "err");
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) {
+    setMsg("Não foi possível abrir a aba de impressão. Verifique o bloqueador de pop-up.", "err");
+    return;
   }
+
+  printWindow.document.write(`<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Lista de convidados - ${escapeHtml(eventTitle)}</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; color: #0f172a; }
+    h1 { margin: 0 0 14px; font-size: 24px; }
+    .event-data { margin-bottom: 18px; }
+    .event-data p { margin: 4px 0; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; font-size: 14px; }
+    th { background: #f1f5f9; }
+    @media print { body { margin: 10mm; } }
+  </style>
+</head>
+<body>
+  <h1>Lista de convidados</h1>
+  <div class="event-data">
+    <p><strong>Evento:</strong> ${escapeHtml(eventTitle)}</p>
+    <p><strong>Local:</strong> ${escapeHtml(eventLocalValue)}</p>
+    <p><strong>Vagas:</strong> ${eventMaxValue > 0 ? eventMaxValue : "Não definido"}</p>
+    <p><strong>Total de convidados:</strong> ${currentRegistrations.length}</p>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Ordem</th>
+        <th>Nome do casal</th>
+        <th>Data de casamento</th>
+        <th>Telefone</th>
+        <th>Prato escolhido</th>
+      </tr>
+    </thead>
+    <tbody>${rowsHtml}</tbody>
+  </table>
+
+  <script>
+    window.onload = () => {
+      window.print();
+    };
+  <\/script>
+</body>
+</html>`);
+  printWindow.document.close();
+  setMsg("Lista aberta em nova aba para impressão.", "ok");
 }
 
 btnLogin.addEventListener("click", async () => {
@@ -556,7 +578,7 @@ btnSaveEvent.addEventListener("click", async () => {
   refreshRegistrations();
 });
 
-btnExportPdf.addEventListener("click", exportRegistrationsPdf);
+btnPrintList.addEventListener("click", openGuestListForPrint);
 
 (async () => {
   const { data } = await supabase.auth.getSession();
