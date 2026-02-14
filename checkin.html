@@ -568,7 +568,8 @@
     const globalToastEl = document.getElementById("globalToast");
 
     const params = new URLSearchParams(location.search);
-    const EVENT_ID = params.get("event");
+    const EVENT_SLUG = params.get("event")?.trim();
+    let EVENT_ID = null;
 
     let allRows = [];
     let scanLockUntil = 0;
@@ -748,6 +749,25 @@
       });
     }
 
+
+    async function resolveEventIdBySlug() {
+      if (!EVENT_SLUG) return;
+
+      const { data, error } = await supabase
+        .from("events")
+        .select("id")
+        .eq("slug", EVENT_SLUG)
+        .maybeSingle();
+
+      if (error || !data?.id) {
+        setMsg("Link inválido: evento não encontrado para o slug informado.", "err");
+        tableWrap.innerHTML = "";
+        throw new Error("Invalid event slug");
+      }
+
+      EVENT_ID = data.id;
+    }
+
     async function loadEventTitle() {
       if (!EVENT_ID) return;
 
@@ -765,7 +785,7 @@
 
     async function loadRegistrations() {
       if (!EVENT_ID) {
-        setMsg("Link inválido: faltou ?event=UUID_DO_EVENTO", "err");
+        setMsg("Link inválido: faltou ?event=slug-do-evento", "err");
         tableWrap.innerHTML = "";
         return;
       }
@@ -1044,6 +1064,7 @@
     searchInput.addEventListener("input", renderTable);
     btnReload.addEventListener("click", loadRegistrations);
 
+    await resolveEventIdBySlug();
     await loadEventTitle();
     await loadRegistrations();
   </script>

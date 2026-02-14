@@ -350,7 +350,8 @@
     });
 
     const params = new URLSearchParams(location.search);
-    const eventId = params.get("event")?.trim();
+    const eventSlug = params.get("event")?.trim();
+    let eventId = null;
 
     const heroTitle = document.getElementById("heroTitle");
     const heroSubtitle = document.getElementById("heroSubtitle");
@@ -424,11 +425,11 @@
 
       url.search = "";
       url.hash = "";
-      url.searchParams.set("event", eventId);
+      url.searchParams.set("event", eventSlug);
       return url.toString();
     }
 
-    if (!eventId) {
+    if (!eventSlug) {
       setError("Link inválido: faltou o parâmetro ?event=.");
       document.title = "Inscrições - Evento não informado";
       heroTitle.textContent = "Evento não informado";
@@ -438,6 +439,26 @@
     }
 
     newRegistrationLink.href = getNewRegistrationUrl();
+
+    async function resolveEventIdBySlug() {
+      const { data, error } = await supabase
+        .from("events")
+        .select("id")
+        .eq("slug", eventSlug)
+        .maybeSingle();
+
+      if (error || !data?.id) {
+        setError("Este evento não existe mais (ou o link está incorreto). Confira o parâmetro ?event=.");
+        document.title = "Inscrições - Evento não encontrado";
+        heroTitle.textContent = "Evento não encontrado";
+        heroSubtitle.textContent = "Data do evento indisponível - Limite indisponível";
+        tableWrap.innerHTML = "<p class='muted'>Nenhuma inscrição para exibir.</p>";
+        throw new Error("Invalid event slug");
+      }
+
+      eventId = data.id;
+    }
+
 
 
     async function loadPanel() {
@@ -623,6 +644,7 @@
 
     window.addEventListener("beforeunload", stopAutoRefresh);
 
+    await resolveEventIdBySlug();
     await loadPanel();
     startAutoRefresh();
   </script>

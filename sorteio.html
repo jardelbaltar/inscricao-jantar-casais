@@ -198,7 +198,8 @@ const SUPABASE_URL = "https://nuqcefxwarrjehvhdoug.supabase.co";
 const supabase=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:false}});
 
 const params=new URLSearchParams(location.search);
-const EVENT_ID=params.get("event");
+const EVENT_SLUG=params.get("event")?.trim();
+let EVENT_ID=null;
 
 const winnerEl=document.getElementById("winner");
 const drawBtn=document.getElementById("drawBtn");
@@ -208,6 +209,31 @@ const historyList=document.getElementById("historyList");
 
 let participants=[];
 let winners=[];
+
+
+async function resolveEventIdBySlug(){
+  if(!EVENT_SLUG){
+    winnerEl.textContent="Link inválido: faltou ?event=slug";
+    drawBtn.disabled=true;
+    return false;
+  }
+
+  const { data, error } = await supabase
+    .from("events")
+    .select("id")
+    .eq("slug", EVENT_SLUG)
+    .maybeSingle();
+
+  if(error || !data?.id){
+    winnerEl.textContent="Evento não encontrado para o slug informado.";
+    drawBtn.disabled=true;
+    return false;
+  }
+
+  EVENT_ID=data.id;
+  return true;
+}
+
 
 async function load(){
   const {data}=await supabase
@@ -288,7 +314,10 @@ resetBtn.addEventListener("click",()=>{
 
 drawBtn.addEventListener("click",draw);
 
-await load();
+const hasEvent = await resolveEventIdBySlug();
+if(hasEvent){
+  await load();
+}
 </script>
 
 </body>

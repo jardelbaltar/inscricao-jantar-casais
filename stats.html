@@ -254,7 +254,7 @@
   </div>
 
   <div class="footer">
-    <div>Abra com: <span class="badge">stats.html?event=UUID</span> • Opcional: <span class="badge">&present=1</span></div>
+    <div>Abra com: <span class="badge">stats.html?event=SLUG_DO_EVENTO</span> • Opcional: <span class="badge">&present=1</span></div>
     <div>Fonte: Supabase • view <span class="badge">registrations_checkin</span></div>
   </div>
 
@@ -271,7 +271,8 @@
     });
 
     const params = new URLSearchParams(location.search);
-    const EVENT_ID = params.get("event");
+    const EVENT_SLUG = params.get("event")?.trim();
+    let EVENT_ID = null;
     const ONLY_PRESENT = params.get("present") === "1";
 
     const statusEl = document.getElementById("status");
@@ -527,9 +528,29 @@
       `;
     }
 
+
+    async function resolveEventIdBySlug(){
+      if (!EVENT_SLUG) return;
+
+      const { data, error } = await supabase
+        .from("events")
+        .select("id")
+        .eq("slug", EVENT_SLUG)
+        .maybeSingle();
+
+      if (error || !data?.id) {
+        statusEl.textContent = "Erro: evento não encontrado para o slug informado";
+        chipCounts.className = "err";
+        chipCounts.textContent = "Link inválido";
+        throw new Error("Invalid event slug");
+      }
+
+      EVENT_ID = data.id;
+    }
+
     async function load(){
       if (!EVENT_ID){
-        statusEl.textContent = "Erro: faltou ?event=UUID";
+        statusEl.textContent = "Erro: faltou ?event=slug";
         chipCounts.className = "err";
         chipCounts.textContent = "Link inválido";
         return;
@@ -610,6 +631,7 @@
       statusEl.textContent = "Online";
     }
 
+    await resolveEventIdBySlug();
     await load();
     setInterval(load, 30000);
   </script>

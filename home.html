@@ -452,7 +452,7 @@ select{
 
 <div class="footer">
   <div>Salve o EVENT_ID uma vez e navegue pelos módulos.</div>
-  <div>home.html?event=UUID</div>
+  <div>home.html?event=SLUG_DO_EVENTO</div>
 </div>
 
 </div>
@@ -460,7 +460,7 @@ select{
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.3/+esm";
 
-const STORAGE_KEY="EVENT_ID";
+const STORAGE_KEY="EVENT_SLUG";
 const SUPABASE_URL = "https://nuqcefxwarrjehvhdoug.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51cWNlZnh3YXJyamVodmhkb3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NzE1NzUsImV4cCI6MjA4NjM0NzU3NX0.xLugRmdl6UKVsMZnDepBlFndh4vGVMnptuloFZC28Mc";
 
@@ -480,7 +480,7 @@ function getInscricaoLink(){
 
 function setEventChip(id){
   if(!eventChip) return;
-  eventChip.textContent = "EVENT_ID: " + (id || "—");
+  eventChip.textContent = "EVENT: " + (id || "—");
 }
 
 function formatDateTime(value) {
@@ -544,7 +544,7 @@ async function loadEvents(preferredId){
 
   const { data, error } = await supabase
     .from("events")
-    .select("id,title,event_at,created_at")
+    .select("id,title,slug,event_at,created_at")
     .order("created_at", { ascending: false });
 
   if(error){
@@ -562,13 +562,14 @@ async function loadEvents(preferredId){
   eventSelect.innerHTML = "<option value=''>Selecione um evento</option>";
   for (const event of data){
     const option = document.createElement("option");
-    option.value = event.id;
+    option.value = event.slug;
+    option.dataset.id = event.id;
     const dateLabel = event.event_at ? ` — ${formatDateTime(event.event_at)}` : "";
     option.textContent = `${event.title}${dateLabel}`;
     eventSelect.appendChild(option);
   }
 
-  if(preferredId && data.some((event)=> event.id === preferredId)){
+  if(preferredId && data.some((event)=> event.slug === preferredId)){
     eventSelect.value = preferredId;
     saveEvent();
     return;
