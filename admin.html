@@ -309,14 +309,24 @@ async function refreshEvents() {
   eventLocal.value = selected.dataset.local;
 }
 
-async function ensureQueuePos(rows) {
-  for (let i = 0; i < rows.length; i++) {
-    if (rows[i].queue_pos == null) {
-      await supabase.from("registrations")
-        .update({ queue_pos: i + 1 })
-        .eq("id", rows[i].id);
-      rows[i].queue_pos = i + 1;
+async function normalizeQueuePos(rows) {
+  const updates = [];
+
+  rows.forEach((row, idx) => {
+    const nextPos = idx + 1;
+    if (Number(row.queue_pos) !== nextPos) {
+      updates.push(
+        supabase
+          .from("registrations")
+          .update({ queue_pos: nextPos })
+          .eq("id", row.id)
+      );
+      row.queue_pos = nextPos;
     }
+  });
+
+  if (updates.length) {
+    await Promise.all(updates);
   }
 }
 
@@ -345,10 +355,11 @@ async function refreshRegistrations() {
     .from("registrations")
     .select("id,couple_name,wedding_date,phone,queue_pos,dishes(name)")
     .eq("event_id", currentEventId)
-    .order("queue_pos", { ascending: true });
+    .order("queue_pos", { ascending: true })
+    .order("id", { ascending: true });
 
   const rows = data || [];
-  await ensureQueuePos(rows);
+  await normalizeQueuePos(rows);
 
   const limit = Number(maxCouples.value || 0);
 
