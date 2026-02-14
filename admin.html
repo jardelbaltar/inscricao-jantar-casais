@@ -395,6 +395,13 @@
       btnLogin.textContent = isLoading ? "Entrando..." : "Entrar";
     }
 
+    function resetLoginForm(clearEmail = false) {
+      if (clearEmail) {
+        document.getElementById("email").value = "";
+      }
+      document.getElementById("password").value = "";
+    }
+
     function escapeHtml(s){
       return (s ?? "").toString().replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     }
@@ -756,6 +763,7 @@
       if (!session) {
         loginCard.style.display = "";
         app.style.display = "none";
+        resetLoginForm();
         setLoginLoading(false);
         return;
       }
@@ -803,9 +811,14 @@
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
       setLoginLoading(true);
+
+      // Garante estado de autenticação limpo para evitar sessão antiga bloqueando novo login no mesmo navegador.
+      await supabase.auth.signOut({ scope: "local" });
+
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         setLoginLoading(false);
+        resetLoginForm();
         setMsg("Falha no login. Verifique e-mail/senha.", "err");
         return;
       }
@@ -830,6 +843,7 @@
 
     btnLogout.addEventListener("click", async () => {
       await supabase.auth.signOut();
+      resetLoginForm();
     });
 
     // UI actions
