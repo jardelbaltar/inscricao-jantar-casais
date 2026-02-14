@@ -111,6 +111,34 @@ button.inline-btn {
 .row { display: flex; gap: 10px; flex-wrap: wrap; }
 .row > div { flex: 1; min-width: 180px; }
 
+.panel-toggle {
+  width: auto;
+  min-height: 36px;
+  margin-top: 0;
+  padding: 8px 12px;
+  font-size: 0.84rem;
+  border-radius: 999px;
+}
+
+.dish-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.dish-panel-body { margin-top: 12px; }
+
+.inline-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.inline-actions .inline-btn {
+  width: auto;
+}
+
 .table-scroll { overflow-x: auto; }
 
 table {
@@ -217,6 +245,37 @@ th { color: #334155; font-size: 0.9rem; }
     </div>
 
     <div class="card">
+      <div class="dish-panel-header">
+        <div>
+          <h2>Gestão de pratos</h2>
+          <p class="muted" style="margin:4px 0 0;">Cadastre, reordene, ajuste quantidade e controle o status dos pratos.</p>
+        </div>
+        <button class="secondary panel-toggle" id="btnToggleDishPanel">Ocultar painel</button>
+      </div>
+
+      <div class="dish-panel-body" id="dishPanelBody">
+        <div class="row">
+          <div>
+            <label>Nome do prato</label>
+            <input id="newDishName" type="text" placeholder="Ex.: Filé ao molho madeira">
+          </div>
+          <div>
+            <label>Ordem</label>
+            <input id="newDishOrder" type="number" min="1" placeholder="1">
+          </div>
+          <div>
+            <label>Quantidade</label>
+            <input id="newDishQty" type="number" min="0" placeholder="50">
+          </div>
+          <div style="align-self:flex-end">
+            <button id="btnAddDish">Cadastrar prato</button>
+          </div>
+        </div>
+        <div id="dishesTableWrap"></div>
+      </div>
+    </div>
+
+    <div class="card">
       <h2>Convidados</h2>
       <p class="muted">Edite diretamente os campos <strong>Nome do casal</strong> e <strong>Data de casamento</strong>.</p>
       <button class="secondary" id="btnPrintList">Imprimir lista de convidados</button>
@@ -246,9 +305,17 @@ const eventLocal = document.getElementById("eventLocal");
 const btnSaveEvent = document.getElementById("btnSaveEvent");
 const btnPrintList = document.getElementById("btnPrintList");
 const regsTableWrap = document.getElementById("regsTableWrap");
+const btnToggleDishPanel = document.getElementById("btnToggleDishPanel");
+const dishPanelBody = document.getElementById("dishPanelBody");
+const newDishName = document.getElementById("newDishName");
+const newDishOrder = document.getElementById("newDishOrder");
+const newDishQty = document.getElementById("newDishQty");
+const btnAddDish = document.getElementById("btnAddDish");
+const dishesTableWrap = document.getElementById("dishesTableWrap");
 
 let currentEventId = null;
 let currentRegistrations = [];
+let dishPanelCollapsed = false;
 
 function setMsg(text, type = "") {
   msg.className = type;
@@ -444,6 +511,134 @@ async function refreshRegistrations() {
   });
 }
 
+function getDishFormValuesById(id) {
+  return {
+    name: document.querySelector(`.js-dish-name[data-id="${id}"]`)?.value.trim() || "",
+    sortOrder: Number(document.querySelector(`.js-dish-order[data-id="${id}"]`)?.value || 0),
+    remaining: Number(document.querySelector(`.js-dish-qty[data-id="${id}"]`)?.value || 0)
+  };
+}
+
+async function refreshDishes() {
+  if (!currentEventId) {
+    dishesTableWrap.innerHTML = "<p class='muted'>Selecione um evento para gerenciar os pratos.</p>";
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("dishes")
+    .select("id,name,sort_order,remaining,is_active,created_at")
+    .eq("event_id", currentEventId)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    dishesTableWrap.innerHTML = "<p class='err'>Erro ao carregar pratos.</p>";
+    return;
+  }
+
+  const rows = (data || []).map((dish) => `
+<tr>
+  <td><input class="inline-input js-dish-name" data-id="${dish.id}" type="text" value="${escapeHtml(dish.name ?? "")}" /></td>
+  <td><input class="inline-input js-dish-order" data-id="${dish.id}" type="number" min="1" value="${dish.sort_order ?? ""}" /></td>
+  <td><input class="inline-input js-dish-qty" data-id="${dish.id}" type="number" min="0" value="${dish.remaining ?? 0}" /></td>
+  <td>${dish.is_active ? "✅ Ativo" : "⏸️ Inativo"}</td>
+  <td>
+    <div class="inline-actions">
+      <button class="secondary inline-btn btnSaveDish" data-id="${dish.id}">Salvar</button>
+      <button class="inline-btn btnToggleDish" data-id="${dish.id}" data-active="${dish.is_active}">${dish.is_active ? "Desativar" : "Ativar"}</button>
+      <button class="danger inline-btn btnDeleteDish" data-id="${dish.id}">Excluir</button>
+    </div>
+  </td>
+</tr>`).join("");
+
+  dishesTableWrap.innerHTML = `
+<div class="table-scroll">
+  <table>
+    <thead>
+      <tr>
+        <th>Prato</th>
+        <th>Ordem</th>
+        <th>Quantidade</th>
+        <th>Status</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>${rows || "<tr><td colspan='5' class='muted'>Nenhum prato cadastrado.</td></tr>"}</tbody>
+  </table>
+</div>`;
+
+  document.querySelectorAll(".btnSaveDish").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.id;
+      const values = getDishFormValuesById(id);
+      if (!values.name) {
+        setMsg("Informe o nome do prato.", "err");
+        return;
+      }
+
+      const { error: updateError } = await supabase
+        .from("dishes")
+        .update({
+          name: values.name,
+          sort_order: Math.max(1, values.sortOrder || 1),
+          remaining: Math.max(0, values.remaining || 0)
+        })
+        .eq("id", id);
+
+      if (updateError) {
+        setMsg("Erro ao atualizar prato.", "err");
+        return;
+      }
+
+      setMsg("Prato atualizado.", "ok");
+      await refreshDishes();
+    });
+  });
+
+  document.querySelectorAll(".btnToggleDish").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.id;
+      const isActive = btn.dataset.active === "true";
+      const { error: toggleError } = await supabase
+        .from("dishes")
+        .update({ is_active: !isActive })
+        .eq("id", id);
+
+      if (toggleError) {
+        setMsg("Erro ao alterar status do prato.", "err");
+        return;
+      }
+
+      setMsg(`Prato ${!isActive ? "ativado" : "desativado"}.`, "ok");
+      await refreshDishes();
+    });
+  });
+
+  document.querySelectorAll(".btnDeleteDish").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.id;
+      const { error: deleteError } = await supabase
+        .from("dishes")
+        .delete()
+        .eq("id", id);
+
+      if (deleteError) {
+        setMsg("Erro ao excluir prato. Verifique se há inscrições vinculadas.", "err");
+        return;
+      }
+
+      setMsg("Prato excluído.", "ok");
+      await refreshDishes();
+    });
+  });
+}
+
+function syncDishPanelState() {
+  dishPanelBody.style.display = dishPanelCollapsed ? "none" : "";
+  btnToggleDishPanel.textContent = dishPanelCollapsed ? "Mostrar painel" : "Ocultar painel";
+}
+
 function openGuestListForPrint() {
   if (!currentEventId) {
     setMsg("Selecione um evento para imprimir.", "err");
@@ -540,6 +735,7 @@ btnLogin.addEventListener("click", async () => {
     loginCard.style.display = "none";
     app.style.display = "";
     await refreshEvents();
+    await refreshDishes();
     await refreshRegistrations();
   } catch {
     await supabase.auth.signOut();
@@ -557,7 +753,50 @@ eventSelect.addEventListener("change", async () => {
   currentEventId = eventSelect.value;
   maxCouples.value = eventSelect.selectedOptions[0].dataset.max;
   eventLocal.value = eventSelect.selectedOptions[0].dataset.local;
+  await refreshDishes();
   refreshRegistrations();
+});
+
+btnToggleDishPanel.addEventListener("click", () => {
+  dishPanelCollapsed = !dishPanelCollapsed;
+  syncDishPanelState();
+});
+
+btnAddDish.addEventListener("click", async () => {
+  if (!currentEventId) {
+    setMsg("Selecione um evento para cadastrar pratos.", "err");
+    return;
+  }
+
+  const name = newDishName.value.trim();
+  const sortOrder = Math.max(1, Number(newDishOrder.value || 1));
+  const remaining = Math.max(0, Number(newDishQty.value || 0));
+
+  if (!name) {
+    setMsg("Informe o nome do prato.", "err");
+    return;
+  }
+
+  const { error } = await supabase
+    .from("dishes")
+    .insert({
+      event_id: currentEventId,
+      name,
+      sort_order: sortOrder,
+      remaining,
+      is_active: true
+    });
+
+  if (error) {
+    setMsg("Erro ao cadastrar prato.", "err");
+    return;
+  }
+
+  newDishName.value = "";
+  newDishOrder.value = "";
+  newDishQty.value = "";
+  setMsg("Prato cadastrado.", "ok");
+  await refreshDishes();
 });
 
 btnSaveEvent.addEventListener("click", async () => {
@@ -588,12 +827,15 @@ btnPrintList.addEventListener("click", openGuestListForPrint);
       loginCard.style.display = "none";
       app.style.display = "";
       await refreshEvents();
+      await refreshDishes();
       await refreshRegistrations();
     } catch {
       await supabase.auth.signOut();
     }
   }
 })();
+
+syncDishPanelState();
 </script>
 </body>
 </html>
