@@ -295,7 +295,7 @@
       <div class="hero-top">
         <div class="brand">
           <div class="brandMark">
-            <img src="logo-modern-noglow.png" alt="Casais 2 em 1" />
+            <img src="/logo-modern-noglow.png" alt="Casais 2 em 1" />
           </div>
         </div>
         <h1 id="heroTitle">Carregando evento...</h1>
@@ -406,24 +406,12 @@
       return `******${last4}`;
     }
 
-    function getReceiptUrl(registrationId) {
-      const url = new URL(window.location.href);
-      const path = url.pathname;
+    function createAppUrl(filename) {
+      return new URL(`/${filename}`, window.location.origin);
+    }
 
-      if (/painel\.html$/i.test(path)) {
-        url.pathname = path.replace(/painel\.html$/i, "recibo.html");
-      } else if (path.endsWith("/")) {
-        url.pathname = `${path}recibo.html`;
-      } else {
-        const lastSegment = path.split("/").pop() ?? "";
-        const looksLikeFile = /\.[a-z0-9]+$/i.test(lastSegment);
-        if (looksLikeFile) {
-          const basePath = path.substring(0, path.lastIndexOf("/") + 1);
-          url.pathname = `${basePath}recibo.html`;
-        } else {
-          url.pathname = `${path}/recibo.html`;
-        }
-      }
+    function getReceiptUrl(registrationId) {
+      const url = createAppUrl("recibo.html");
 
       url.search = "";
       url.hash = "";
@@ -432,23 +420,7 @@
     }
 
     function getNewRegistrationUrl() {
-      const url = new URL(window.location.href);
-      const path = url.pathname;
-
-      if (/painel\.html$/i.test(path)) {
-        url.pathname = path.replace(/painel\.html$/i, "index.html");
-      } else if (path.endsWith("/")) {
-        url.pathname = `${path}index.html`;
-      } else {
-        const lastSegment = path.split("/").pop() ?? "";
-        const looksLikeFile = /\.[a-z0-9]+$/i.test(lastSegment);
-        if (looksLikeFile) {
-          const basePath = path.substring(0, path.lastIndexOf("/") + 1);
-          url.pathname = `${basePath}index.html`;
-        } else {
-          url.pathname = `${path}/index.html`;
-        }
-      }
+      const url = createAppUrl("index.html");
 
       url.search = "";
       url.hash = "";
