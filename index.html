@@ -322,6 +322,20 @@
       msg.textContent = message;
     }
 
+    function showDuplicatePhoneMessage(registrationId) {
+      msg.className = "err";
+      msg.innerHTML = "";
+
+      const text = document.createElement("span");
+      text.textContent = "Este telefone já está inscrito neste evento. ";
+
+      const link = document.createElement("a");
+      link.href = getReceiptUrl(registrationId);
+      link.textContent = "Ver recibo";
+
+      msg.append(text, link);
+    }
+
     function getPanelUrl() {
       const url = new URL(window.location.href);
       const path = url.pathname;
@@ -580,10 +594,18 @@
         const map = {
           EVENT_FULL: "As vagas foram preenchidas. No momento não foi possível incluir automaticamente na lista de espera. Tente novamente em instantes.",
           DISH_SOLD_OUT: "Esse prato acabou. Escolha outro.",
-          PHONE_ALREADY_REGISTERED: "Este telefone já está inscrito neste evento.",
           DISH_NOT_FOUND: "Prato inválido. Recarregue a página.",
           EVENT_NOT_FOUND: "Evento inválido."
         };
+
+        if (data?.error === "PHONE_ALREADY_REGISTERED") {
+          const existingRegistrationId = await findRegistrationIdByPhone(phone);
+          if (existingRegistrationId) {
+            showDuplicatePhoneMessage(existingRegistrationId);
+            return;
+          }
+        }
+
         msg.textContent = map[data.error] ?? "Não foi possível concluir. Tente novamente.";
         await loadDishes();
         return;
