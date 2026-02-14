@@ -341,9 +341,8 @@
   </main>
 
   <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.3/+esm";
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/+esm";
 
-    // ✅ COLE AQUI:
     const SUPABASE_URL = "https://nuqcefxwarrjehvhdoug.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51cWNlZnh3YXJyamVodmhkb3VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NzE1NzUsImV4cCI6MjA4NjM0NzU3NX0.xLugRmdl6UKVsMZnDepBlFndh4vGVMnptuloFZC28Mc";
 
@@ -352,7 +351,7 @@
         storageKey: "sb-admin-session",
         persistSession: true,
         autoRefreshToken: true,
-        detectSessionInUrl: false
+        detectSessionInUrl: true
       }
     });
 
@@ -382,7 +381,7 @@
     const regsTableWrap = document.getElementById("regsTableWrap");
 
     let currentEventId = null;
-    let cachedRegsRows = []; // para export CSV
+    let cachedRegsRows = []; 
     let authCheckVersion = 0;
 
     function setMsg(text, kind="") {
@@ -418,13 +417,6 @@
       return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${timeLabel}`;
     }
 
-    function formatDate(value) {
-      if (!value) return "—";
-      const [y, m, d] = value.split("-");
-      if (!y || !m || !d) return escapeHtml(value);
-      return `${d}/${m}/${y}`;
-    }
-
     function formatDateInput(value) {
       if (!value) return "";
       const d = new Date(value);
@@ -440,14 +432,12 @@
     }
 
     function pageBaseUrl() {
-      // URL base do GitHub Pages atual
       const url = new URL(window.location.href);
-      url.pathname = url.pathname.replace(/admin\.html$/i, ""); // remove admin.html
+      url.pathname = url.pathname.replace(/admin\.html$/i, "");
       url.search = "";
       url.hash = "";
       return url.toString();
     }
-
 
     function delay(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
@@ -455,101 +445,71 @@
 
     async function withRetry(operation, retries = 2, delayMs = 400) {
       let lastError = null;
-
       for (let attempt = 0; attempt <= retries; attempt += 1) {
         try {
           const result = await operation();
-          if (result?.error) {
-            throw result.error;
-          }
+          if (result?.error) throw result.error;
           return result;
         } catch (error) {
           lastError = error;
-          if (attempt < retries) {
-            await delay(delayMs);
-          }
+          if (attempt < retries) await delay(delayMs);
         }
       }
-
       throw lastError;
     }
 
     async function requireAdminOrFail() {
-      // Checa se usuário autenticado está em public.admins (policy permite só o próprio).
-      // Após login/refresh, alguns ambientes podem levar alguns ms para estabilizar o token.
       const retries = [0, 150, 300, 600];
-
       for (const waitMs of retries) {
-        if (waitMs > 0) {
-          await delay(waitMs);
-        }
-
+        if (waitMs > 0) await delay(waitMs);
         const { data, error } = await supabase.from("admins").select("*").limit(1);
-
         if (!error) {
           if (!data || data.length === 0) throw new Error("NOT_ADMIN");
           return;
         }
-
-        const msg = (error.message || "").toLowerCase();
-        const isTransientAuthError =
-          msg.includes("jwt") ||
-          msg.includes("token") ||
-          msg.includes("not authenticated") ||
-          msg.includes("invalid claim");
-
-        // Se for erro de autenticação transitório, tenta novamente.
-        if (isTransientAuthError && waitMs !== retries[retries.length - 1]) {
-          continue;
-        }
-
+        const msgStr = (error.message || "").toLowerCase();
+        const isTransientAuthError = msgStr.includes("jwt") || msgStr.includes("token") || msgStr.includes("not authenticated") || msgStr.includes("invalid claim");
+        if (isTransientAuthError && waitMs !== retries[retries.length - 1]) continue;
         throw new Error("NOT_ADMIN");
       }
     }
 
     async function refreshEvents() {
       eventSelect.innerHTML = "<option>Carregando...</option>";
-
-      let data;
       try {
         const response = await withRetry(() => supabase
           .from("events")
           .select("id,title,event_at,max_couples,local,created_at")
           .order("created_at", { ascending: false }));
-        data = response.data;
+        const data = response.data;
+        if (!data || data.length === 0) {
+          eventSelect.innerHTML = "<option value=''>Nenhum evento encontrado</option>";
+          currentEventId = null;
+          return;
+        }
+        eventSelect.innerHTML = "";
+        for (const e of data) {
+          const opt = document.createElement("option");
+          opt.value = e.id;
+          const d = e.event_at ? ` — ${formatDateTime(e.event_at)}` : "";
+          opt.textContent = `${e.title}${d}`;
+          opt.dataset.max = e.max_couples;
+          opt.dataset.local = e.local ?? "";
+          eventSelect.appendChild(opt);
+        }
+        const params = new URLSearchParams(location.search);
+        const urlEvent = params.get("event");
+        if (urlEvent && data.some(x => x.id === urlEvent)) {
+          eventSelect.value = urlEvent;
+        }
+        currentEventId = eventSelect.value;
+        maxCouples.value = eventSelect.selectedOptions[0]?.dataset.max ?? "";
+        eventLocal.value = eventSelect.selectedOptions[0]?.dataset.local ?? "";
+        publicLink.value = `${pageBaseUrl()}?event=${currentEventId}`;
       } catch (error) {
         eventSelect.innerHTML = "<option>Erro ao carregar eventos</option>";
         throw error;
       }
-
-      if (!data || data.length === 0) {
-        eventSelect.innerHTML = "<option value=''>Nenhum evento encontrado</option>";
-        currentEventId = null;
-        return;
-      }
-
-      eventSelect.innerHTML = "";
-      for (const e of data) {
-        const opt = document.createElement("option");
-        opt.value = e.id;
-        const d = e.event_at ? ` — ${formatDateTime(e.event_at)}` : "";
-        opt.textContent = `${e.title}${d}`;
-        opt.dataset.max = e.max_couples;
-        opt.dataset.local = e.local ?? "";
-        eventSelect.appendChild(opt);
-      }
-
-      // tenta manter seleção por ?event=
-      const params = new URLSearchParams(location.search);
-      const urlEvent = params.get("event");
-      if (urlEvent && data.some(x => x.id === urlEvent)) {
-        eventSelect.value = urlEvent;
-      }
-
-      currentEventId = eventSelect.value;
-      maxCouples.value = eventSelect.selectedOptions[0]?.dataset.max ?? "";
-      eventLocal.value = eventSelect.selectedOptions[0]?.dataset.local ?? "";
-      publicLink.value = `${pageBaseUrl()}?event=${currentEventId}`;
     }
 
     async function refreshStats() {
@@ -558,103 +518,59 @@
         .from("registrations")
         .select("id", { count: "exact", head: true })
         .eq("event_id", currentEventId);
-
       if (error) {
         statsPill.textContent = "Erro ao carregar stats";
         return;
       }
-
       const limit = parseInt(maxCouples.value || "0", 10);
       statsPill.textContent = `Inscritos: ${count ?? 0} / ${limit}`;
     }
 
     async function refreshDishes() {
       dishesTableWrap.innerHTML = "<p class='muted'>Carregando...</p>";
-
       const { data, error } = await supabase
         .from("dishes")
         .select("id,name,remaining,is_active,sort_order,created_at")
         .eq("event_id", currentEventId)
         .order("sort_order", { ascending: true })
         .order("created_at", { ascending: true });
-
       if (error) {
         dishesTableWrap.innerHTML = "<p class='err'>Erro ao carregar pratos.</p>";
         return;
       }
-
       const rows = (data ?? []).map(d => `
         <tr>
-          <td>
-            <strong>${escapeHtml(d.name)}</strong><br/>
-            <span class="muted small">id: ${d.id}</span>
-          </td>
+          <td><strong>${escapeHtml(d.name)}</strong><br/><span class="muted small">id: ${d.id}</span></td>
           <td>${d.is_active ? "✅ ativo" : "⛔ inativo"}</td>
-          <td>
-            <input data-field="remaining" data-id="${d.id}" type="number" min="0" value="${d.remaining}" />
-          </td>
-          <td>
-            <input data-field="sort_order" data-id="${d.id}" type="number" value="${d.sort_order}" />
-          </td>
+          <td><input data-field="remaining" data-id="${d.id}" type="number" min="0" value="${d.remaining}" /></td>
+          <td><input data-field="sort_order" data-id="${d.id}" type="number" value="${d.sort_order}" /></td>
           <td class="right">
             <button class="btn2" data-action="save" data-id="${d.id}">Salvar</button>
-            <button class="btn2 ${d.is_active ? "danger" : ""}" data-action="toggle" data-id="${d.id}" data-active="${d.is_active}">
-              ${d.is_active ? "Desativar" : "Ativar"}
-            </button>
+            <button class="btn2 ${d.is_active ? "danger" : ""}" data-action="toggle" data-id="${d.id}" data-active="${d.is_active}">${d.is_active ? "Desativar" : "Ativar"}</button>
           </td>
-        </tr>
-      `).join("");
-
+        </tr>`).join("");
       dishesTableWrap.innerHTML = `
         <table>
-          <thead>
-            <tr>
-              <th>Prato</th>
-              <th>Status</th>
-              <th>Estoque (remaining)</th>
-              <th>Ordem</th>
-              <th style="text-align:right">Ações</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Prato</th><th>Status</th><th>Estoque</th><th>Ordem</th><th style="text-align:right">Ações</th></tr></thead>
           <tbody>${rows || "<tr><td colspan='5' class='muted'>Nenhum prato cadastrado.</td></tr>"}</tbody>
-        </table>
-      `;
-
+        </table>`;
       dishesTableWrap.querySelectorAll("button[data-action='save']").forEach(btn => {
         btn.addEventListener("click", async () => {
           const id = btn.dataset.id;
           const remaining = dishesTableWrap.querySelector(`input[data-field="remaining"][data-id="${id}"]`).value;
           const sort = dishesTableWrap.querySelector(`input[data-field="sort_order"][data-id="${id}"]`).value;
-
-          const { error } = await supabase
-            .from("dishes")
-            .update({ remaining: parseInt(remaining, 10), sort_order: parseInt(sort, 10) })
-            .eq("id", id)
-            .eq("event_id", currentEventId);
-
-          if (error) {
-            setMsg("Erro ao salvar prato.", "err");
-            return;
-          }
+          const { error } = await supabase.from("dishes").update({ remaining: parseInt(remaining, 10), sort_order: parseInt(sort, 10) }).eq("id", id);
+          if (error) { setMsg("Erro ao salvar prato.", "err"); return; }
           setMsg("Prato atualizado.", "ok");
           await refreshDishes();
         });
       });
-
       dishesTableWrap.querySelectorAll("button[data-action='toggle']").forEach(btn => {
         btn.addEventListener("click", async () => {
           const id = btn.dataset.id;
           const active = btn.dataset.active === "true";
-          const { error } = await supabase
-            .from("dishes")
-            .update({ is_active: !active })
-            .eq("id", id)
-            .eq("event_id", currentEventId);
-
-          if (error) {
-            setMsg("Erro ao alterar status.", "err");
-            return;
-          }
+          const { error } = await supabase.from("dishes").update({ is_active: !active }).eq("id", id);
+          if (error) { setMsg("Erro ao alterar status.", "err"); return; }
           setMsg("Status atualizado.", "ok");
           await refreshDishes();
         });
@@ -663,29 +579,15 @@
 
     async function refreshRegistrations() {
       regsTableWrap.innerHTML = "<p class='muted'>Carregando...</p>";
-      cachedRegsRows = [];
-
-      // Join simples: registrations -> dishes (via dish_id)
       const { data, error } = await supabase
         .from("registrations")
-        .select(`
-          id,
-          created_at,
-          couple_name,
-          wedding_date,
-          phone,
-          dishes ( name )
-        `)
+        .select("id, created_at, couple_name, wedding_date, phone, dishes ( name )")
         .eq("event_id", currentEventId)
         .order("created_at", { ascending: true });
-
-      const selectedLimit = Number(eventSelect.selectedOptions[0]?.dataset.max ?? 0);
-
       if (error) {
         regsTableWrap.innerHTML = "<p class='err'>Erro ao carregar inscrições.</p>";
         return;
       }
-
       cachedRegsRows = (data ?? []).map(r => ({
         created_at: r.created_at,
         couple_name: r.couple_name,
@@ -693,351 +595,164 @@
         phone: r.phone,
         dish: r.dishes?.name ?? ""
       }));
-
+      const selectedLimit = Number(eventSelect.selectedOptions[0]?.dataset.max ?? 0);
       const rowsHtml = (data ?? []).map((r, idx) => {
         const isConfirmed = selectedLimit <= 0 ? true : idx < selectedLimit;
         const status = isConfirmed ? "✅" : "⏳";
-        const statusLabel = isConfirmed ? "Confirmado" : "Lista de espera";
-        const canMoveUpWaiting = idx > 0;
         return `
         <tr>
-          <td title="${statusLabel}">${status}</td>
+          <td>${status}</td>
           <td>${formatDateTime(r.created_at)}</td>
-          <td>
-            <input type="text" data-reg-field="couple_name" data-id="${r.id}" value="${escapeHtml(r.couple_name)}" />
-          </td>
+          <td><input type="text" data-reg-field="couple_name" data-id="${r.id}" value="${escapeHtml(r.couple_name)}" /></td>
           <td>${escapeHtml(maskPhone(r.phone))}</td>
-          <td>
-            <input type="date" data-reg-field="wedding_date" data-id="${r.id}" value="${formatDateInput(r.wedding_date)}" />
-          </td>
+          <td><input type="date" data-reg-field="wedding_date" data-id="${r.id}" value="${formatDateInput(r.wedding_date)}" /></td>
           <td>${escapeHtml(r.dishes?.name ?? "—")}</td>
           <td class="right">
             <button class="btn2" data-reg-action="save" data-id="${r.id}">Salvar</button>
             <button class="btn2 danger" data-reg-action="delete" data-id="${r.id}" data-name="${escapeHtml(r.couple_name)}">Excluir</button>
-            <button class="btn2" data-reg-action="up" data-id="${r.id}" ${canMoveUpWaiting ? "" : "disabled"}>Subir</button>
+            <button class="btn2" data-reg-action="up" data-id="${r.id}" ${idx > 0 ? "" : "disabled"}>Subir</button>
           </td>
-        </tr>
-      `;
+        </tr>`;
       }).join("");
-
       regsTableWrap.innerHTML = `
         <table>
-          <thead>
-            <tr>
-              <th>Status</th>
-              <th>Data/Hora</th>
-              <th>Casal</th>
-              <th>Telefone</th>
-              <th>Data casamento</th>
-              <th>Prato</th>
-              <th style="text-align:right">Ações</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Status</th><th>Data/Hora</th><th>Casal</th><th>Telefone</th><th>Casamento</th><th>Prato</th><th style="text-align:right">Ações</th></tr></thead>
           <tbody>${rowsHtml || "<tr><td colspan='7' class='muted'>Nenhuma inscrição ainda.</td></tr>"}</tbody>
-        </table>
-      `;
-
+        </table>`;
       regsTableWrap.querySelectorAll("button[data-reg-action='save']").forEach(btn => {
         btn.addEventListener("click", async () => {
           const id = btn.dataset.id;
           const coupleName = regsTableWrap.querySelector(`input[data-reg-field='couple_name'][data-id='${id}']`)?.value?.trim() ?? "";
           const weddingDate = regsTableWrap.querySelector(`input[data-reg-field='wedding_date'][data-id='${id}']`)?.value ?? null;
-
-          if (!coupleName) {
-            setMsg("Informe o nome do casal.", "err");
-            return;
-          }
-
-          const { data: updatedRows, error: updateError } = await supabase
-            .from("registrations")
-            .update({
-              couple_name: coupleName,
-              wedding_date: weddingDate || null
-            })
-            .eq("id", id)
-            .eq("event_id", currentEventId)
-            .select("id");
-
-          if (updateError || !updatedRows?.length) {
-            setMsg("Erro ao salvar inscrição.", "err");
-            return;
-          }
-
+          if (!coupleName) { setMsg("Informe o nome do casal.", "err"); return; }
+          const { error } = await supabase.from("registrations").update({ couple_name: coupleName, wedding_date: weddingDate || null }).eq("id", id);
+          if (error) { setMsg("Erro ao salvar inscrição.", "err"); return; }
           setMsg("Inscrição atualizada.", "ok");
           await refreshRegistrations();
         });
       });
-
       regsTableWrap.querySelectorAll("button[data-reg-action='delete']").forEach(btn => {
         btn.addEventListener("click", async () => {
           const id = btn.dataset.id;
-          const name = btn.dataset.name || "este casal";
-          const shouldDelete = window.confirm(`Deseja realmente excluir ${name}?`);
-          if (!shouldDelete) return;
-
-          const { data: deletedRows, error: deleteError } = await supabase
-            .from("registrations")
-            .delete()
-            .eq("id", id)
-            .eq("event_id", currentEventId)
-            .select("id");
-
-          if (deleteError || !deletedRows?.length) {
-            setMsg("Erro ao excluir inscrição.", "err");
-            return;
-          }
-
+          if (!window.confirm(`Deseja realmente excluir ${btn.dataset.name}?`)) return;
+          const { error } = await supabase.from("registrations").delete().eq("id", id);
+          if (error) { setMsg("Erro ao excluir inscrição.", "err"); return; }
           setMsg("Inscrição excluída.", "ok");
-          await refreshStats();
-          await refreshRegistrations();
+          await refreshStats(); await refreshRegistrations();
         });
       });
-
       regsTableWrap.querySelectorAll("button[data-reg-action='up']").forEach(btn => {
         btn.addEventListener("click", async () => {
           const id = btn.dataset.id;
-          const allRows = data ?? [];
-          const currentIndex = allRows.findIndex(row => row.id === id);
-          const prevIndex = currentIndex - 1;
-
-          if (prevIndex < 0) {
-            return;
-          }
-
-          const previousWaiting = allRows[prevIndex];
+          const currentIndex = data.findIndex(row => row.id === id);
+          if (currentIndex <= 0) return;
+          const previousWaiting = data[currentIndex - 1];
           const previousDate = new Date(previousWaiting.created_at);
-          if (Number.isNaN(previousDate.getTime())) {
-            setMsg("Não foi possível alterar a ordem da lista de espera.", "err");
-            return;
-          }
-
           const newCreatedAt = new Date(previousDate.getTime() - 1000).toISOString();
-
-          const { data: movedRows, error: moveError } = await supabase
-            .from("registrations")
-            .update({ created_at: newCreatedAt })
-            .eq("id", id)
-            .eq("event_id", currentEventId)
-            .select("id");
-
-          if (moveError || !movedRows?.length) {
-            setMsg("Erro ao subir casal na lista de espera.", "err");
-            return;
-          }
-
-          setMsg("Casal movido para cima na lista de espera.", "ok");
+          const { error } = await supabase.from("registrations").update({ created_at: newCreatedAt }).eq("id", id);
+          if (error) { setMsg("Erro ao subir casal.", "err"); return; }
+          setMsg("Casal movido para cima.", "ok");
           await refreshRegistrations();
         });
       });
     }
 
     function exportCSV() {
-      if (!cachedRegsRows.length) {
-        setMsg("Não há dados para exportar.", "err");
-        return;
-      }
-
+      if (!cachedRegsRows.length) { setMsg("Não há dados para exportar.", "err"); return; }
       const header = ["created_at","couple_name","wedding_date","phone","dish"];
       const lines = [header.join(",")];
-
       for (const r of cachedRegsRows) {
-        const row = header.map(k => {
-          const v = (r[k] ?? "").toString().replaceAll('"','""');
-          return `"${v}"`;
-        }).join(",");
-        lines.push(row);
+        lines.push(header.map(k => `"${(r[k] ?? "").toString().replaceAll('"','""')}"`).join(","));
       }
-
       const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `inscricoes_evento_${currentEventId}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
+      const a = document.createElement("a"); a.href = url; a.download = `inscricoes_${currentEventId}.csv`;
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
     }
 
     async function loadAll() {
       await refreshEvents();
       if (!currentEventId) return;
-      publicLink.value = `${pageBaseUrl()}?event=${currentEventId}`;
-      await refreshStats();
-      await refreshDishes();
-      await refreshRegistrations();
+      await refreshStats(); await refreshDishes(); await refreshRegistrations();
     }
 
     async function applySession(session) {
       const currentCheck = ++authCheckVersion;
-      setMsg("");
-
       if (!session) {
-        loginCard.style.display = "";
-        app.style.display = "none";
-        resetLoginForm();
-        setLoginLoading(false);
-        return;
+        loginCard.style.display = ""; app.style.display = "none";
+        resetLoginForm(); setLoginLoading(false); return;
       }
-
       try {
         await requireAdminOrFail();
-
-        // evita efeitos de callbacks antigos quando há corrida de autenticação
         if (currentCheck !== authCheckVersion) return;
-
-        loginCard.style.display = "none";
-        app.style.display = "";
-        try {
-          await loadAll();
-        } catch (loadErr) {
-          await supabase.auth.signOut();
-          setMsg("Sessão expirou ou ficou inconsistente. Entre novamente.", "err");
-        }
+        loginCard.style.display = "none"; app.style.display = "";
+        await loadAll();
       } catch (err) {
-        // evita efeitos de callbacks antigos quando há corrida de autenticação
         if (currentCheck !== authCheckVersion) return;
-
+        loginCard.style.display = ""; app.style.display = "none";
         if (err?.message === "NOT_ADMIN") {
-          loginCard.style.display = "";
-          app.style.display = "none";
-          setLoginLoading(false);
-          await supabase.auth.signOut();
-          setMsg("Seu usuário não está autorizado como admin.", "err");
-          return;
+          await supabase.auth.signOut(); setMsg("Usuário não autorizado.", "err");
+        } else {
+          setMsg(`Erro: ${err?.message}`, "err");
         }
-
-        loginCard.style.display = "";
-        app.style.display = "none";
-        setMsg(`Erro ao carregar painel admin: ${err?.message ?? "erro desconhecido"}.`, "err");
       } finally {
-        if (currentCheck === authCheckVersion) {
-          setLoginLoading(false);
-        }
+        if (currentCheck === authCheckVersion) setLoginLoading(false);
       }
     }
 
-    // LOGIN handlers
     btnLogin.addEventListener("click", async () => {
-      setMsg("");
-      const email = document.getElementById("email").value.trim();
+      setMsg(""); setLoginLoading(true);
+      const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
-      setLoginLoading(true);
-
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        setLoginLoading(false);
-        resetLoginForm();
-        setMsg("Falha no login. Verifique e-mail/senha.", "err");
-        return;
-      }
-
-      // Usa a sessão retornada no login para evitar corrida entre persistência de sessão e getSession()
-      let session = data?.session ?? null;
-
-      // fallback: em alguns ambientes o evento de auth pode demorar/não disparar de imediato
-      if (!session) {
-        const { data: current } = await supabase.auth.getSession();
-        session = current?.session ?? null;
-      }
-
-      if (!session) {
-        setLoginLoading(false);
-        setMsg("Login efetuado, mas não foi possível validar a sessão no navegador. Tente novamente.", "err");
-        return;
-      }
-
-      await applySession(session);
+      if (error) { setLoginLoading(false); setMsg("Falha no login.", "err"); return; }
+      await applySession(data?.session);
     });
 
-    btnLogout.addEventListener("click", async () => {
-      await supabase.auth.signOut();
-      resetLoginForm();
-    });
+    btnLogout.addEventListener("click", async () => { await supabase.auth.signOut(); resetLoginForm(); });
 
-    // UI actions
     eventSelect.addEventListener("change", async () => {
       currentEventId = eventSelect.value;
       maxCouples.value = eventSelect.selectedOptions[0]?.dataset.max ?? "";
       eventLocal.value = eventSelect.selectedOptions[0]?.dataset.local ?? "";
       publicLink.value = `${pageBaseUrl()}?event=${currentEventId}`;
-
-      // Atualiza ?event= na URL
-      const u = new URL(location.href);
-      u.searchParams.set("event", currentEventId);
+      const u = new URL(location.href); u.searchParams.set("event", currentEventId);
       history.replaceState({}, "", u);
-
-      await refreshStats();
-      await refreshDishes();
-      await refreshRegistrations();
+      await refreshStats(); await refreshDishes(); await refreshRegistrations();
     });
 
     btnSaveEvent.addEventListener("click", async () => {
       const n = parseInt(maxCouples.value || "0", 10);
       const local = eventLocal.value.trim();
-      const { error } = await supabase
-        .from("events")
-        .update({ max_couples: n, local: local || null })
-        .eq("id", currentEventId);
-
-      if (error) {
-        setMsg("Erro ao salvar limite do evento.", "err");
-        return;
-      }
+      const { error } = await supabase.from("events").update({ max_couples: n, local: local || null }).eq("id", currentEventId);
+      if (error) { setMsg("Erro ao salvar evento.", "err"); return; }
       eventSelect.selectedOptions[0].dataset.max = n;
       eventSelect.selectedOptions[0].dataset.local = local;
-      setMsg("Dados do evento atualizados.", "ok");
-      await refreshStats();
+      setMsg("Evento atualizado.", "ok"); await refreshStats();
     });
 
     btnAddDish.addEventListener("click", async () => {
       const name = newDishName.value.trim();
-      const remaining = parseInt(newDishRemaining.value || "0", 10);
-      const sort = parseInt(newDishOrder.value || "0", 10);
-
-      if (!name) {
-        setMsg("Informe o nome do prato.", "err");
-        return;
-      }
-
-      const { error } = await supabase
-        .from("dishes")
-        .insert({ event_id: currentEventId, name, remaining, sort_order: sort, is_active: true });
-
-      if (error) {
-        setMsg("Erro ao adicionar prato.", "err");
-        return;
-      }
-
-      newDishName.value = "";
-      setMsg("Prato adicionado.", "ok");
-      await refreshDishes();
+      if (!name) { setMsg("Informe o nome do prato.", "err"); return; }
+      const { error } = await supabase.from("dishes").insert({ event_id: currentEventId, name, remaining: parseInt(newDishRemaining.value || "0", 10), sort_order: parseInt(newDishOrder.value || "0", 10), is_active: true });
+      if (error) { setMsg("Erro ao adicionar prato.", "err"); return; }
+      newDishName.value = ""; setMsg("Prato adicionado.", "ok"); await refreshDishes();
     });
 
     btnReloadDishes.addEventListener("click", refreshDishes);
     btnReloadRegs.addEventListener("click", refreshRegistrations);
     btnExportCSV.addEventListener("click", exportCSV);
 
-    // Sessão / bootstrap
-    // Em alguns refreshes o callback de auth pode emitir estados em ordem diferente.
-    // Guardamos se a sessão inicial já foi resolvida para evitar sobrescrever UI com null transitório.
     let initialSessionResolved = false;
-
     supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "INITIAL_SESSION") {
         initialSessionResolved = true;
         await applySession(session);
-        return;
+      } else if (initialSessionResolved || session) {
+        await applySession(session);
       }
-
-      if (!initialSessionResolved && !session) {
-        return;
-      }
-
-      await applySession(session);
     });
 
-    // Fallback: se o ambiente não disparar INITIAL_SESSION, usa getSession.
     const { data: { session } } = await supabase.auth.getSession();
     if (!initialSessionResolved) {
       initialSessionResolved = true;
