@@ -425,6 +425,14 @@
       return `${d}/${m}/${y}`;
     }
 
+    function formatDateInput(value) {
+      if (!value) return "";
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "";
+      const pad = (n) => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    }
+
     function maskPhone(phone) {
       const digits = (phone ?? "").replace(/\D/g, "");
       if (!digits) return "—";
@@ -690,14 +698,24 @@
         const isConfirmed = selectedLimit <= 0 ? true : idx < selectedLimit;
         const status = isConfirmed ? "✅" : "⏳";
         const statusLabel = isConfirmed ? "Confirmado" : "Lista de espera";
+        const canMoveUpWaiting = selectedLimit > 0 && idx > selectedLimit;
         return `
         <tr>
           <td title="${statusLabel}">${status}</td>
           <td>${formatDateTime(r.created_at)}</td>
-          <td><strong>${escapeHtml(r.couple_name)}</strong></td>
+          <td>
+            <input type="text" data-reg-field="couple_name" data-id="${r.id}" value="${escapeHtml(r.couple_name)}" />
+          </td>
           <td>${escapeHtml(maskPhone(r.phone))}</td>
-          <td>${formatDate(r.wedding_date)}</td>
+          <td>
+            <input type="date" data-reg-field="wedding_date" data-id="${r.id}" value="${formatDateInput(r.wedding_date)}" />
+          </td>
           <td>${escapeHtml(r.dishes?.name ?? "—")}</td>
+          <td class="right">
+            <button class="btn2" data-reg-action="save" data-id="${r.id}">Salvar</button>
+            <button class="btn2 danger" data-reg-action="delete" data-id="${r.id}" data-name="${escapeHtml(r.couple_name)}">Excluir</button>
+            <button class="btn2" data-reg-action="up" data-id="${r.id}" ${canMoveUpWaiting ? "" : "disabled"}>Subir</button>
+          </td>
         </tr>
       `;
       }).join("");
@@ -712,11 +730,102 @@
               <th>Telefone</th>
               <th>Data casamento</th>
               <th>Prato</th>
+              <th style="text-align:right">Ações</th>
             </tr>
           </thead>
-          <tbody>${rowsHtml || "<tr><td colspan='6' class='muted'>Nenhuma inscrição ainda.</td></tr>"}</tbody>
+          <tbody>${rowsHtml || "<tr><td colspan='7' class='muted'>Nenhuma inscrição ainda.</td></tr>"}</tbody>
         </table>
       `;
+
+      regsTableWrap.querySelectorAll("button[data-reg-action='save']").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.id;
+          const coupleName = regsTableWrap.querySelector(`input[data-reg-field='couple_name'][data-id='${id}']`)?.value?.trim() ?? "";
+          const weddingDate = regsTableWrap.querySelector(`input[data-reg-field='wedding_date'][data-id='${id}']`)?.value ?? null;
+
+          if (!coupleName) {
+            setMsg("Informe o nome do casal.", "err");
+            return;
+          }
+
+          const { error: updateError } = await supabase
+            .from("registrations")
+            .update({
+              couple_name: coupleName,
+              wedding_date: weddingDate || null
+            })
+            .eq("id", id)
+            .eq("event_id", currentEventId);
+
+          if (updateError) {
+            setMsg("Erro ao salvar inscrição.", "err");
+            return;
+          }
+
+          setMsg("Inscrição atualizada.", "ok");
+          await refreshRegistrations();
+        });
+      });
+
+      regsTableWrap.querySelectorAll("button[data-reg-action='delete']").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.id;
+          const name = btn.dataset.name || "este casal";
+          const shouldDelete = window.confirm(`Deseja realmente excluir ${name}?`);
+          if (!shouldDelete) return;
+
+          const { error: deleteError } = await supabase
+            .from("registrations")
+            .delete()
+            .eq("id", id)
+            .eq("event_id", currentEventId);
+
+          if (deleteError) {
+            setMsg("Erro ao excluir inscrição.", "err");
+            return;
+          }
+
+          setMsg("Inscrição excluída.", "ok");
+          await refreshStats();
+          await refreshRegistrations();
+        });
+      });
+
+      regsTableWrap.querySelectorAll("button[data-reg-action='up']").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.id;
+          const allRows = data ?? [];
+          const currentIndex = allRows.findIndex(row => row.id === id);
+          const prevIndex = currentIndex - 1;
+
+          if (currentIndex <= selectedLimit || prevIndex < 0) {
+            return;
+          }
+
+          const previousWaiting = allRows[prevIndex];
+          const previousDate = new Date(previousWaiting.created_at);
+          if (Number.isNaN(previousDate.getTime())) {
+            setMsg("Não foi possível alterar a ordem da lista de espera.", "err");
+            return;
+          }
+
+          const newCreatedAt = new Date(previousDate.getTime() - 1000).toISOString();
+
+          const { error: moveError } = await supabase
+            .from("registrations")
+            .update({ created_at: newCreatedAt })
+            .eq("id", id)
+            .eq("event_id", currentEventId);
+
+          if (moveError) {
+            setMsg("Erro ao subir casal na lista de espera.", "err");
+            return;
+          }
+
+          setMsg("Casal movido para cima na lista de espera.", "ok");
+          await refreshRegistrations();
+        });
+      });
     }
 
     function exportCSV() {
