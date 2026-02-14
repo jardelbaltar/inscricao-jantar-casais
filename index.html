@@ -169,6 +169,40 @@
       padding: 10px 12px;
     }
 
+    .info {
+      color: #1e3a8a;
+      background: #dbeafe;
+      border: 1px solid #93c5fd;
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .info-receipt-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      align-self: center;
+      width: auto;
+      min-height: 40px;
+      margin-top: 0;
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid #60a5fa;
+      background: #2563eb;
+      color: #eff6ff;
+      font-size: 0.93rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .info-receipt-btn:hover {
+      background: #1d4ed8;
+      border-color: #3b82f6;
+    }
+
 
     @media (min-width: 680px) {
       body { padding: 30px 20px; }
@@ -323,17 +357,18 @@
     }
 
     function showDuplicatePhoneMessage(registrationId) {
-      msg.className = "err";
+      msg.className = "info";
       msg.innerHTML = "";
 
       const text = document.createElement("span");
-      text.textContent = "Este telefone já está inscrito neste evento. ";
+      text.textContent = "Este telefone já está inscrito neste evento.";
 
-      const link = document.createElement("a");
-      link.href = getReceiptUrl(registrationId);
-      link.textContent = "Ver recibo";
+      const receiptButton = document.createElement("a");
+      receiptButton.href = getReceiptUrl(registrationId);
+      receiptButton.className = "info-receipt-btn";
+      receiptButton.textContent = "Ver recibo";
 
-      msg.append(text, link);
+      msg.append(text, receiptButton);
     }
 
     function getPanelUrl() {
