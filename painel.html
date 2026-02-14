@@ -559,10 +559,12 @@
             couple_name,
             wedding_date,
             phone,
+            queue_pos,
             created_at,
             dishes ( name )
           `)
           .eq("event_id", eventId)
+          .order("queue_pos", { ascending: true, nullsFirst: false })
           .order("created_at", { ascending: true });
 
         if (regError) {
@@ -573,7 +575,8 @@
         const limit = Number(eventData?.max_couples ?? 0);
         const hasFiniteLimit = limit > 0;
         const rows = (registrations ?? []).map((r, idx) => {
-          const isConfirmed = hasFiniteLimit ? idx < limit : true;
+          const queuePos = Number(r.queue_pos ?? idx + 1);
+          const isConfirmed = hasFiniteLimit ? queuePos <= limit : true;
           const statusIcon = isConfirmed
             ? `<a class="receipt-shortcut" href="${escapeHtml(getReceiptUrl(r.id))}" title="Ver recibo de ${escapeHtml(r.couple_name)}" aria-label="Ver recibo de ${escapeHtml(r.couple_name)}">✅</a>`
             : "⏳";
@@ -581,7 +584,7 @@
           return `
           <tr>
             <td title="${statusLabel}">${statusIcon}</td>
-            <td>${formatDateTime(r.created_at)}</td>
+            <td>${escapeHtml(String(queuePos))}</td>
             <td><strong>${escapeHtml(r.couple_name)}</strong></td>
             <td>${formatDate(r.wedding_date)}</td>
             <td>${escapeHtml(maskPhone(r.phone))}</td>
