@@ -225,7 +225,7 @@
       <div class="hero-top">
         <div class="brand">
           <div class="brandMark">
-            <img src="logo-modern-noglow.png" alt="Casais 2 em 1" />
+            <img src="/logo-modern-noglow.png" alt="Casais 2 em 1" />
           </div>
         </div>
         <h1 id="eventName">Carregando evento...</h1>
@@ -371,23 +371,12 @@
       msg.append(text, receiptButton);
     }
 
+    function createAppUrl(filename) {
+      return new URL(`/${filename}`, window.location.origin);
+    }
+
     function getPanelUrl() {
-      const url = new URL(window.location.href);
-      const path = url.pathname;
-      if (/index\.html$/i.test(path)) {
-        url.pathname = path.replace(/index\.html$/i, "painel.html");
-      } else if (path.endsWith("/")) {
-        url.pathname = `${path}painel.html`;
-      } else {
-        const lastSegment = path.split("/").pop() ?? "";
-        const looksLikeFile = /\.[a-z0-9]+$/i.test(lastSegment);
-        if (looksLikeFile) {
-          const basePath = path.substring(0, path.lastIndexOf("/") + 1);
-          url.pathname = `${basePath}painel.html`;
-        } else {
-          url.pathname = `${path}/painel.html`;
-        }
-      }
+      const url = createAppUrl("painel.html");
       url.search = "";
       url.hash = "";
       url.searchParams.set("event", EVENT_ID);
@@ -521,24 +510,7 @@
 
     // NOVO: construir URL base para recibo
     function getReceiptUrl(registrationId){
-      const url = new URL(window.location.href);
-      const path = url.pathname;
-
-      // troca index.html -> recibo.html (ou adiciona)
-      if (/index\.html$/i.test(path)) {
-        url.pathname = path.replace(/index\.html$/i, "recibo.html");
-      } else if (path.endsWith("/")) {
-        url.pathname = `${path}recibo.html`;
-      } else {
-        const lastSegment = path.split("/").pop() ?? "";
-        const looksLikeFile = /\.[a-z0-9]+$/i.test(lastSegment);
-        if (looksLikeFile) {
-          const basePath = path.substring(0, path.lastIndexOf("/") + 1);
-          url.pathname = `${basePath}recibo.html`;
-        } else {
-          url.pathname = `${path}/recibo.html`;
-        }
-      }
+      const url = createAppUrl("recibo.html");
 
       url.search = "";
       url.hash = "";
