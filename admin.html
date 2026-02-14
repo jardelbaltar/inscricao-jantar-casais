@@ -458,10 +458,17 @@ async function exportRegistrationsPdf() {
   const eventTitle = eventSelect.selectedOptions[0]?.textContent?.trim() || "evento";
 
   try {
-    const [{ jsPDF }, { default: autoTable }] = await Promise.all([
+    const [jspdfModule, autoTableModule] = await Promise.all([
       import("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/+esm"),
       import("https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/+esm")
     ]);
+
+    const jsPDF = jspdfModule.jsPDF || jspdfModule.default?.jsPDF;
+    const autoTable = autoTableModule.default || autoTableModule.autoTable;
+
+    if (typeof jsPDF !== "function" || typeof autoTable !== "function") {
+      throw new Error("PDF_DEPENDENCY_LOAD_FAILED");
+    }
 
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     doc.setFontSize(14);
