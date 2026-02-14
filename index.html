@@ -440,8 +440,6 @@
         : "Vagas: ilimitadas";
     }
 
-    await loadEventSummary();
-
     function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
     async function withRetry(operation, retries = 2, delayMs = 400) {
@@ -503,6 +501,7 @@
     await resolveEventIdBySlug();
     panelLink.href = getPanelUrl();
 
+    await loadEventSummary();
     await loadDishes();
 
     async function resolveRegistrationResult(rpcData) {
