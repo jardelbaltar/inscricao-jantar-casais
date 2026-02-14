@@ -350,20 +350,28 @@ async function requireAdmin(session) {
 }
 
 async function refreshEvents() {
+  const params = new URLSearchParams(location.search);
+  const urlEventSlug = params.get("event");
+
   const { data } = await supabase
     .from("events")
-    .select("*")
+    .select("id,title,slug,event_at,max_couples,local,created_at")
     .order("created_at", { ascending: false });
 
   eventSelect.innerHTML = "";
   (data || []).forEach((e) => {
     const opt = document.createElement("option");
-    opt.value = e.id;
+    opt.value = e.slug;
+    opt.dataset.id = e.id;
     opt.textContent = e.title;
     opt.dataset.max = e.max_couples || 0;
     opt.dataset.local = e.local || "";
     eventSelect.appendChild(opt);
   });
+
+  if (urlEventSlug && (data || []).some((x) => x.slug === urlEventSlug)) {
+    eventSelect.value = urlEventSlug;
+  }
 
   const selected = eventSelect.selectedOptions[0];
   if (!selected) {
@@ -374,7 +382,7 @@ async function refreshEvents() {
     return;
   }
 
-  currentEventId = eventSelect.value;
+  currentEventId = eventSelect.selectedOptions[0]?.dataset.id || null;
   maxCouples.value = selected.dataset.max;
   eventLocal.value = selected.dataset.local;
 }
@@ -750,7 +758,7 @@ btnLogout.addEventListener("click", async () => {
 });
 
 eventSelect.addEventListener("change", async () => {
-  currentEventId = eventSelect.value;
+  currentEventId = eventSelect.selectedOptions[0]?.dataset.id || null;
   maxCouples.value = eventSelect.selectedOptions[0].dataset.max;
   eventLocal.value = eventSelect.selectedOptions[0].dataset.local;
   await refreshDishes();

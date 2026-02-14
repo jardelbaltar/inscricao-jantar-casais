@@ -278,8 +278,9 @@
     });
 
     const params = new URLSearchParams(location.search);
-    const EVENT_ID = params.get("event");
-    if (!EVENT_ID) {
+    const EVENT_SLUG = params.get("event")?.trim();
+    let EVENT_ID = null;
+    if (!EVENT_SLUG) {
       document.body.innerHTML = "<p class='err'>Link inválido: faltou o parâmetro <b>?event=</b>.</p>";
       throw new Error("Missing event");
     }
@@ -379,11 +380,27 @@
       const url = createAppUrl("painel.html");
       url.search = "";
       url.hash = "";
-      url.searchParams.set("event", EVENT_ID);
+      url.searchParams.set("event", EVENT_SLUG);
       return url.toString();
     }
 
-    panelLink.href = getPanelUrl();
+
+
+
+    async function resolveEventIdBySlug() {
+      const { data, error } = await supabase
+        .from("events")
+        .select("id")
+        .eq("slug", EVENT_SLUG)
+        .maybeSingle();
+
+      if (error || !data?.id) {
+        document.body.innerHTML = "<p class='err'>Evento inválido: o parâmetro <b>?event=</b> não corresponde a um evento existente.</p>";
+        throw new Error("Invalid event slug");
+      }
+
+      EVENT_ID = data.id;
+    }
 
     function formatDateTime(value) {
       if (!value) return "--";
@@ -482,6 +499,9 @@
       }
       dishHint.textContent = "As quantidades atualizam conforme as inscrições.";
     }
+
+    await resolveEventIdBySlug();
+    panelLink.href = getPanelUrl();
 
     await loadDishes();
 
