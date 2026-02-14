@@ -698,7 +698,7 @@
         const isConfirmed = selectedLimit <= 0 ? true : idx < selectedLimit;
         const status = isConfirmed ? "✅" : "⏳";
         const statusLabel = isConfirmed ? "Confirmado" : "Lista de espera";
-        const canMoveUpWaiting = selectedLimit > 0 && idx > selectedLimit;
+        const canMoveUpWaiting = idx > 0;
         return `
         <tr>
           <td title="${statusLabel}">${status}</td>
@@ -748,16 +748,17 @@
             return;
           }
 
-          const { error: updateError } = await supabase
+          const { data: updatedRows, error: updateError } = await supabase
             .from("registrations")
             .update({
               couple_name: coupleName,
               wedding_date: weddingDate || null
             })
             .eq("id", id)
-            .eq("event_id", currentEventId);
+            .eq("event_id", currentEventId)
+            .select("id");
 
-          if (updateError) {
+          if (updateError || !updatedRows?.length) {
             setMsg("Erro ao salvar inscrição.", "err");
             return;
           }
@@ -774,13 +775,14 @@
           const shouldDelete = window.confirm(`Deseja realmente excluir ${name}?`);
           if (!shouldDelete) return;
 
-          const { error: deleteError } = await supabase
+          const { data: deletedRows, error: deleteError } = await supabase
             .from("registrations")
             .delete()
             .eq("id", id)
-            .eq("event_id", currentEventId);
+            .eq("event_id", currentEventId)
+            .select("id");
 
-          if (deleteError) {
+          if (deleteError || !deletedRows?.length) {
             setMsg("Erro ao excluir inscrição.", "err");
             return;
           }
@@ -798,7 +800,7 @@
           const currentIndex = allRows.findIndex(row => row.id === id);
           const prevIndex = currentIndex - 1;
 
-          if (currentIndex <= selectedLimit || prevIndex < 0) {
+          if (prevIndex < 0) {
             return;
           }
 
@@ -811,13 +813,14 @@
 
           const newCreatedAt = new Date(previousDate.getTime() - 1000).toISOString();
 
-          const { error: moveError } = await supabase
+          const { data: movedRows, error: moveError } = await supabase
             .from("registrations")
             .update({ created_at: newCreatedAt })
             .eq("id", id)
-            .eq("event_id", currentEventId);
+            .eq("event_id", currentEventId)
+            .select("id");
 
-          if (moveError) {
+          if (moveError || !movedRows?.length) {
             setMsg("Erro ao subir casal na lista de espera.", "err");
             return;
           }
@@ -920,9 +923,6 @@
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
       setLoginLoading(true);
-
-      // Garante estado de autenticação limpo para evitar sessão antiga bloqueando novo login no mesmo navegador.
-      await supabase.auth.signOut({ scope: "local" });
 
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
