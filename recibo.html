@@ -372,15 +372,17 @@ async function load(){
 
   if(!reg)return;
 
-  const indexUrl=new URL("index.html",window.location.href);
-  indexUrl.searchParams.set("event",reg.event_id);
-  newRegistrationLink.href=indexUrl.toString();
-
   const {data:ev}=await supabase
     .from("events")
-    .select("title,event_at,local")
+    .select("title,event_at,local,slug")
     .eq("id",reg.event_id)
     .maybeSingle();
+
+  if(ev?.slug){
+    const indexUrl=new URL("index.html",window.location.href);
+    indexUrl.searchParams.set("event",ev.slug);
+    newRegistrationLink.href=indexUrl.toString();
+  }
 
   const {data:dishRes}=reg.dish_id
     ? await supabase.from("dishes").select("name").eq("id",reg.dish_id).maybeSingle()
