@@ -141,13 +141,6 @@
       background: linear-gradient(135deg, var(--primary-hover) 0%, #2563eb 100%);
     }
 
-    .btnSecondary{
-      background: rgba(15, 23, 42, 0.10);
-      color: #0f172a;
-      border: 1px solid rgba(148, 163, 184, 0.55);
-    }
-    .btnSecondary:hover{ background: rgba(15, 23, 42, 0.14); }
-
     .row {
       display: grid;
       gap: 12px;
@@ -474,7 +467,6 @@
               Ler QR Code
             </button>
 
-            <button id="btnReload" type="button" class="btnSecondary">Recarregar</button>
           </div>
         </div>
       </div>
@@ -550,7 +542,6 @@
     const msg = document.getElementById("msg");
     const titleEl = document.getElementById("title");
     const searchInput = document.getElementById("search");
-    const btnReload = document.getElementById("btnReload");
 
     const pillTotal = document.getElementById("pillTotal");
     const pillPresent = document.getElementById("pillPresent");
@@ -1062,7 +1053,6 @@
     });
 
     searchInput.addEventListener("input", renderTable);
-    btnReload.addEventListener("click", loadRegistrations);
 
     await resolveEventIdBySlug();
     await loadEventTitle();
