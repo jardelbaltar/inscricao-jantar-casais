@@ -551,8 +551,7 @@
             id,
             couple_name,
             queue_pos,
-            created_at,
-            dishes ( name )
+            created_at
           `)
           .eq("event_id", eventId)
           .order("queue_pos", { ascending: true, nullsFirst: false })
@@ -577,7 +576,6 @@
             <td title="${statusLabel}">${statusIcon}</td>
             <td>${escapeHtml(String(queuePos))}</td>
             <td><strong>${escapeHtml(r.couple_name)}</strong></td>
-            <td>${escapeHtml(r.dishes?.name ?? "—")}</td>
           </tr>
         `;
         }).join("");
@@ -589,10 +587,9 @@
                 <th>Status</th>
                 <th>Inscrição</th>
                 <th>Nome do casal</th>
-                <th>Prato escolhido</th>
               </tr>
             </thead>
-            <tbody>${rows || "<tr><td colspan='4' class='muted'>Nenhuma inscrição ainda.</td></tr>"}</tbody>
+            <tbody>${rows || "<tr><td colspan='3' class='muted'>Nenhuma inscrição ainda.</td></tr>"}</tbody>
           </table>
         `;
       } finally {
