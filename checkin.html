@@ -124,6 +124,52 @@
       box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
     }
 
+    .search-input-wrap {
+      position: relative;
+    }
+
+    #search {
+      padding-right: 42px;
+    }
+
+    .clear-search-btn {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 24px;
+      height: 24px;
+      min-height: 24px;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      border-radius: 999px;
+      background: #e2e8f0;
+      color: #475569;
+      font-size: 16px;
+      line-height: 1;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .clear-search-btn:hover {
+      transform: translateY(-50%);
+      background: #cbd5e1;
+      color: #0f172a;
+    }
+
+    .clear-search-btn:focus-visible {
+      outline: 2px solid color-mix(in srgb, var(--primary) 70%, white);
+      outline-offset: 2px;
+    }
+
+    .clear-search-btn[hidden] {
+      display: none;
+    }
+
     button {
       width: auto;
       cursor: pointer;
@@ -451,7 +497,10 @@
       <div class="row">
         <div>
           <label>Buscar (nome)</label>
-          <input id="search" placeholder="Ex: Maria" />
+          <div class="search-input-wrap">
+            <input id="search" placeholder="Ex: Maria" />
+            <button id="clearSearch" class="clear-search-btn" type="button" aria-label="Limpar busca" title="Limpar busca" hidden>&times;</button>
+          </div>
         </div>
         <div>
           <label>&nbsp;</label>
@@ -542,6 +591,7 @@
     const msg = document.getElementById("msg");
     const titleEl = document.getElementById("title");
     const searchInput = document.getElementById("search");
+    const clearSearchBtn = document.getElementById("clearSearch");
 
     const pillTotal = document.getElementById("pillTotal");
     const pillPresent = document.getElementById("pillPresent");
@@ -668,6 +718,10 @@
       const q = (searchInput.value || "").trim().toLowerCase();
       if (!q) return allRows;
       return allRows.filter(r => (r.couple_name || "").toLowerCase().includes(q));
+    }
+
+    function updateSearchClearButton() {
+      clearSearchBtn.hidden = !(searchInput.value || "").trim();
     }
 
     function highlightRow(id){
@@ -1052,7 +1106,19 @@
       if (document.hidden) stopScanner();
     });
 
-    searchInput.addEventListener("input", renderTable);
+    searchInput.addEventListener("input", () => {
+      updateSearchClearButton();
+      renderTable();
+    });
+
+    clearSearchBtn.addEventListener("click", () => {
+      searchInput.value = "";
+      updateSearchClearButton();
+      renderTable();
+      searchInput.focus();
+    });
+
+    updateSearchClearButton();
 
     await resolveEventIdBySlug();
     await loadEventTitle();
