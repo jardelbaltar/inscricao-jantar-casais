@@ -151,6 +151,21 @@
 
     .muted { color: var(--muted); font-size: 0.91rem; margin: 8px 0 0; line-height: 1.45; }
 
+    .waitlist-notice {
+      display: none;
+      margin: 0 0 12px;
+      color: #991b1b;
+      background: #fee2e2;
+      border: 1px solid #fecaca;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    .waitlist-notice.visible { display: block; }
+
     #msg { margin: 14px 0 0; font-weight: 700; min-height: 24px; }
 
     .ok {
@@ -244,6 +259,8 @@
 
     <div class="card">
       <form id="f">
+        <p id="waitlistNotice" class="waitlist-notice">Todas as vagas foram preenchidas, mas você pode entrar na lista de espera!</p>
+
         <label>Telefone</label>
         <input id="phone" required placeholder="Ex: (61) 99999-9999" inputmode="tel" maxlength="15" />
 
@@ -293,6 +310,7 @@
     const eventName = document.getElementById("eventName");
     const eventDate = document.getElementById("eventDate");
     const eventSlots = document.getElementById("eventSlots");
+    const waitlistNotice = document.getElementById("waitlistNotice");
     const phoneInput = document.getElementById("phone");
     const coupleNameInput = document.getElementById("couple_name");
     const weddingDateInput = document.getElementById("wedding_date");
@@ -300,6 +318,11 @@
     const PHONE_FULL_LENGTH = 15;
     let lastSearchedPhone = "";
     let phoneLookupRequestId = 0;
+
+    function setWaitlistMode(isEventFull) {
+      waitlistNotice.classList.toggle("visible", isEventFull);
+      btn.textContent = isEventFull ? "Entrar na lista de espera" : "Solicitar inscrição";
+    }
 
     function formatPhone(value) {
       const digits = value.replace(/\D/g, "").slice(0, 11);
@@ -438,6 +461,8 @@
       eventSlots.textContent = totalSlots > 0
         ? `Vagas: ${availableSlots}/${totalSlots}`
         : "Vagas: ilimitadas";
+
+      setWaitlistMode(totalSlots > 0 && availableSlots === 0);
     }
 
     function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
