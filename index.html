@@ -264,6 +264,8 @@
         <label>Telefone</label>
         <input id="phone" required placeholder="Ex: (61) 99999-9999" inputmode="tel" maxlength="15" />
 
+        <p id="registrationsClosedNotice" class="waitlist-notice">As inscrições ainda não estão abertas. Aguarde!</p>
+
         <label>Nome do casal</label>
         <input id="couple_name" required placeholder="Ex: João e Maria" />
 
@@ -306,22 +308,36 @@
     const dishHint = document.getElementById("dishHint");
     const msg = document.getElementById("msg");
     const btn = document.getElementById("btn");
+    const form = document.getElementById("f");
     const panelLink = document.getElementById("panelLink");
     const eventName = document.getElementById("eventName");
     const eventDate = document.getElementById("eventDate");
     const eventSlots = document.getElementById("eventSlots");
     const waitlistNotice = document.getElementById("waitlistNotice");
+    const registrationsClosedNotice = document.getElementById("registrationsClosedNotice");
     const phoneInput = document.getElementById("phone");
     const coupleNameInput = document.getElementById("couple_name");
     const weddingDateInput = document.getElementById("wedding_date");
     const WAITLIST_MESSAGE = "Não há mais vagas disponíveis. Incluímos você na lista de espera. Nossa equipe entrará em contato com você em caso de desistências.";
+    const REGISTRATIONS_CLOSED_MESSAGE = "As inscrições ainda não estão abertas. Aguarde!";
     const PHONE_FULL_LENGTH = 15;
+    let isEventOpen = true;
     let lastSearchedPhone = "";
     let phoneLookupRequestId = 0;
 
     function setWaitlistMode(isEventFull) {
       waitlistNotice.classList.toggle("visible", isEventFull);
       btn.textContent = isEventFull ? "Entrar na lista de espera" : "Solicitar inscrição";
+    }
+
+    function setRegistrationMode(isOpen) {
+      isEventOpen = isOpen;
+      registrationsClosedNotice.classList.toggle("visible", !isOpen);
+
+      const controls = form.querySelectorAll("input, select, button");
+      controls.forEach((control) => {
+        control.disabled = !isOpen;
+      });
     }
 
     function formatPhone(value) {
@@ -439,7 +455,7 @@
 
     async function loadEventSummary() {
       const [eventRes, countRes] = await Promise.all([
-        supabase.from("events").select("title,event_at,local,max_couples").eq("id", EVENT_ID).maybeSingle(),
+        supabase.from("events").select("title,event_at,local,max_couples,is_open").eq("id", EVENT_ID).maybeSingle(),
         supabase.from("registrations").select("id", { count: "exact", head: true }).eq("event_id", EVENT_ID)
       ]);
 
@@ -452,6 +468,7 @@
       const totalRegistrations = Number(countRes.count ?? 0);
       const totalSlots = Number(eventData.max_couples ?? 0);
       const availableSlots = totalSlots > 0 ? Math.max(totalSlots - totalRegistrations, 0) : 0;
+      const shouldOpenRegistrations = eventData.is_open !== false;
 
       eventName.textContent = eventData.title || "Evento";
       document.title = eventData.title || "Inscrição";
@@ -462,6 +479,7 @@
         ? `Vagas: ${availableSlots}/${totalSlots}`
         : "Vagas: ilimitadas";
 
+      setRegistrationMode(shouldOpenRegistrations);
       setWaitlistMode(totalSlots > 0 && availableSlots === 0);
     }
 
@@ -587,6 +605,13 @@
       e.preventDefault();
       msg.textContent = "";
       msg.className = "";
+
+      if (!isEventOpen) {
+        msg.className = "err";
+        msg.textContent = REGISTRATIONS_CLOSED_MESSAGE;
+        return;
+      }
+
       btn.disabled = true;
 
       const coupleName = document.getElementById("couple_name").value.trim();
