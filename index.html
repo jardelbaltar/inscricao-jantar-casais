@@ -322,6 +322,7 @@
     const REGISTRATIONS_CLOSED_MESSAGE = "As inscrições ainda não estão abertas. Aguarde!";
     const PHONE_FULL_LENGTH = 15;
     let isEventOpen = true;
+    let isEventFull = false;
     let lastSearchedPhone = "";
     let phoneLookupRequestId = 0;
     let eventRegistrationOpen = true;
@@ -329,6 +330,10 @@
     function setWaitlistMode(isEventFull) {
       waitlistNotice.classList.toggle("visible", isEventFull);
       btn.textContent = isEventFull ? "Entrar na lista de espera" : "Solicitar inscrição";
+    }
+
+    function isToBeDefinedDish(dish) {
+      return (dish?.name ?? "").trim().toLowerCase() === "a definir";
     }
 
     function setRegistrationMode(isOpen) {
@@ -470,6 +475,7 @@
       const totalSlots = Number(eventData.max_couples ?? 0);
       const availableSlots = totalSlots > 0 ? Math.max(totalSlots - totalRegistrations, 0) : 0;
       const shouldOpenRegistrations = eventData.is_open !== false;
+      isEventFull = totalSlots > 0 && availableSlots === 0;
 
       eventName.textContent = eventData.title || "Evento";
       document.title = eventData.title || "Inscrição";
@@ -481,7 +487,7 @@
         : "Vagas: ilimitadas";
 
       setRegistrationMode(shouldOpenRegistrations);
-      setWaitlistMode(totalSlots > 0 && availableSlots === 0);
+      setWaitlistMode(isEventFull);
     }
 
     function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
@@ -525,7 +531,31 @@
         return;
       }
 
-      const available = (data ?? []).filter(d => d.remaining > 0);
+      const dishes = data ?? [];
+
+      if (isEventFull) {
+        const toBeDefinedDish = dishes.find(isToBeDefinedDish);
+
+        if (toBeDefinedDish) {
+          dishSelect.innerHTML = "";
+          const opt = document.createElement("option");
+          opt.value = toBeDefinedDish.id;
+          opt.textContent = toBeDefinedDish.name;
+          dishSelect.appendChild(opt);
+          dishSelect.value = toBeDefinedDish.id;
+        } else {
+          dishSelect.innerHTML = "<option value=''>A definir</option>";
+          dishSelect.value = "";
+        }
+
+        dishSelect.disabled = true;
+        dishHint.textContent = "Com as vagas encerradas, o prato é definido automaticamente como “a definir”.";
+        return;
+      }
+
+      dishSelect.disabled = !isEventOpen;
+
+      const available = dishes.filter((d) => d.remaining > 0 && !isToBeDefinedDish(d));
       if (available.length === 0) {
         dishSelect.innerHTML = "<option value=''>Sem pratos disponíveis</option>";
         dishHint.textContent = "As opções esgotaram. Procure a equipe de organização.";
