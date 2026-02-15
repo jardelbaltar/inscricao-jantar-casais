@@ -120,6 +120,23 @@ button.inline-btn {
   border-radius: 999px;
 }
 
+.event-open-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.event-open-toggle input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  min-height: auto;
+}
+
 .dish-panel-header {
   display: flex;
   align-items: center;
@@ -234,6 +251,10 @@ th { color: #334155; font-size: 0.9rem; }
         <div>
           <label>Local</label>
           <input id="eventLocal">
+          <label class="event-open-toggle" for="eventIsOpen">
+            <input id="eventIsOpen" type="checkbox">
+            <span>Inscrições abertas</span>
+          </label>
         </div>
         <div style="align-self:flex-end">
           <button id="btnSaveEvent">Salvar</button>
@@ -302,6 +323,7 @@ const btnLogout = document.getElementById("btnLogout");
 const eventSelect = document.getElementById("eventSelect");
 const maxCouples = document.getElementById("maxCouples");
 const eventLocal = document.getElementById("eventLocal");
+const eventIsOpen = document.getElementById("eventIsOpen");
 const btnSaveEvent = document.getElementById("btnSaveEvent");
 const btnPrintList = document.getElementById("btnPrintList");
 const regsTableWrap = document.getElementById("regsTableWrap");
@@ -355,7 +377,7 @@ async function refreshEvents() {
 
   const { data } = await supabase
     .from("events")
-    .select("id,title,slug,event_at,max_couples,local,created_at")
+    .select("id,title,slug,event_at,max_couples,local,is_open,created_at")
     .order("created_at", { ascending: false });
 
   eventSelect.innerHTML = "";
@@ -366,6 +388,7 @@ async function refreshEvents() {
     opt.textContent = e.title;
     opt.dataset.max = e.max_couples || 0;
     opt.dataset.local = e.local || "";
+    opt.dataset.isOpen = e.is_open === false ? "false" : "true";
     eventSelect.appendChild(opt);
   });
 
@@ -378,6 +401,7 @@ async function refreshEvents() {
     currentEventId = null;
     maxCouples.value = "";
     eventLocal.value = "";
+    eventIsOpen.checked = false;
     regsTableWrap.innerHTML = "<p class='muted'>Nenhum evento cadastrado.</p>";
     return;
   }
@@ -385,6 +409,7 @@ async function refreshEvents() {
   currentEventId = eventSelect.selectedOptions[0]?.dataset.id || null;
   maxCouples.value = selected.dataset.max;
   eventLocal.value = selected.dataset.local;
+  eventIsOpen.checked = selected.dataset.isOpen !== "false";
 }
 
 async function normalizeQueuePos(rows) {
@@ -761,6 +786,7 @@ eventSelect.addEventListener("change", async () => {
   currentEventId = eventSelect.selectedOptions[0]?.dataset.id || null;
   maxCouples.value = eventSelect.selectedOptions[0].dataset.max;
   eventLocal.value = eventSelect.selectedOptions[0].dataset.local;
+  eventIsOpen.checked = eventSelect.selectedOptions[0].dataset.isOpen !== "false";
   await refreshDishes();
   refreshRegistrations();
 });
@@ -811,7 +837,8 @@ btnSaveEvent.addEventListener("click", async () => {
   await supabase.from("events")
     .update({
       max_couples: Number(maxCouples.value || 0),
-      local: eventLocal.value || null
+      local: eventLocal.value || null,
+      is_open: eventIsOpen.checked
     })
     .eq("id", currentEventId);
 
@@ -819,6 +846,7 @@ btnSaveEvent.addEventListener("click", async () => {
   if (selected) {
     selected.dataset.max = maxCouples.value || 0;
     selected.dataset.local = eventLocal.value || "";
+    selected.dataset.isOpen = eventIsOpen.checked ? "true" : "false";
   }
 
   setMsg("Evento atualizado.", "ok");

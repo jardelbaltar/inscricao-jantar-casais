@@ -324,6 +324,7 @@
     let isEventOpen = true;
     let lastSearchedPhone = "";
     let phoneLookupRequestId = 0;
+    let eventRegistrationOpen = true;
 
     function setWaitlistMode(isEventFull) {
       waitlistNotice.classList.toggle("visible", isEventFull);
@@ -603,6 +604,13 @@
 
     document.getElementById("f").addEventListener("submit", async (e) => {
       e.preventDefault();
+
+      if (!eventRegistrationOpen) {
+        msg.className = "err";
+        msg.textContent = FORM_CLOSED_MESSAGE;
+        return;
+      }
+
       msg.textContent = "";
       msg.className = "";
 
