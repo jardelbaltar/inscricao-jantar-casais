@@ -550,8 +550,6 @@
           .select(`
             id,
             couple_name,
-            wedding_date,
-            phone,
             queue_pos,
             created_at,
             dishes ( name )
@@ -579,8 +577,6 @@
             <td title="${statusLabel}">${statusIcon}</td>
             <td>${escapeHtml(String(queuePos))}</td>
             <td><strong>${escapeHtml(r.couple_name)}</strong></td>
-            <td>${formatDate(r.wedding_date)}</td>
-            <td>${escapeHtml(maskPhone(r.phone))}</td>
             <td>${escapeHtml(r.dishes?.name ?? "—")}</td>
           </tr>
         `;
@@ -593,12 +589,10 @@
                 <th>Status</th>
                 <th>Inscrição</th>
                 <th>Nome do casal</th>
-                <th>Data de casamento</th>
-                <th>Telefone</th>
                 <th>Prato escolhido</th>
               </tr>
             </thead>
-            <tbody>${rows || "<tr><td colspan='6' class='muted'>Nenhuma inscrição ainda.</td></tr>"}</tbody>
+            <tbody>${rows || "<tr><td colspan='4' class='muted'>Nenhuma inscrição ainda.</td></tr>"}</tbody>
           </table>
         `;
       } finally {
