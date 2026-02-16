@@ -392,13 +392,19 @@
       return `${year}-${month}-${day}`;
     }
 
+    function formatDateBR(dateISO) {
+      if (!dateISO || !/^\d{4}-\d{2}-\d{2}$/.test(dateISO)) return "--";
+      const [year, month, day] = dateISO.split("-");
+      return `${day}/${month}/${year}`;
+    }
+
     function validateWeddingDate() {
       const weddingDate = weddingDateInput.value;
       if (!weddingDate || !eventDateLimit) return true;
 
       if (weddingDate >= eventDateLimit) {
         msg.className = "err";
-        msg.textContent = "A data de casamento deve ser anterior à data do evento.";
+        msg.textContent = `A data de casamento deve ser anterior à data do evento (${formatDateBR(eventDateLimit)}).`;
         return false;
       }
 
