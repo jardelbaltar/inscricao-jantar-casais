@@ -37,8 +37,8 @@ body{
 
 .home-link {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 26px;
+  right: 26px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -86,6 +86,10 @@ body{
     padding:14px;
     gap:12px;
   }
+  .home-link{
+    top:14px;
+    right:14px;
+  }
 }
 
 .eventMain{
@@ -97,7 +101,7 @@ body{
 
 .eventHeader{
   display:flex;
-  align-items:center;
+  align-items:flex-start;
   gap:12px;
   justify-content:flex-start;
   width:100%;
@@ -116,33 +120,39 @@ body{
   line-height:1.1;
 }
 
-.eventDate{
-  color:var(--muted);
-  margin-top:6px;
-  font-size:22px;
-  font-weight:700;
-}
 
-.dishHighlight{
+.dishHighlight,
+.eventInfoPanel{
   border:1px solid rgba(45,212,191,.35);
   border-radius:16px;
   padding:14px 18px;
   background:rgba(45,212,191,.15);
 }
 
-.dishLabel{
+.eventInfoPanel{
+  text-align:left;
+}
+
+.dishLabel,
+.eventInfoLabel{
   color:#ccfbf1;
   font-size:13px;
   font-weight:800;
   letter-spacing:.4px;
 }
 
-.dishValue{
+.dishValue,
+.eventInfoValue{
   margin-top:6px;
   font-size:28px;
   font-weight:1000;
   line-height:1.15;
 }
+
+.eventInfoValue{
+  font-size:22px;
+}
+
 
 .section{
   border:1px solid var(--line);
@@ -190,14 +200,7 @@ body{
   .eventMain{gap:12px}
   .eventLogo{width:46px;height:46px}
   .eventTitle{font-size:22px}
-  .eventDate{
-    margin-top:6px;
-    font-size:16px;
-    line-height:1.3;
-    max-width:260px;
-    margin-left:auto;
-    margin-right:auto;
-  }
+  .eventInfoValue{font-size:16px;line-height:1.3}
   .dishValue{font-size:20px}
   .section{padding:10px;border-radius:14px}
   .value{font-size:16px;line-height:1.2}
@@ -283,8 +286,12 @@ body{
     <img class="eventLogo" src="/logo-modern-noglow.png" alt="Logo Casais 2 em 1"/>
     <div>
       <div class="eventTitle" id="evTitle">—</div>
-      <div class="eventDate" id="evDate">—</div>
     </div>
+  </div>
+
+  <div class="eventInfoPanel">
+    <div class="eventInfoLabel">DATA, HORA E LOCAL</div>
+    <div class="eventInfoValue" id="evDate">—</div>
   </div>
 
   <div class="dishHighlight">
