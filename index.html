@@ -708,7 +708,7 @@
       if (isDishAvailable) return true;
 
       msg.className = "err";
-      msg.textContent = "O prato selecionado não está mais disponível. Escolha outra opção atualizada abaixo.";
+      msg.textContent = "O prato selecionado não está mais disponível. Escolha outra opção atualizada.";
       await loadDishes({ clearFeedback: false });
       return false;
     }
