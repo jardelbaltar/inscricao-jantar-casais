@@ -411,12 +411,32 @@
       return true;
     }
 
+    function updateWeddingDateCustomValidity() {
+      if (!weddingDateInput.value || !eventDateLimit) {
+        weddingDateInput.setCustomValidity("");
+        return;
+      }
+
+      if (weddingDateInput.validity.rangeOverflow) {
+        weddingDateInput.setCustomValidity(`A data de casamento deve ser anterior à data do evento (${formatDateBR(eventDateLimit)}).`);
+        return;
+      }
+
+      weddingDateInput.setCustomValidity("");
+    }
+
     weddingDateInput.addEventListener("input", () => {
+      updateWeddingDateCustomValidity();
+
       if (!msg.classList.contains("err")) return;
       if (!validateWeddingDate()) return;
 
       msg.textContent = "";
       msg.className = "";
+    });
+
+    weddingDateInput.addEventListener("invalid", () => {
+      updateWeddingDateCustomValidity();
     });
 
     phoneInput.addEventListener("input", (event) => {
@@ -564,6 +584,7 @@
       const eventData = eventRes.data;
       eventDateLimit = toDateOnlyISO(eventData.event_at);
       weddingDateInput.max = eventDateLimit || "";
+      updateWeddingDateCustomValidity();
       const totalRegistrations = Number(countRes.count ?? 0);
       const totalSlots = Number(eventData.max_couples ?? 0);
       const availableSlots = totalSlots > 0 ? Math.max(totalSlots - totalRegistrations, 0) : 0;
