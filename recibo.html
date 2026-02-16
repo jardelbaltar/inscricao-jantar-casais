@@ -33,7 +33,7 @@ body{
   padding:16px;
 }
 
-.wrap{width:100%;max-width:900px;position:relative}
+.wrap{width:100%;max-width:860px;position:relative}
 
 .home-link {
   position: absolute;
@@ -75,30 +75,31 @@ body{
 /* ÁREA QUE VIRA IMAGEM */
 .receipt{
   padding:26px;
-  display:grid;
-  grid-template-columns: 1.3fr .7fr;
-  gap:20px;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
 }
 
 @media(max-width:780px){
   body{padding:8px}
   .receipt{
-    grid-template-columns:1fr;
     padding:14px;
     gap:12px;
   }
 }
 
-.left{
+.eventMain{
   display:flex;
   flex-direction:column;
-  gap:18px;
+  gap:14px;
+  text-align:center;
 }
 
 .eventHeader{
   display:flex;
   align-items:center;
   gap:12px;
+  justify-content:center;
 }
 
 .eventLogo{
@@ -109,14 +110,36 @@ body{
 }
 
 .eventTitle{
-  font-size:26px;
+  font-size:32px;
   font-weight:1000;
   line-height:1.1;
 }
 
 .eventDate{
   color:var(--muted);
-  font-size:15px;
+  font-size:20px;
+  font-weight:700;
+}
+
+.dishHighlight{
+  border:1px solid rgba(45,212,191,.35);
+  border-radius:16px;
+  padding:14px 18px;
+  background:rgba(45,212,191,.15);
+}
+
+.dishLabel{
+  color:#ccfbf1;
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:.4px;
+}
+
+.dishValue{
+  margin-top:6px;
+  font-size:28px;
+  font-weight:1000;
+  line-height:1.15;
 }
 
 .section{
@@ -144,31 +167,29 @@ body{
   font-size:24px;
 }
 
-.right{
+.qrCenter{
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:center;
   gap:16px;
-  border-left:1px dashed rgba(255,255,255,.15);
-  padding-left:20px;
+}
+
+
+.personalInfo{
+  border-top:1px dashed rgba(255,255,255,.15);
+  padding-top:16px;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
 }
 
 @media(max-width:780px){
-  .right{
-    border-left:none;
-    border-top:1px dashed rgba(255,255,255,.15);
-    padding-left:0;
-    padding-top:12px;
-    gap:10px;
-  }
-}
-
-@media(max-width:780px){
-  .left{gap:12px}
+  .eventMain{gap:12px}
   .eventLogo{width:46px;height:46px}
-  .eventTitle{font-size:20px}
-  .eventDate{font-size:13px}
+  .eventTitle{font-size:22px}
+  .eventDate{font-size:15px}
+  .dishValue{font-size:20px}
   .section{padding:10px;border-radius:14px}
   .value{font-size:16px;line-height:1.2}
   .value.big{font-size:clamp(16px,4.2vw,18px)}
@@ -176,6 +197,7 @@ body{
   .qrBox{width:140px;height:140px;padding:10px;border-radius:14px}
   .qrBox img{width:120px;height:120px}
   .qrLabel{font-size:11px}
+  .personalInfo{grid-template-columns:1fr}
   .actions{padding:10px}
   .btn{padding:10px 14px;font-size:13px}
 }
@@ -247,7 +269,7 @@ body{
 
 <div id="receiptShot" class="receipt">
 
-<div class="left">
+<div class="eventMain">
   <div class="eventHeader">
     <img class="eventLogo" src="/logo-modern-noglow.png" alt="Logo Casais 2 em 1"/>
     <div>
@@ -256,7 +278,24 @@ body{
     </div>
   </div>
 
+  <div class="dishHighlight">
+    <div class="dishLabel">PRATO SELECIONADO</div>
+    <div class="dishValue" id="dish">—</div>
+  </div>
+
   <div class="confirm">✅ INSCRIÇÃO CONFIRMADA</div>
+</div>
+
+<div class="qrCenter">
+  <div class="qrBox" id="qrBox"></div>
+  <div class="qrLabel">Apresente este QR no check-in</div>
+</div>
+
+<div class="personalInfo">
+  <div class="section">
+    <div class="label">TELEFONE (ANONIMIZADO)</div>
+    <div class="value" id="phone">—</div>
+  </div>
 
   <div class="section">
     <div class="label">CASAL</div>
@@ -264,24 +303,9 @@ body{
   </div>
 
   <div class="section">
-    <div class="label">TELEFONE</div>
-    <div class="value" id="phone">—</div>
-  </div>
-
-  <div class="section">
     <div class="label">DATA DE CASAMENTO</div>
     <div class="value" id="wedding">—</div>
   </div>
-
-  <div class="section">
-    <div class="label">PRATO</div>
-    <div class="value" id="dish">—</div>
-  </div>
-</div>
-
-<div class="right">
-  <div class="qrBox" id="qrBox"></div>
-  <div class="qrLabel">Apresente este QR no check-in</div>
 </div>
 
 </div>
