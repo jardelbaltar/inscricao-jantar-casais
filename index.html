@@ -134,6 +134,21 @@
 
     input[type="date"] { -webkit-appearance: none; appearance: none; }
 
+    .date-select-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-top: 7px;
+    }
+
+    .date-proxy-input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
     button {
       margin-top: 20px;
       background: linear-gradient(135deg, var(--primary) 0%, #2563eb 100%);
@@ -269,8 +284,31 @@
         <label>Nome do casal</label>
         <input id="couple_name" required placeholder="Ex: João e Maria" />
 
-        <label>Data de casamento</label>
-        <input id="wedding_date" type="date" required />
+        <label for="wedding_day">Data de casamento</label>
+        <div class="date-select-grid">
+          <select id="wedding_day" required>
+            <option value="">Dia</option>
+          </select>
+          <select id="wedding_month" required>
+            <option value="">Mês</option>
+            <option value="01">Janeiro</option>
+            <option value="02">Fevereiro</option>
+            <option value="03">Março</option>
+            <option value="04">Abril</option>
+            <option value="05">Maio</option>
+            <option value="06">Junho</option>
+            <option value="07">Julho</option>
+            <option value="08">Agosto</option>
+            <option value="09">Setembro</option>
+            <option value="10">Outubro</option>
+            <option value="11">Novembro</option>
+            <option value="12">Dezembro</option>
+          </select>
+          <select id="wedding_year" required>
+            <option value="">Ano</option>
+          </select>
+        </div>
+        <input id="wedding_date" type="date" class="date-proxy-input" tabindex="-1" aria-hidden="true" required />
 
         <label>Escolha o prato que irá trazer</label>
         <select id="dish" required>
@@ -318,6 +356,9 @@
     const phoneInput = document.getElementById("phone");
     const coupleNameInput = document.getElementById("couple_name");
     const weddingDateInput = document.getElementById("wedding_date");
+    const weddingDaySelect = document.getElementById("wedding_day");
+    const weddingMonthSelect = document.getElementById("wedding_month");
+    const weddingYearSelect = document.getElementById("wedding_year");
     const WAITLIST_MESSAGE = "Não há mais vagas disponíveis. Incluímos você na lista de espera. Nossa equipe entrará em contato com você em caso de desistências.";
     const REGISTRATIONS_CLOSED_MESSAGE = "As inscrições ainda não estão abertas. Aguarde!";
     const PHONE_FULL_LENGTH = 15;
@@ -398,9 +439,93 @@
       return `${day}/${month}/${year}`;
     }
 
+    function getDaysInMonth(year, month) {
+      if (!year || !month) return 31;
+      return new Date(Number(year), Number(month), 0).getDate();
+    }
+
+    function populateYearOptions(selectedYear = "") {
+      const currentYear = new Date().getFullYear();
+      const oldestYear = 1950;
+      weddingYearSelect.innerHTML = "<option value=''>Ano</option>";
+
+      for (let year = currentYear; year >= oldestYear; year -= 1) {
+        const option = document.createElement("option");
+        option.value = String(year);
+        option.textContent = String(year);
+        weddingYearSelect.appendChild(option);
+      }
+
+      if (selectedYear) {
+        weddingYearSelect.value = selectedYear;
+      }
+    }
+
+    function populateDayOptions(selectedDay = "") {
+      const totalDays = getDaysInMonth(weddingYearSelect.value, weddingMonthSelect.value);
+      weddingDaySelect.innerHTML = "<option value=''>Dia</option>";
+
+      for (let day = 1; day <= totalDays; day += 1) {
+        const option = document.createElement("option");
+        option.value = String(day).padStart(2, "0");
+        option.textContent = String(day);
+        weddingDaySelect.appendChild(option);
+      }
+
+      if (selectedDay && Number(selectedDay) <= totalDays) {
+        weddingDaySelect.value = selectedDay;
+      }
+    }
+
+    function syncWeddingDateSelectorsFromInput() {
+      if (!weddingDateInput.value || !/^\d{4}-\d{2}-\d{2}$/.test(weddingDateInput.value)) {
+        weddingDaySelect.value = "";
+        weddingMonthSelect.value = "";
+        weddingYearSelect.value = "";
+        populateDayOptions();
+        return;
+      }
+
+      const [year, month, day] = weddingDateInput.value.split("-");
+      weddingYearSelect.value = year;
+      weddingMonthSelect.value = month;
+      populateDayOptions(day);
+    }
+
+    function updateWeddingDateFromSelectors() {
+      const day = weddingDaySelect.value;
+      const month = weddingMonthSelect.value;
+      const year = weddingYearSelect.value;
+
+      if (!day || !month || !year) {
+        weddingDateInput.value = "";
+      } else {
+        weddingDateInput.value = `${year}-${month}-${day}`;
+      }
+
+      updateWeddingDateCustomValidity();
+
+      if (msg.classList.contains("err") && validateWeddingDate()) {
+        msg.textContent = "";
+        msg.className = "";
+      }
+    }
+
+    function setWeddingDateValue(value = "") {
+      weddingDateInput.value = value;
+      syncWeddingDateSelectorsFromInput();
+      updateWeddingDateCustomValidity();
+    }
+
     function validateWeddingDate() {
       const weddingDate = weddingDateInput.value;
-      if (!weddingDate || !eventDateLimit) return true;
+      if (!weddingDate) {
+        msg.className = "err";
+        msg.textContent = "Selecione dia, mês e ano da data de casamento.";
+        return false;
+      }
+
+      if (!eventDateLimit) return true;
 
       if (weddingDate >= eventDateLimit) {
         msg.className = "err";
@@ -412,12 +537,7 @@
     }
 
     function updateWeddingDateCustomValidity() {
-      if (!weddingDateInput.value || !eventDateLimit) {
-        weddingDateInput.setCustomValidity("");
-        return;
-      }
-
-      if (weddingDateInput.validity.rangeOverflow) {
+      if (weddingDateInput.value && eventDateLimit && weddingDateInput.value >= eventDateLimit) {
         weddingDateInput.setCustomValidity(`A data de casamento deve ser anterior à data do evento (${formatDateBR(eventDateLimit)}).`);
         return;
       }
@@ -425,14 +545,23 @@
       weddingDateInput.setCustomValidity("");
     }
 
-    weddingDateInput.addEventListener("input", () => {
-      updateWeddingDateCustomValidity();
+    weddingMonthSelect.addEventListener("change", () => {
+      populateDayOptions(weddingDaySelect.value);
+      updateWeddingDateFromSelectors();
+    });
 
-      if (!msg.classList.contains("err")) return;
-      if (!validateWeddingDate()) return;
+    weddingYearSelect.addEventListener("change", () => {
+      populateDayOptions(weddingDaySelect.value);
+      updateWeddingDateFromSelectors();
+    });
 
-      msg.textContent = "";
-      msg.className = "";
+    weddingDaySelect.addEventListener("change", updateWeddingDateFromSelectors);
+
+    form.addEventListener("reset", () => {
+      setTimeout(() => {
+        setWeddingDateValue("");
+        populateDayOptions();
+      }, 0);
     });
 
     weddingDateInput.addEventListener("invalid", () => {
@@ -476,7 +605,7 @@
 
       if (sameEventRegistration) {
         coupleNameInput.value = sameEventRegistration.couple_name ?? "";
-        weddingDateInput.value = sameEventRegistration.wedding_date ?? "";
+        setWeddingDateValue(sameEventRegistration.wedding_date ?? "");
         setDuplicateRegistrationState(sameEventRegistration.id);
         return;
       }
@@ -501,7 +630,7 @@
 
       if (data) {
         coupleNameInput.value = data.couple_name ?? "";
-        weddingDateInput.value = data.wedding_date ?? "";
+        setWeddingDateValue(data.wedding_date ?? "");
         return;
       }
 
@@ -715,6 +844,8 @@
 
     await resolveEventIdBySlug();
     panelLink.href = getPanelUrl();
+    populateYearOptions();
+    populateDayOptions();
 
     await loadEventSummary();
     await loadDishes();
