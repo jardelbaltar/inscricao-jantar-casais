@@ -686,6 +686,33 @@
       dishHint.textContent = "As quantidades atualizam conforme as inscrições.";
     }
 
+    async function validateSelectedDishAvailability(selectedDishId) {
+      if (!selectedDishId || isEventFull) return true;
+
+      let dishData;
+      try {
+        const response = await withRetry(() => supabase
+          .from("dishes")
+          .select("id,name,remaining,is_active")
+          .eq("event_id", EVENT_ID)
+          .eq("id", selectedDishId)
+          .maybeSingle());
+        dishData = response.data;
+      } catch (_error) {
+        msg.className = "err";
+        msg.textContent = "Não foi possível validar o prato selecionado. Tente novamente.";
+        return false;
+      }
+
+      const isDishAvailable = Boolean(dishData?.is_active) && Number(dishData?.remaining ?? 0) > 0;
+      if (isDishAvailable) return true;
+
+      msg.className = "err";
+      msg.textContent = "O prato selecionado não está mais disponível. Escolha outra opção atualizada abaixo.";
+      await loadDishes({ clearFeedback: false });
+      return false;
+    }
+
     await resolveEventIdBySlug();
     panelLink.href = getPanelUrl();
 
@@ -780,12 +807,19 @@
         return;
       }
 
+      const selectedDishId = dishSelect.value;
+      const isDishStillAvailable = await validateSelectedDishAvailability(selectedDishId);
+      if (!isDishStillAvailable) {
+        btn.disabled = false;
+        return;
+      }
+
       const payload = {
         p_event_id: EVENT_ID,
         p_couple_name: coupleName,
         p_wedding_date: weddingDate,
         p_phone: phone,
-        p_dish_id: dishSelect.value
+        p_dish_id: selectedDishId
       };
 
       let data;
