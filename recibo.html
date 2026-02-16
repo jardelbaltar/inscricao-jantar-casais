@@ -335,6 +335,16 @@ function formatDate(v){
   return new Intl.DateTimeFormat("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric"}).format(d);
 }
 
+function anonymizePhone(value){
+  if(!value) return "—";
+
+  const digits=value.replace(/\D/g,"");
+  if(digits.length<4) return "••••";
+
+  const visibleDigits=digits.slice(-4);
+  return `••••••${visibleDigits}`;
+}
+
 async function generateQR(id){
   const payload=`rid:${id}`;
   const qrUrl=`https://api.qrserver.com/v1/create-qr-code/?size=170x170&margin=1&data=${encodeURIComponent(payload)}`;
@@ -392,7 +402,7 @@ async function load(){
   const eventLocal=(ev?.local??"").trim();
   evDate.textContent=`${formatDateTime(ev?.event_at)}${eventLocal ? ` • ${eventLocal}` : ""}`;
   couple.textContent=reg.couple_name??"—";
-  phone.textContent=reg.phone??"—";
+  phone.textContent=anonymizePhone(reg.phone);
   wedding.textContent=formatDate(reg.wedding_date);
   dish.textContent=dishRes?.name??"—";
 
