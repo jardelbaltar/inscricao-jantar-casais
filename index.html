@@ -326,6 +326,19 @@
     let lastSearchedPhone = "";
     let phoneLookupRequestId = 0;
     let eventRegistrationOpen = true;
+    let duplicateRegistrationId = null;
+
+    function updateFormAvailability() {
+      const disableAllControls = !isEventOpen || Boolean(duplicateRegistrationId);
+      const controls = form.querySelectorAll("input, select, button");
+      controls.forEach((control) => {
+        control.disabled = disableAllControls;
+      });
+
+      if (!disableAllControls && isEventFull) {
+        dishSelect.disabled = true;
+      }
+    }
 
     function setWaitlistMode(isEventFull) {
       waitlistNotice.classList.toggle("visible", isEventFull);
@@ -339,11 +352,22 @@
     function setRegistrationMode(isOpen) {
       isEventOpen = isOpen;
       registrationsClosedNotice.classList.toggle("visible", !isOpen);
+      updateFormAvailability();
+    }
 
-      const controls = form.querySelectorAll("input, select, button");
-      controls.forEach((control) => {
-        control.disabled = !isOpen;
-      });
+    function setDuplicateRegistrationState(registrationId) {
+      duplicateRegistrationId = registrationId;
+      updateFormAvailability();
+
+      if (registrationId) {
+        showDuplicatePhoneMessage(registrationId);
+        return;
+      }
+
+      if (msg.classList.contains("info")) {
+        msg.textContent = "";
+        msg.className = "";
+      }
     }
 
     function formatPhone(value) {
@@ -361,6 +385,7 @@
       const formattedPhone = event.target.value;
       if (formattedPhone.length < PHONE_FULL_LENGTH) {
         lastSearchedPhone = "";
+        setDuplicateRegistrationState(null);
         return;
       }
 
@@ -371,6 +396,32 @@
 
     async function lookupCoupleByPhone(phone) {
       const currentRequestId = ++phoneLookupRequestId;
+
+      let sameEventRegistration;
+      try {
+        const response = await withRetry(() => supabase
+          .from("registrations")
+          .select("id,couple_name,wedding_date")
+          .eq("event_id", EVENT_ID)
+          .eq("phone", phone)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle());
+        sameEventRegistration = response.data;
+      } catch (_error) {
+        return;
+      }
+
+      if (currentRequestId !== phoneLookupRequestId) return;
+
+      if (sameEventRegistration) {
+        coupleNameInput.value = sameEventRegistration.couple_name ?? "";
+        weddingDateInput.value = sameEventRegistration.wedding_date ?? "";
+        setDuplicateRegistrationState(sameEventRegistration.id);
+        return;
+      }
+
+      setDuplicateRegistrationState(null);
 
       let data;
       try {
@@ -650,6 +701,11 @@
         return;
       }
 
+      if (duplicateRegistrationId) {
+        showDuplicatePhoneMessage(duplicateRegistrationId);
+        return;
+      }
+
       btn.disabled = true;
 
       const coupleName = document.getElementById("couple_name").value.trim();
@@ -715,7 +771,7 @@
         if (data?.error === "PHONE_ALREADY_REGISTERED") {
           const existingRegistrationId = await findRegistrationIdByPhone(phone);
           if (existingRegistrationId) {
-            showDuplicatePhoneMessage(existingRegistrationId);
+            setDuplicateRegistrationState(existingRegistrationId);
             return;
           }
         }
