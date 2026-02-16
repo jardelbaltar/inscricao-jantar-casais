@@ -713,6 +713,11 @@
         };
 
         if (data?.error === "PHONE_ALREADY_REGISTERED") {
+          const redirectedToReceipt = await redirectToReceipt(phone);
+          if (redirectedToReceipt) {
+            return;
+          }
+
           const existingRegistrationId = await findRegistrationIdByPhone(phone);
           if (existingRegistrationId) {
             showDuplicatePhoneMessage(existingRegistrationId);
