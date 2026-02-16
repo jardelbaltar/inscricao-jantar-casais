@@ -101,10 +101,11 @@ body{
 
 .eventHeader{
   display:flex;
-  align-items:flex-start;
-  gap:12px;
-  justify-content:flex-start;
+  align-items:center;
+  justify-content:center;
+  position:relative;
   width:100%;
+  min-height:60px;
 }
 
 .eventLogo{
@@ -112,6 +113,16 @@ body{
   height:60px;
   object-fit:contain;
   flex-shrink:0;
+  position:absolute;
+  left:0;
+  top:50%;
+  transform:translateY(-50%);
+}
+
+.eventTitleWrap{
+  width:100%;
+  text-align:center;
+  padding:0 72px;
 }
 
 .eventTitle{
@@ -199,6 +210,7 @@ body{
 @media(max-width:780px){
   .eventMain{gap:12px}
   .eventLogo{width:46px;height:46px}
+  .eventTitleWrap{padding:0 54px}
   .eventTitle{font-size:22px}
   .eventInfoValue{font-size:16px;line-height:1.3}
   .dishValue{font-size:20px}
@@ -284,7 +296,7 @@ body{
 <div class="eventMain">
   <div class="eventHeader">
     <img class="eventLogo" src="/logo-modern-noglow.png" alt="Logo Casais 2 em 1"/>
-    <div>
+    <div class="eventTitleWrap">
       <div class="eventTitle" id="evTitle">—</div>
     </div>
   </div>
