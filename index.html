@@ -327,6 +327,7 @@
     let phoneLookupRequestId = 0;
     let eventRegistrationOpen = true;
     let duplicateRegistrationId = null;
+    let eventDateLimit = null;
 
     function updateFormAvailability() {
       const disableAllControls = !isEventOpen || Boolean(duplicateRegistrationId);
@@ -378,6 +379,39 @@
       if (digits.length < 11) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
       return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
     }
+
+    function toDateOnlyISO(dateValue) {
+      if (!dateValue) return null;
+      const date = new Date(dateValue);
+      if (Number.isNaN(date.getTime())) return null;
+
+      const pad = (value) => String(value).padStart(2, "0");
+      const year = date.getFullYear();
+      const month = pad(date.getMonth() + 1);
+      const day = pad(date.getDate());
+      return `${year}-${month}-${day}`;
+    }
+
+    function validateWeddingDate() {
+      const weddingDate = weddingDateInput.value;
+      if (!weddingDate || !eventDateLimit) return true;
+
+      if (weddingDate >= eventDateLimit) {
+        msg.className = "err";
+        msg.textContent = "A data de casamento deve ser anterior à data do evento.";
+        return false;
+      }
+
+      return true;
+    }
+
+    weddingDateInput.addEventListener("input", () => {
+      if (!msg.classList.contains("err")) return;
+      if (!validateWeddingDate()) return;
+
+      msg.textContent = "";
+      msg.className = "";
+    });
 
     phoneInput.addEventListener("input", (event) => {
       event.target.value = formatPhone(event.target.value);
@@ -522,6 +556,8 @@
       }
 
       const eventData = eventRes.data;
+      eventDateLimit = toDateOnlyISO(eventData.event_at);
+      weddingDateInput.max = eventDateLimit || "";
       const totalRegistrations = Number(countRes.count ?? 0);
       const totalSlots = Number(eventData.max_couples ?? 0);
       const availableSlots = totalSlots > 0 ? Math.max(totalSlots - totalRegistrations, 0) : 0;
@@ -711,6 +747,11 @@
       const coupleName = document.getElementById("couple_name").value.trim();
       const weddingDate = document.getElementById("wedding_date").value;
       const phone = document.getElementById("phone").value.trim();
+
+      if (!validateWeddingDate()) {
+        btn.disabled = false;
+        return;
+      }
 
       const payload = {
         p_event_id: EVENT_ID,
