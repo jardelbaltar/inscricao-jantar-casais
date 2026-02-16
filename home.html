@@ -536,7 +536,8 @@ function handleModalClick(event){
 function go(page){
   const id=localStorage.getItem(STORAGE_KEY);
   if(!id){ alert("Defina o evento primeiro"); return; }
-  location.href=page+"?event="+id;
+  const separator = page.includes("?") ? "&" : "?";
+  location.href=page+separator+"event="+id;
 }
 
 async function loadEvents(preferredId){
