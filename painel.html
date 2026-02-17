@@ -518,7 +518,7 @@
         }
 
         const { count, error: countError } = await supabase
-          .from("registrations_checkin")
+          .from("registrations")
           .select("id", { count: "exact", head: true })
           .eq("event_id", eventId);
 
@@ -576,7 +576,7 @@
         }
 
         const { data: registrations, error: regError } = await supabase
-          .from("registrations_checkin")
+          .from("registrations")
           .select(`
             id,
             couple_name,
@@ -640,7 +640,7 @@
         .channel(`painel-evento-${eventId}`)
         .on(
           "postgres_changes",
-          { event: "*", schema: "public", table: "registrations_checkin", filter: `event_id=eq.${eventId}` },
+          { event: "*", schema: "public", table: "registrations", filter: `event_id=eq.${eventId}` },
           () => loadPanel()
         )
         .on(
