@@ -427,7 +427,7 @@ async function load(){
   if(!rid)return;
 
   const {data:reg}=await supabase
-    .from("registrations")
+    .from("registrations_checkin")
     .select("id,event_id,couple_name,wedding_date,phone,dish_id")
     .eq("id",rid)
     .maybeSingle();
