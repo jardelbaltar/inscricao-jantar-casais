@@ -879,7 +879,7 @@
       showScanConfirmation("");
 
       const { data: reg, error: regErr } = await supabase
-        .from("registrations_checkin")
+        .from("registrations")
         .select("id,event_id,couple_name,is_present")
         .eq("id", rid)
         .maybeSingle();
