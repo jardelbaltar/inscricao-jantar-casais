@@ -357,8 +357,6 @@ const rid=params.get("rid");
 const evTitle=document.getElementById("evTitle");
 const evDate=document.getElementById("evDate");
 const couple=document.getElementById("couple");
-const phone=document.getElementById("phone");
-const wedding=document.getElementById("wedding");
 const dish=document.getElementById("dish");
 const qrBox=document.getElementById("qrBox");
 const btnShare=document.getElementById("btnShare");
@@ -371,23 +369,6 @@ function formatDateTime(v){
   const minutes=d.getMinutes();
   const timeLabel=minutes===0 ? `${pad(d.getHours())}h` : `${pad(d.getHours())}h${pad(minutes)}`;
   return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${timeLabel}`;
-}
-
-function formatDate(v){
-  if(!v)return "—";
-  const d = new Date(`${v}T00:00:00`);
-  if(Number.isNaN(d.getTime())) return "—";
-  return new Intl.DateTimeFormat("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric"}).format(d);
-}
-
-function anonymizePhone(value){
-  if(!value) return "—";
-
-  const digits=value.replace(/\D/g,"");
-  if(digits.length<4) return "••••";
-
-  const visibleDigits=digits.slice(-4);
-  return `••••••${visibleDigits}`;
 }
 
 async function generateQR(id){
@@ -421,7 +402,7 @@ async function load(){
 
   const {data:reg}=await supabase
     .from("registrations_checkin")
-    .select("id,event_id,couple_name,wedding_date,phone,dish_id")
+    .select("id,event_id,couple_name,dish_id")
     .eq("id",rid)
     .maybeSingle();
 
@@ -447,8 +428,6 @@ async function load(){
   const eventLocal=(ev?.local??"").trim();
   evDate.textContent=`${formatDateTime(ev?.event_at)}${eventLocal ? ` • ${eventLocal}` : ""}`;
   couple.textContent=reg.couple_name??"—";
-  phone.textContent=anonymizePhone(reg.phone);
-  wedding.textContent=formatDate(reg.wedding_date);
   dish.textContent=dishRes?.name??"—";
 
   await generateQR(reg.id);
