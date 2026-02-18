@@ -296,11 +296,31 @@
     function escapeHtml(s){
       return (s ?? "").toString().replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
     }
-    function formatTimeNow() {
-      const now = new Date();
-      const pad = (n) => String(n).padStart(2, "0");
-      const minutes = now.getMinutes();
-      return minutes === 0 ? `${pad(now.getHours())}h` : `${pad(now.getHours())}h${pad(minutes)}`;
+    function formatDateBR(dateObj) {
+      if (!(dateObj instanceof Date) || Number.isNaN(dateObj.getTime())) return "—";
+      return dateObj.toLocaleDateString("pt-BR", {
+        timeZone: "America/Sao_Paulo"
+      });
+    }
+
+    function formatDateTimeBR(dateObj) {
+      if (!(dateObj instanceof Date) || Number.isNaN(dateObj.getTime())) return "—";
+      return dateObj.toLocaleString("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+        hour12: false
+      });
+    }
+
+    function formatDateFromValueBR(value) {
+      const parsed = parseISODate(value);
+      return parsed ? formatDateBR(parsed) : "—";
+    }
+
+    function formatDateTimeFromValueBR(value) {
+      if (!value) return "—";
+      const dt = new Date(value);
+      if (!Number.isNaN(dt.getTime())) return formatDateTimeBR(dt);
+      return formatDateFromValueBR(value);
     }
 
     function parseISODate(iso) {
@@ -315,14 +335,6 @@
       }
       const dt = new Date(value);
       return Number.isNaN(dt.getTime()) ? null : new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
-    }
-
-    function formatDateISO(dateObj) {
-      if (!(dateObj instanceof Date) || Number.isNaN(dateObj.getTime())) return "—";
-      const y = dateObj.getFullYear();
-      const m = String(dateObj.getMonth() + 1).padStart(2, "0");
-      const d = String(dateObj.getDate()).padStart(2, "0");
-      return `${y}-${m}-${d}`;
     }
 
     function diffYMD(fromDate, toDate) {
@@ -399,7 +411,7 @@
       top1El.innerHTML = `
         <div class="value">
           <div class="big">${escapeHtml(best.couple_name)}</div>
-          <span class="badge">${best.wedding_date}</span>
+          <span class="badge">${formatDateFromValueBR(best.wedding_date)}</span>
           <span class="badge">${best.is_present ? "✅ Presente" : "⬜ Ausente"}</span>
         </div>
         <div class="muted" style="margin-top:8px">
@@ -412,7 +424,7 @@
       youngestEl.innerHTML = `
         <div class="value">
           <div class="big">${escapeHtml(y.couple_name)}</div>
-          <span class="badge">${y.wedding_date}</span>
+          <span class="badge">${formatDateFromValueBR(y.wedding_date)}</span>
           <span class="badge">${y.is_present ? "✅ Presente" : "⬜ Ausente"}</span>
         </div>
         <div class="muted" style="margin-top:8px">
@@ -515,11 +527,11 @@
       anniversaryEl.innerHTML = `
         <div class="value">
           <div class="big">${escapeHtml(best.couple_name)}</div>
-          <span class="badge">${best.wedding_date}</span>
+          <span class="badge">${formatDateFromValueBR(best.wedding_date)}</span>
         </div>
         <div class="muted" style="margin-top:8px">
-          <span class="badge">Data do evento: ${escapeHtml(eventDateISO)}</span>
-          <span class="badge">Aniversário (ano do evento): ${formatDateISO(best.anniversaryDate)}</span>
+          <span class="badge">Data do evento: ${formatDateTimeFromValueBR(eventDateISO)}</span>
+          <span class="badge">Aniversário (ano do evento): ${formatDateBR(best.anniversaryDate)}</span>
         </div>
         <div class="muted" style="margin-top:10px;line-height:1.5">
           ${label} para completar
@@ -599,7 +611,7 @@
       const presentAll = data.filter(r => r.is_present === true).length;
 
       chipCounts.textContent = `Inscritos: ${totalAll} • Presentes: ${presentAll}`;
-      lastUpdated.textContent = `Atualizado: ${formatTimeNow()}`;
+      lastUpdated.textContent = `Atualizado: ${formatDateTimeBR(new Date())}`;
 
       renderPresence(totalAll, presentAll);
 
