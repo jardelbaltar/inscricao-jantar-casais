@@ -236,12 +236,24 @@ async function resolveEventIdBySlug(){
 
 
 async function load(){
-  const {data}=await supabase
+  const { data, error } = await supabase
     .from("registrations_checkin")
     .select("id,couple_name,is_present")
-    .eq("event_id",EVENT_ID);
+    .eq("event_id",EVENT_ID)
+    .eq("is_present", true);
+
+  if(error){
+    winnerEl.textContent="Não foi possível carregar os presentes para o sorteio.";
+    drawBtn.disabled=true;
+    return;
+  }
 
   participants=data||[];
+
+  if(participants.length===0){
+    winnerEl.textContent="Nenhum casal presente para participar do sorteio.";
+    drawBtn.disabled=true;
+  }
 }
 
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
