@@ -101,6 +101,8 @@
       gap:14px;
     }
     @media (max-width: 980px){ .grid2{grid-template-columns:1fr} }
+    .distribution-card{align-self:start}
+    @media (max-width: 980px){ .distribution-card{align-self:stretch} }
     .card h2{
       margin:0 0 8px;
       font-size:14px;
@@ -213,14 +215,12 @@
   </header>
 
   <div class="wrap">
-    <div class="card">
-      <h2>📊 Distribuição por tempo de casado</h2>
-      <div class="muted">Faixas em anos (0–4, 5–9, …, 30+).</div>
-      <div style="height:14px"></div>
-      <canvas id="chart"></canvas>
-    </div>
-
     <div class="grid2">
+      <div class="card" style="grid-column:1 / -1">
+        <h2>🏅 Top 5 mais tempo de casado</h2>
+        <div class="list" id="top5"></div>
+      </div>
+
       <div class="card">
         <h2>🏆 Casal com mais tempo de casado</h2>
         <div id="top1"><div class="muted">Carregando…</div></div>
@@ -245,11 +245,13 @@
         <h2>🎂 Aniversário mais próximo do evento</h2>
         <div id="anniversary"><div class="muted">Carregando…</div></div>
       </div>
+    </div>
 
-      <div class="card" style="grid-column:1 / -1">
-        <h2>🏅 Top 5 mais tempo de casado</h2>
-        <div class="list" id="top5"></div>
-      </div>
+    <div class="card distribution-card">
+      <h2>📊 Distribuição por tempo de casado</h2>
+      <div class="muted">Faixas em anos (0–4, 5–9, …, 30+).</div>
+      <div style="height:14px"></div>
+      <canvas id="chart"></canvas>
     </div>
   </div>
 
