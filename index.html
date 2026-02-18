@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>Inscrição - Jantar de Casais</title>
+  <title>InscriÃ§Ã£o - Jantar de Casais</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -266,7 +266,7 @@
           </div>
         </div>
         <h1 id="eventName">Carregando evento...</h1>
-        <a id="panelLink" class="home-link" href="#" aria-label="Abrir painel público de inscrições" title="Abrir painel público de inscrições">
+        <a id="panelLink" class="home-link" href="#" aria-label="Abrir painel pÃºblico de inscriÃ§Ãµes" title="Abrir painel pÃºblico de inscriÃ§Ãµes">
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <rect x="3" y="3" width="8" height="8" rx="2" stroke="currentColor" stroke-width="1.7"></rect>
             <rect x="13" y="3" width="8" height="5" rx="2" stroke="currentColor" stroke-width="1.7"></rect>
@@ -281,15 +281,15 @@
 
     <div class="card">
       <form id="f">
-        <p id="waitlistNotice" class="waitlist-notice">Todas as vagas foram preenchidas, mas você pode entrar na lista de espera!</p>
+        <p id="waitlistNotice" class="waitlist-notice">Todas as vagas foram preenchidas, mas vocÃª pode entrar na lista de espera!</p>
 
-        <p id="registrationsClosedNotice" class="waitlist-notice">As inscrições ainda não estão abertas. Aguarde!</p>
+        <p id="registrationsClosedNotice" class="waitlist-notice">As inscriÃ§Ãµes ainda nÃ£o estÃ£o abertas. Aguarde!</p>
 
         <label>Telefone</label>
         <input id="phone" required placeholder="Ex: (61) 99999-9999" inputmode="tel" maxlength="15" />
 
         <label>Nome do casal</label>
-        <input id="couple_name" required placeholder="Ex: João e Maria" />
+        <input id="couple_name" required placeholder="Ex: JoÃ£o e Maria" />
 
         <label for="wedding_day">Data de casamento</label>
         <div class="date-select-grid">
@@ -297,10 +297,10 @@
             <option value="">Dia</option>
           </select>
           <select id="wedding_month" required>
-            <option value="">Mês</option>
+            <option value="">MÃªs</option>
             <option value="01">Janeiro</option>
             <option value="02">Fevereiro</option>
-            <option value="03">Março</option>
+            <option value="03">MarÃ§o</option>
             <option value="04">Abril</option>
             <option value="05">Maio</option>
             <option value="06">Junho</option>
@@ -318,13 +318,13 @@
         <p id="weddingDateValidation" class="date-validation-panel" role="alert" aria-live="polite"></p>
         <input id="wedding_date" type="hidden" required />
 
-        <label>Escolha o prato que irá trazer</label>
+        <label>Escolha o prato que irÃ¡ trazer</label>
         <select id="dish" required>
           <option value="">Carregando...</option>
         </select>
         <p class="muted" id="dishHint"></p>
 
-        <button id="btn" type="submit">Solicitar inscrição</button>
+        <button id="btn" type="submit">Solicitar inscriÃ§Ã£o</button>
       </form>
 
       <p id="msg"></p>
@@ -346,7 +346,7 @@
     const EVENT_SLUG = params.get("event")?.trim();
     let EVENT_ID = null;
     if (!EVENT_SLUG) {
-      document.body.innerHTML = "<p class='err'>Link inválido: faltou o parâmetro <b>?event=</b>.</p>";
+      document.body.innerHTML = "<p class='err'>Link invÃ¡lido: faltou o parÃ¢metro <b>?event=</b>.</p>";
       throw new Error("Missing event");
     }
 
@@ -368,8 +368,8 @@
     const weddingDaySelect = document.getElementById("wedding_day");
     const weddingMonthSelect = document.getElementById("wedding_month");
     const weddingYearSelect = document.getElementById("wedding_year");
-    const WAITLIST_MESSAGE = "Não há mais vagas disponíveis. Incluímos você na lista de espera. Nossa equipe entrará em contato com você em caso de desistências.";
-    const REGISTRATIONS_CLOSED_MESSAGE = "As inscrições ainda não estão abertas. Aguarde!";
+    const WAITLIST_MESSAGE = "NÃ£o hÃ¡ mais vagas disponÃ­veis. IncluÃ­mos vocÃª na lista de espera. Nossa equipe entrarÃ¡ em contato com vocÃª em caso de desistÃªncias.";
+    const REGISTRATIONS_CLOSED_MESSAGE = "As inscriÃ§Ãµes ainda nÃ£o estÃ£o abertas. Aguarde!";
     const PHONE_FULL_LENGTH = 15;
     let isEventOpen = true;
     let isEventFull = false;
@@ -378,6 +378,7 @@
     let eventRegistrationOpen = true;
     let duplicateRegistrationId = null;
     let eventDateLimit = null;
+    let toBeDefinedDishId = null;
 
     function updateFormAvailability() {
       const disableAllControls = !isEventOpen || Boolean(duplicateRegistrationId);
@@ -393,7 +394,7 @@
 
     function setWaitlistMode(isEventFull) {
       waitlistNotice.classList.toggle("visible", isEventFull);
-      btn.textContent = isEventFull ? "Entrar na lista de espera" : "Solicitar inscrição";
+      btn.textContent = isEventFull ? "Entrar na lista de espera" : "Solicitar inscriÃ§Ã£o";
     }
 
     function isToBeDefinedDish(dish) {
@@ -535,7 +536,7 @@
     function validateWeddingDate() {
       const weddingDate = weddingDateInput.value;
       if (!weddingDate) {
-        setWeddingDateValidationMessage("Selecione dia, mês e ano da data de casamento.");
+        setWeddingDateValidationMessage("Selecione dia, mÃªs e ano da data de casamento.");
         return false;
       }
 
@@ -545,7 +546,7 @@
       }
 
       if (weddingDate >= eventDateLimit) {
-        setWeddingDateValidationMessage(`A data de casamento deve ser anterior à data do evento (${formatDateBR(eventDateLimit)}).`);
+        setWeddingDateValidationMessage(`A data de casamento deve ser anterior Ã  data do evento (${formatDateBR(eventDateLimit)}).`);
         return false;
       }
 
@@ -651,7 +652,7 @@
       msg.innerHTML = "";
 
       const text = document.createElement("span");
-      text.textContent = "Este telefone já está inscrito neste evento.";
+      text.textContent = "Este telefone jÃ¡ estÃ¡ inscrito neste evento.";
 
       const receiptButton = document.createElement("a");
       receiptButton.href = getReceiptUrl(registrationId);
@@ -684,7 +685,7 @@
         .maybeSingle();
 
       if (error || !data?.id) {
-        document.body.innerHTML = "<p class='err'>Evento inválido: o parâmetro <b>?event=</b> não corresponde a um evento existente.</p>";
+        document.body.innerHTML = "<p class='err'>Evento invÃ¡lido: o parÃ¢metro <b>?event=</b> nÃ£o corresponde a um evento existente.</p>";
         throw new Error("Invalid event slug");
       }
 
@@ -710,7 +711,7 @@
       ]);
 
       if (eventRes.error || !eventRes.data) {
-        eventName.textContent = "Evento não encontrado";
+        eventName.textContent = "Evento nÃ£o encontrado";
         return;
       }
 
@@ -723,9 +724,9 @@
       isEventFull = totalSlots > 0 && availableSlots === 0;
 
       eventName.textContent = eventData.title || "Evento";
-      document.title = eventData.title || "Inscrição";
+      document.title = eventData.title || "InscriÃ§Ã£o";
       const eventLocal = (eventData.local ?? "").trim();
-      const localText = eventLocal ? ` • ${eventLocal}` : "";
+      const localText = eventLocal ? ` â€¢ ${eventLocal}` : "";
       eventDate.textContent = `${formatDateTime(eventData.event_at)}${localText}`;
       eventSlots.textContent = totalSlots > 0
         ? `Vagas: ${availableSlots}/${totalSlots}`
@@ -777,6 +778,7 @@
       }
 
       const dishes = data ?? [];
+      toBeDefinedDishId = dishes.find(isToBeDefinedDish)?.id ?? null;
 
       if (isEventFull) {
         const toBeDefinedDish = dishes.find(isToBeDefinedDish);
@@ -794,7 +796,7 @@
         }
 
         dishSelect.disabled = true;
-        dishHint.textContent = "Com as vagas encerradas, o prato é definido automaticamente como “a definir”.";
+        dishHint.textContent = "Com as vagas encerradas, o prato Ã© definido automaticamente como â€œa definirâ€.";
         return;
       }
 
@@ -802,8 +804,8 @@
 
       const available = dishes.filter((d) => d.remaining > 0 && !isToBeDefinedDish(d));
       if (available.length === 0) {
-        dishSelect.innerHTML = "<option value=''>Sem pratos disponíveis</option>";
-        dishHint.textContent = "As opções esgotaram. Procure a equipe de organização.";
+        dishSelect.innerHTML = "<option value=''>Sem pratos disponÃ­veis</option>";
+        dishHint.textContent = "As opÃ§Ãµes esgotaram. Procure a equipe de organizaÃ§Ã£o.";
         return;
       }
 
@@ -814,7 +816,7 @@
         opt.textContent = `${d.name} (restam ${d.remaining})`;
         dishSelect.appendChild(opt);
       }
-      dishHint.textContent = "As quantidades atualizam conforme as inscrições.";
+      dishHint.textContent = "As quantidades atualizam conforme as inscriÃ§Ãµes.";
     }
 
     async function validateSelectedDishAvailability(selectedDishId) {
@@ -831,7 +833,7 @@
         dishData = response.data;
       } catch (_error) {
         msg.className = "err";
-        msg.textContent = "Não foi possível validar o prato selecionado. Tente novamente.";
+        msg.textContent = "NÃ£o foi possÃ­vel validar o prato selecionado. Tente novamente.";
         return false;
       }
 
@@ -839,7 +841,7 @@
       if (isDishAvailable) return true;
 
       msg.className = "err";
-      msg.textContent = "O prato selecionado não está mais disponível. Escolha outra opção atualizada.";
+      msg.textContent = "O prato selecionado nÃ£o estÃ¡ mais disponÃ­vel. Escolha outra opÃ§Ã£o atualizada.";
       await loadDishes({ clearFeedback: false });
       return false;
     }
@@ -885,7 +887,7 @@
       return url.toString();
     }
 
-    // NOVO: obter o id da inscrição recém-criada usando phone + event_id
+    // NOVO: obter o id da inscriÃ§Ã£o recÃ©m-criada usando phone + event_id
     async function findRegistrationIdByPhone(phone){
       const res = await withRetry(() => supabase
         .from("registrations")
@@ -942,6 +944,15 @@
       }
 
       const selectedDishId = dishSelect.value;
+      const dishIdForPayload = isEventFull ? toBeDefinedDishId : selectedDishId;
+
+      if (!dishIdForPayload) {
+        btn.disabled = false;
+        msg.className = "err";
+        msg.textContent = "Não foi possível identificar o prato \"A definir\" para este evento.";
+        return;
+      }
+
       const isDishStillAvailable = await validateSelectedDishAvailability(selectedDishId);
       if (!isDishStillAvailable) {
         btn.disabled = false;
@@ -953,7 +964,7 @@
         p_couple_name: coupleName,
         p_wedding_date: weddingDate,
         p_phone: phone,
-        p_dish_id: selectedDishId
+        p_dish_id: dishIdForPayload
       };
 
       let data;
@@ -969,7 +980,7 @@
 
       if (error) {
         msg.className = "err";
-        msg.textContent = "Erro na inscrição. Tente novamente.";
+        msg.textContent = "Erro na inscriÃ§Ã£o. Tente novamente.";
         return;
       }
 
@@ -998,10 +1009,10 @@
 
         msg.className = "err";
         const map = {
-          EVENT_FULL: "As vagas foram preenchidas. No momento não foi possível incluir automaticamente na lista de espera. Tente novamente em instantes.",
+          EVENT_FULL: "As vagas foram preenchidas. No momento nÃ£o foi possÃ­vel incluir automaticamente na lista de espera. Tente novamente em instantes.",
           DISH_SOLD_OUT: "Esse prato acabou. Escolha outro.",
-          DISH_NOT_FOUND: "Prato inválido. Recarregue a página.",
-          EVENT_NOT_FOUND: "Evento inválido."
+          DISH_NOT_FOUND: "Prato invÃ¡lido. Recarregue a pÃ¡gina.",
+          EVENT_NOT_FOUND: "Evento invÃ¡lido."
         };
 
         if (data?.error === "PHONE_ALREADY_REGISTERED") {
@@ -1012,7 +1023,7 @@
           }
         }
 
-        msg.textContent = map[data.error] ?? "Não foi possível concluir. Tente novamente.";
+        msg.textContent = map[data.error] ?? "NÃ£o foi possÃ­vel concluir. Tente novamente.";
         await loadDishes();
         return;
       }
@@ -1028,9 +1039,14 @@
       const redirectedToReceipt = await redirectToReceipt(phone);
       if (!redirectedToReceipt) {
         msg.className = "err";
-        msg.textContent = "Inscrição confirmada, mas não foi possível abrir o recibo automaticamente.";
+        msg.textContent = "InscriÃ§Ã£o confirmada, mas nÃ£o foi possÃ­vel abrir o recibo automaticamente.";
       }
     });
   </script>
 </body>
 </html>
+
+
+
+
+
