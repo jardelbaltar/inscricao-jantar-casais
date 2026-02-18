@@ -1,7 +1,8 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
@@ -397,8 +398,25 @@
       btn.textContent = isEventFull ? "Entrar na lista de espera" : "Solicitar inscrição";
     }
 
+    function normalizeDishName(value) {
+      return (value ?? "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-zA-Z\s]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .toLowerCase();
+    }
+
     function isToBeDefinedDish(dish) {
-      return (dish?.name ?? "").trim().toLowerCase() === "a definir";
+      const normalizedName = normalizeDishName(dish?.name);
+      if (!normalizedName) return false;
+
+      if (normalizedName === "a definir" || normalizedName === "a denifir") {
+        return true;
+      }
+
+      return Boolean(dish?.sort_order) && Number(dish.sort_order) >= 99 && normalizedName.startsWith("a d");
     }
 
     function setRegistrationMode(isOpen) {
