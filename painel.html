@@ -564,13 +564,14 @@
         } else {
           const limite = Number(eventData.max_couples ?? 0);
           const hasFiniteLimit = limite > 0;
+          const confirmados = hasFiniteLimit ? Math.min(inscritos, limite) : inscritos;
           const vagas = hasFiniteLimit ? Math.max(limite - inscritos, 0) : "∞";
           const emEspera = hasFiniteLimit ? Math.max(inscritos - limite, 0) : 0;
 
           document.title = `Inscrições - ${eventData.title}`;
           heroTitle.textContent = eventData.title;
           heroSubtitle.textContent = `${formatDateTime(eventData.event_at)} - ${hasFiniteLimit ? `${limite} casais` : "Sem limite de casais"}`;
-          totalRegistered.textContent = inscritos;
+          totalRegistered.textContent = confirmados;
           remainingSlots.textContent = vagas;
           waitlistTotal.textContent = emEspera;
         }
