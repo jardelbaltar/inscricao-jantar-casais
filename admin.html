@@ -456,10 +456,10 @@ async function refreshRegistrations() {
 
   const { data } = await supabase
     .from("registrations")
-    .select("id,couple_name,wedding_date,phone,queue_pos,dishes(name)")
+    .select("id,couple_name,wedding_date,phone,queue_pos,created_at,dishes(name)")
     .eq("event_id", currentEventId)
     .order("queue_pos", { ascending: true })
-    .order("id", { ascending: true });
+    .order("created_at", { ascending: true });
 
   const rows = data || [];
   currentRegistrations = rows;
