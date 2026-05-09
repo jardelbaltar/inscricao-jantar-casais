@@ -49,7 +49,7 @@
 
     .hero-top {
       display: grid;
-      grid-template-columns: 52px 1fr 52px;
+      grid-template-columns: 52px 1fr;
       align-items: center;
       gap: 10px;
       margin-bottom: 8px;
@@ -65,27 +65,6 @@
       line-height: 1.2;
     }
 
-    .home-link {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 42px;
-      height: 42px;
-      justify-self: end;
-      color: #bfdbfe;
-      text-decoration: none;
-      border-radius: 999px;
-      border: 1px solid rgba(191, 219, 254, 0.45);
-      background: rgba(15, 23, 42, 0.25);
-    }
-
-    .home-link:hover {
-      color: #dbeafe;
-      border-color: rgba(219, 234, 254, 0.85);
-      background: rgba(15, 23, 42, 0.4);
-    }
-
-    .home-link svg { width: 20px; height: 20px; }
 
     .hero p {
       margin: 8px 0 0;
@@ -273,14 +252,6 @@
           </div>
         </div>
         <h1 id="eventName">Carregando evento...</h1>
-        <a id="panelLink" class="home-link" href="#" aria-label="Abrir painel público de inscrições" title="Abrir painel público de inscrições">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <rect x="3" y="3" width="8" height="8" rx="2" stroke="currentColor" stroke-width="1.7"></rect>
-            <rect x="13" y="3" width="8" height="5" rx="2" stroke="currentColor" stroke-width="1.7"></rect>
-            <rect x="13" y="10" width="8" height="11" rx="2" stroke="currentColor" stroke-width="1.7"></rect>
-            <rect x="3" y="13" width="8" height="8" rx="2" stroke="currentColor" stroke-width="1.7"></rect>
-          </svg>
-        </a>
       </div>
       <p id="eventDate">--</p>
       <p id="eventSlots">Vagas: --/--</p>
@@ -362,7 +333,6 @@
     const msg = document.getElementById("msg");
     const btn = document.getElementById("btn");
     const form = document.getElementById("f");
-    const panelLink = document.getElementById("panelLink");
     const eventName = document.getElementById("eventName");
     const eventDate = document.getElementById("eventDate");
     const eventSlots = document.getElementById("eventSlots");
@@ -690,15 +660,6 @@
       return new URL(`/${filename}`, window.location.origin);
     }
 
-    function getPanelUrl() {
-      const url = createAppUrl("painel.html");
-      url.search = "";
-      url.hash = "";
-      url.searchParams.set("event", EVENT_SLUG);
-      return url.toString();
-    }
-
-
 
 
     async function resolveEventIdBySlug() {
@@ -871,7 +832,6 @@
     }
 
     await resolveEventIdBySlug();
-    panelLink.href = getPanelUrl();
     populateYearOptions();
     populateDayOptions();
 
