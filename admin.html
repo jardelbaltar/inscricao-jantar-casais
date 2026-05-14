@@ -258,6 +258,10 @@ th { color: #334155; font-size: 0.9rem; }
         <div>
           <label>Local</label>
           <input id="eventLocal">
+          <label class="event-open-toggle" for="eventRequiresDish">
+            <input id="eventRequiresDish" type="checkbox" checked>
+            <span>Exigir escolha de prato</span>
+          </label>
           <label class="event-open-toggle" for="eventIsOpen">
             <input id="eventIsOpen" type="checkbox">
             <span>Inscrições abertas</span>
@@ -333,6 +337,7 @@ const btnLogout = document.getElementById("btnLogout");
 const eventSelect = document.getElementById("eventSelect");
 const maxCouples = document.getElementById("maxCouples");
 const eventLocal = document.getElementById("eventLocal");
+const eventRequiresDish = document.getElementById("eventRequiresDish");
 const eventIsOpen = document.getElementById("eventIsOpen");
 const btnSaveEvent = document.getElementById("btnSaveEvent");
 const btnPrintList = document.getElementById("btnPrintList");
@@ -388,7 +393,7 @@ async function refreshEvents() {
 
   const { data } = await supabase
     .from("events")
-    .select("id,title,slug,event_at,max_couples,local,is_open,created_at")
+    .select("id,title,slug,event_at,max_couples,local,is_open,requires_dish,created_at")
     .order("created_at", { ascending: false });
 
   eventSelect.innerHTML = "";
@@ -400,6 +405,7 @@ async function refreshEvents() {
     opt.dataset.max = e.max_couples || 0;
     opt.dataset.local = e.local || "";
     opt.dataset.isOpen = e.is_open === false ? "false" : "true";
+    opt.dataset.requiresDish = e.requires_dish === false ? "false" : "true";
     eventSelect.appendChild(opt);
   });
 
@@ -413,6 +419,7 @@ async function refreshEvents() {
     maxCouples.value = "";
     eventLocal.value = "";
     eventIsOpen.checked = false;
+    eventRequiresDish.checked = true;
     regsTableWrap.innerHTML = "<p class='muted'>Nenhum evento cadastrado.</p>";
     return;
   }
@@ -421,6 +428,7 @@ async function refreshEvents() {
   maxCouples.value = selected.dataset.max;
   eventLocal.value = selected.dataset.local;
   eventIsOpen.checked = selected.dataset.isOpen !== "false";
+  eventRequiresDish.checked = selected.dataset.requiresDish !== "false";
 }
 
 async function normalizeQueuePos(rows) {
@@ -566,6 +574,10 @@ function getDishFormValuesById(id) {
 async function refreshDishes() {
   if (!currentEventId) {
     dishesTableWrap.innerHTML = "<p class='muted'>Selecione um evento para gerenciar os pratos.</p>";
+    return;
+  }
+  if (!eventRequiresDish.checked) {
+    dishesTableWrap.innerHTML = "<p class='muted'>Este evento não exige escolha de prato.</p>";
     return;
   }
 
@@ -861,6 +873,7 @@ eventSelect.addEventListener("change", async () => {
   maxCouples.value = eventSelect.selectedOptions[0].dataset.max;
   eventLocal.value = eventSelect.selectedOptions[0].dataset.local;
   eventIsOpen.checked = eventSelect.selectedOptions[0].dataset.isOpen !== "false";
+  eventRequiresDish.checked = eventSelect.selectedOptions[0].dataset.requiresDish !== "false";
   await refreshDishes();
   refreshRegistrations();
 });
@@ -871,6 +884,10 @@ btnToggleDishPanel.addEventListener("click", () => {
 });
 
 btnAddDish.addEventListener("click", async () => {
+  if (!eventRequiresDish.checked) {
+    setMsg("Este evento está configurado sem escolha de prato.", "err");
+    return;
+  }
   if (!currentEventId) {
     setMsg("Selecione um evento para cadastrar pratos.", "err");
     return;
@@ -912,6 +929,7 @@ btnSaveEvent.addEventListener("click", async () => {
     .update({
       max_couples: Number(maxCouples.value || 0),
       local: eventLocal.value || null,
+      requires_dish: eventRequiresDish.checked,
       is_open: eventIsOpen.checked
     })
     .eq("id", currentEventId);
@@ -921,6 +939,7 @@ btnSaveEvent.addEventListener("click", async () => {
     selected.dataset.max = maxCouples.value || 0;
     selected.dataset.local = eventLocal.value || "";
     selected.dataset.isOpen = eventIsOpen.checked ? "true" : "false";
+    selected.dataset.requiresDish = eventRequiresDish.checked ? "true" : "false";
   }
 
   setMsg("Evento atualizado.", "ok");
