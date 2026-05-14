@@ -306,7 +306,7 @@ body{
     <div class="eventInfoValue" id="evDate">—</div>
   </div>
 
-  <div class="dishHighlight">
+  <div class="dishHighlight" id="dishHighlight">
     <div class="dishLabel">PRATO SELECIONADO</div>
     <div class="dishValue" id="dish">—</div>
   </div>
@@ -358,6 +358,7 @@ const evTitle=document.getElementById("evTitle");
 const evDate=document.getElementById("evDate");
 const couple=document.getElementById("couple");
 const dish=document.getElementById("dish");
+const dishHighlight=document.getElementById("dishHighlight");
 const qrBox=document.getElementById("qrBox");
 const btnShare=document.getElementById("btnShare");
 const newRegistrationLink=document.getElementById("newRegistrationLink");
@@ -410,7 +411,7 @@ async function load(){
 
   const {data:ev}=await supabase
     .from("events")
-    .select("title,event_at,local,slug")
+    .select("title,event_at,local,slug,requires_dish")
     .eq("id",reg.event_id)
     .maybeSingle();
 
@@ -428,7 +429,11 @@ async function load(){
   const eventLocal=(ev?.local??"").trim();
   evDate.textContent=`${formatDateTime(ev?.event_at)}${eventLocal ? ` • ${eventLocal}` : ""}`;
   couple.textContent=reg.couple_name??"—";
-  dish.textContent=dishRes?.name??"—";
+  if (ev?.requires_dish === false) {
+    dishHighlight.style.display = "none";
+  } else {
+    dish.textContent=dishRes?.name??"—";
+  }
 
   await generateQR(reg.id);
 }

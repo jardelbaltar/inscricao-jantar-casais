@@ -296,11 +296,13 @@
         <p id="weddingDateValidation" class="date-validation-panel" role="alert" aria-live="polite"></p>
         <input id="wedding_date" type="hidden" required />
 
-        <label>Escolha o prato que irá trazer</label>
-        <select id="dish" required>
-          <option value="">Carregando...</option>
-        </select>
-        <p class="muted" id="dishHint"></p>
+        <div id="dishField">
+          <label>Escolha o prato que irá trazer</label>
+          <select id="dish" required>
+            <option value="">Carregando...</option>
+          </select>
+          <p class="muted" id="dishHint"></p>
+        </div>
 
         <button id="btn" type="submit">Solicitar inscrição</button>
       </form>
@@ -353,6 +355,7 @@
     let lastSearchedPhone = "";
     let phoneLookupRequestId = 0;
     let eventRegistrationOpen = true;
+    let eventRequiresDish = true;
     let duplicateRegistrationId = null;
     let eventDateLimit = null;
     let toBeDefinedDishId = null;
@@ -691,7 +694,7 @@
 
     async function loadEventSummary() {
       const [eventRes, countRes] = await Promise.all([
-        supabase.from("events").select("title,event_at,local,max_couples,is_open").eq("id", EVENT_ID).maybeSingle(),
+        supabase.from("events").select("title,event_at,local,max_couples,is_open,requires_dish").eq("id", EVENT_ID).maybeSingle(),
         supabase.from("registrations").select("id", { count: "exact", head: true }).eq("event_id", EVENT_ID)
       ]);
 
@@ -707,6 +710,7 @@
       const availableSlots = totalSlots > 0 ? Math.max(totalSlots - totalRegistrations, 0) : 0;
       const shouldOpenRegistrations = eventData.is_open !== false;
       isEventFull = totalSlots > 0 && availableSlots === 0;
+      eventRequiresDish = eventData.requires_dish !== false;
 
       eventName.textContent = eventData.title || "Evento";
       document.title = eventData.title || "Inscrição";
@@ -719,6 +723,16 @@
 
       setRegistrationMode(shouldOpenRegistrations);
       setWaitlistMode(isEventFull);
+      const dishField = document.getElementById("dishField");
+      if (!eventRequiresDish) {
+        dishField.style.display = "none";
+        dishSelect.required = false;
+        dishSelect.disabled = true;
+        dishSelect.value = "";
+      } else {
+        dishField.style.display = "";
+        dishSelect.required = true;
+      }
     }
 
     function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
@@ -739,6 +753,13 @@
     }
 
     async function loadDishes({ clearFeedback = true } = {}) {
+      if (!eventRequiresDish) {
+        toBeDefinedDishId = null;
+        dishHint.textContent = "Este evento não exige escolha de prato.";
+        dishSelect.innerHTML = "<option value=''>Não se aplica</option>";
+        dishSelect.disabled = true;
+        return;
+      }
       if (clearFeedback) {
         msg.textContent = "";
         msg.className = "";
@@ -805,6 +826,7 @@
     }
 
     async function validateSelectedDishAvailability(selectedDishId) {
+      if (!eventRequiresDish) return true;
       if (!selectedDishId || isEventFull) return true;
 
       let dishData;
@@ -928,9 +950,11 @@
       }
 
       const selectedDishId = dishSelect.value;
-      const dishIdForPayload = isEventFull ? toBeDefinedDishId : selectedDishId;
+      const dishIdForPayload = eventRequiresDish
+        ? (isEventFull ? toBeDefinedDishId : selectedDishId)
+        : null;
 
-      if (!dishIdForPayload) {
+      if (eventRequiresDish && !dishIdForPayload) {
         btn.disabled = false;
         msg.className = "err";
         msg.textContent = "Não foi possível identificar o prato \"A definir\" para este evento.";
@@ -1029,7 +1053,6 @@
   </script>
 </body>
 </html>
-
 
 
 
