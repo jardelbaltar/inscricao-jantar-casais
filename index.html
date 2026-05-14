@@ -1001,7 +1001,7 @@
               couple_name: coupleName,
               wedding_date: weddingDate,
               phone,
-              dish_id: payload.p_dish_id || null
+              dish_id: eventRequiresDish ? (payload.p_dish_id ?? null) : null
             })
             .select("id")
             .single();
