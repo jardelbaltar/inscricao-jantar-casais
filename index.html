@@ -349,6 +349,7 @@
     const weddingYearSelect = document.getElementById("wedding_year");
     const WAITLIST_MESSAGE = "Não há mais vagas disponíveis. Incluímos você na lista de espera. Nossa equipe entrará em contato com você em caso de desistências.";
     const REGISTRATIONS_CLOSED_MESSAGE = "As inscrições ainda não estão abertas. Aguarde!";
+    const PIX_PAYMENT_INSTRUCTIONS_MESSAGE = "Para confirmar sua inscrição, faça o PIX para [chave-pix] e envie o comprovante para o whatsapp (61) 9999-9999 - Jefferson";
     const PHONE_FULL_LENGTH = 15;
     let isEventOpen = true;
     let isEventFull = false;
@@ -1044,6 +1045,13 @@
         return;
       }
 
+      if (!eventRequiresDish) {
+        showSubmissionFeedback({ message: PIX_PAYMENT_INSTRUCTIONS_MESSAGE });
+        e.target.reset();
+        await loadDishes({ clearFeedback: false });
+        return;
+      }
+
       const redirectedToReceipt = await redirectToReceipt(phone);
       if (!redirectedToReceipt) {
         msg.className = "err";
@@ -1053,6 +1061,5 @@
   </script>
 </body>
 </html>
-
 
 
