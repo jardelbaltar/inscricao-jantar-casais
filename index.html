@@ -349,7 +349,8 @@
     const weddingYearSelect = document.getElementById("wedding_year");
     const WAITLIST_MESSAGE = "Não há mais vagas disponíveis. Incluímos você na lista de espera. Nossa equipe entrará em contato com você em caso de desistências.";
     const REGISTRATIONS_CLOSED_MESSAGE = "As inscrições ainda não estão abertas. Aguarde!";
-    const PIX_PAYMENT_INSTRUCTIONS_MESSAGE = "Para confirmar sua inscrição, faça o PIX para [chave-pix] e envie o comprovante para o whatsapp (61) 9999-9999 - Jefferson";
+    const PIX_KEY = "[chave-pix]";
+    const PIX_PAYMENT_INSTRUCTIONS_MESSAGE = `Para confirmar sua inscrição, faça o PIX para ${PIX_KEY} e envie o comprovante para o whatsapp (61) 9999-9999 - Jefferson`;
     const PHONE_FULL_LENGTH = 15;
     let isEventOpen = true;
     let isEventFull = false;
@@ -640,9 +641,41 @@
       coupleNameInput.focus();
     }
 
+    async function copyPixKey(button) {
+      await navigator.clipboard.writeText(PIX_KEY);
+      const originalLabel = button.textContent;
+      button.textContent = "Chave PIX copiada!";
+      button.disabled = true;
+      setTimeout(() => {
+        button.textContent = originalLabel;
+        button.disabled = false;
+      }, 1800);
+    }
+
+    function appendPixPaymentMessage(container) {
+      const pixInfo = document.createElement("span");
+      pixInfo.textContent = PIX_PAYMENT_INSTRUCTIONS_MESSAGE;
+
+      const copyPixButton = document.createElement("button");
+      copyPixButton.type = "button";
+      copyPixButton.className = "info-receipt-btn";
+      copyPixButton.textContent = "Copiar chave pix";
+      copyPixButton.addEventListener("click", async () => {
+        await copyPixKey(copyPixButton);
+      });
+
+      container.append(pixInfo, copyPixButton);
+    }
+
     function showSubmissionFeedback({ message }) {
       msg.className = "ok";
       msg.textContent = message;
+    }
+
+    function showPixPaymentFeedback() {
+      msg.className = "ok";
+      msg.innerHTML = "";
+      appendPixPaymentMessage(msg);
     }
 
     function showDuplicatePhoneMessage(registrationId, paymentConfirmed = false) {
@@ -666,9 +699,7 @@
       }
 
       if (!eventRequiresDish) {
-        const pixInfo = document.createElement("span");
-        pixInfo.textContent = PIX_PAYMENT_INSTRUCTIONS_MESSAGE;
-        msg.append(pixInfo);
+        appendPixPaymentMessage(msg);
       }
     }
 
@@ -1058,7 +1089,7 @@
       }
 
       if (!eventRequiresDish) {
-        showSubmissionFeedback({ message: PIX_PAYMENT_INSTRUCTIONS_MESSAGE });
+        showPixPaymentFeedback();
         e.target.reset();
         await loadDishes({ clearFeedback: false });
         return;
