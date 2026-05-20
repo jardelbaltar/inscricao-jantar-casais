@@ -350,8 +350,9 @@
     const WAITLIST_MESSAGE = "Não há mais vagas disponíveis. Incluímos você na lista de espera. Nossa equipe entrará em contato com você em caso de desistências.";
     const REGISTRATIONS_CLOSED_MESSAGE = "As inscrições ainda não estão abertas. Aguarde!";
     const PIX_KEY = "00020126380014br.gov.bcb.pix0116adm@ipbsb.org.br5204000053039865406290.025802BR5925IGREJA PRESBITERIANA DE B6008BRASILIA62070503***63046390";
-    const PIX_PAYMENT_INSTRUCTIONS_MESSAGE = `Cadastro realizado com sucesso!
-Pague pelo PIX e envie o comprovante para o Whatsapp (21) 99401-3009 - Jefferson.`;
+    const WHATSAPP_CONTACT_PHONE = "5521994013009";
+    const WHATSAPP_CONTACT_LABEL = "(21) 99401-3009 - Jefferson";
+    const PIX_PAYMENT_INSTRUCTIONS_MESSAGE = "Cadastro realizado com sucesso!";
     const PHONE_FULL_LENGTH = 15;
     let isEventOpen = true;
     let isEventFull = false;
@@ -658,6 +659,17 @@ Pague pelo PIX e envie o comprovante para o Whatsapp (21) 99401-3009 - Jefferson
       pixInfo.textContent = PIX_PAYMENT_INSTRUCTIONS_MESSAGE;
       pixInfo.style.display = "block";
 
+      const whatsappInstruction = document.createElement("span");
+      whatsappInstruction.style.display = "block";
+      whatsappInstruction.append("Pague pelo PIX e envie o comprovante para o Whatsapp ");
+
+      const whatsappLink = document.createElement("a");
+      whatsappLink.href = `https://wa.me/${WHATSAPP_CONTACT_PHONE}`;
+      whatsappLink.target = "_blank";
+      whatsappLink.rel = "noopener noreferrer";
+      whatsappLink.textContent = WHATSAPP_CONTACT_LABEL;
+      whatsappInstruction.append(whatsappLink, ".");
+
       const copyPixButton = document.createElement("button");
       copyPixButton.type = "button";
       copyPixButton.className = "info-receipt-btn";
@@ -666,7 +678,7 @@ Pague pelo PIX e envie o comprovante para o Whatsapp (21) 99401-3009 - Jefferson
         await copyPixKey(copyPixButton);
       });
 
-      container.append(copyPixButton, pixInfo);
+      container.append(copyPixButton, pixInfo, whatsappInstruction);
     }
 
     function showSubmissionFeedback({ message }) {
