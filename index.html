@@ -184,6 +184,24 @@
       padding: 10px 12px;
     }
 
+    .pix-feedback-title,
+    .pix-feedback-instruction {
+      display: block;
+      text-align: center;
+    }
+
+    .pix-feedback-instruction {
+      margin-top: 12px;
+    }
+
+    .ok .info-receipt-btn {
+      margin-top: 12px;
+    }
+
+    .ok .pix-qr-code {
+      margin-top: 12px;
+    }
+
     .err {
       color: var(--error-text);
       background: #fee2e2;
@@ -361,7 +379,7 @@
     const PIX_QR_CODE_URL = `https://api.qrserver.com/v1/create-qr-code/?size=360x360&data=${encodeURIComponent(PIX_KEY)}`;
     const WHATSAPP_CONTACT_PHONE = "5521994013009";
     const WHATSAPP_CONTACT_LABEL = "(21) 99401-3009 - Jefferson";
-    const PIX_PAYMENT_INSTRUCTIONS_MESSAGE = "Cadastro realizado com sucesso!";
+    const PIX_PAYMENT_INSTRUCTIONS_MESSAGE = "Solicitação realizada com sucesso.";
     const PHONE_FULL_LENGTH = 15;
     let isEventOpen = true;
     let isEventFull = false;
@@ -666,10 +684,10 @@
     function appendPixPaymentMessage(container) {
       const pixInfo = document.createElement("span");
       pixInfo.textContent = PIX_PAYMENT_INSTRUCTIONS_MESSAGE;
-      pixInfo.style.display = "block";
+      pixInfo.className = "pix-feedback-title";
 
       const whatsappInstruction = document.createElement("span");
-      whatsappInstruction.style.display = "block";
+      whatsappInstruction.className = "pix-feedback-instruction";
       whatsappInstruction.append("Pague pelo PIX e envie o comprovante para o Whatsapp ");
 
       const whatsappLink = document.createElement("a");
@@ -693,7 +711,7 @@
       qrCodeImage.className = "pix-qr-code";
       qrCodeImage.loading = "lazy";
 
-      container.append(copyPixButton, pixInfo, whatsappInstruction, qrCodeImage);
+      container.append(pixInfo, whatsappInstruction, copyPixButton, qrCodeImage);
     }
 
     function showSubmissionFeedback({ message }) {
