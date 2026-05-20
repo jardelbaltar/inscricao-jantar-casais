@@ -182,6 +182,9 @@
       border: 1px solid #86efac;
       border-radius: 12px;
       padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
     .pix-feedback-title,
@@ -219,6 +222,11 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
+    }
+
+    .feedback-message {
+      display: block;
+      text-align: center;
     }
 
     .info-receipt-btn {
@@ -730,6 +738,7 @@
       msg.innerHTML = "";
 
       const text = document.createElement("span");
+      text.className = "feedback-message";
       text.textContent = paymentConfirmed
         ? "Este telefone já está inscrito neste evento e o pagamento foi confirmado."
         : "Este telefone já está inscrito neste evento.";
@@ -1151,4 +1160,3 @@
   </script>
 </body>
 </html>
-
