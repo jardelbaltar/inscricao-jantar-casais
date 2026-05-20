@@ -405,12 +405,12 @@
       updateFormAvailability();
     }
 
-    function setDuplicateRegistrationState(registrationId) {
+    function setDuplicateRegistrationState(registrationId, paymentConfirmed = false) {
       duplicateRegistrationId = registrationId;
       updateFormAvailability();
 
       if (registrationId) {
-        showDuplicatePhoneMessage(registrationId);
+        showDuplicatePhoneMessage(registrationId, paymentConfirmed);
         return;
       }
 
@@ -593,7 +593,7 @@
       try {
         const response = await withRetry(() => supabase
           .from("registrations")
-          .select("id,couple_name,wedding_date")
+          .select("id,couple_name,wedding_date,payment_confirmed")
           .eq("event_id", EVENT_ID)
           .eq("phone", phone)
           .order("created_at", { ascending: false })
@@ -609,7 +609,7 @@
       if (sameEventRegistration) {
         coupleNameInput.value = sameEventRegistration.couple_name ?? "";
         setWeddingDateValue(sameEventRegistration.wedding_date ?? "");
-        setDuplicateRegistrationState(sameEventRegistration.id);
+        setDuplicateRegistrationState(sameEventRegistration.id, sameEventRegistration.payment_confirmed === true);
         return;
       }
 
@@ -645,19 +645,31 @@
       msg.textContent = message;
     }
 
-    function showDuplicatePhoneMessage(registrationId) {
+    function showDuplicatePhoneMessage(registrationId, paymentConfirmed = false) {
       msg.className = "info";
       msg.innerHTML = "";
 
       const text = document.createElement("span");
-      text.textContent = "Este telefone já está inscrito neste evento.";
+      text.textContent = paymentConfirmed
+        ? "Este telefone já está inscrito neste evento e o pagamento foi confirmado."
+        : "Este telefone já está inscrito neste evento.";
 
-      const receiptButton = document.createElement("a");
-      receiptButton.href = getReceiptUrl(registrationId);
-      receiptButton.className = "info-receipt-btn";
-      receiptButton.textContent = "Ver recibo";
+      msg.append(text);
 
-      msg.append(text, receiptButton);
+      if (paymentConfirmed) {
+        const receiptButton = document.createElement("a");
+        receiptButton.href = getReceiptUrl(registrationId);
+        receiptButton.className = "info-receipt-btn";
+        receiptButton.textContent = "Ver recibo";
+        msg.append(receiptButton);
+        return;
+      }
+
+      if (!eventRequiresDish) {
+        const pixInfo = document.createElement("span");
+        pixInfo.textContent = PIX_PAYMENT_INSTRUCTIONS_MESSAGE;
+        msg.append(pixInfo);
+      }
     }
 
     function createAppUrl(filename) {
