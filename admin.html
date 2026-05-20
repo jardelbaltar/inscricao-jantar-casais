@@ -475,7 +475,7 @@ async function refreshRegistrations() {
 
   const { data } = await supabase
     .from("registrations")
-    .select("id,couple_name,wedding_date,phone,payment_confirmed,queue_pos,created_at,dishes(name)")
+    .select("id,couple_name,wedding_date,phone,payment_confirmed,queue_pos,created_at,dishes(name),events(requires_dish)")
     .eq("event_id", currentEventId)
     .order("queue_pos", { ascending: true })
     .order("created_at", { ascending: true });
@@ -487,8 +487,10 @@ async function refreshRegistrations() {
   const limit = Number(maxCouples.value || 0);
 
   const html = rows.map((r, idx) => {
-    const confirmed = limit > 0 ? idx < limit : true;
-    const statusText = confirmed ? "Confirmado" : "Lista de espera";
+    const withinLimit = limit > 0 ? idx < limit : true;
+    const requiresDish = r.events?.requires_dish !== false;
+    const confirmed = requiresDish ? withinLimit : (withinLimit && r.payment_confirmed === true);
+    const statusText = confirmed ? "Confirmado" : (withinLimit ? "Pendente" : "Lista de espera");
     const statusClass = confirmed ? "confirmed" : "waiting";
 
     return `

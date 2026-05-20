@@ -316,7 +316,7 @@ body{
 
 <div class="qrCenter">
   <div class="qrBox" id="qrBox"></div>
-  <div class="qrLabel">✅ INSCRIÇÃO CONFIRMADA! Apresente este QR no check-in</div>
+  <div class="qrLabel" id="receiptStatus">✅ INSCRIÇÃO CONFIRMADA! Apresente este QR no check-in</div>
 </div>
 
 <div class="personalInfo">
@@ -359,6 +359,7 @@ const evDate=document.getElementById("evDate");
 const couple=document.getElementById("couple");
 const dish=document.getElementById("dish");
 const dishHighlight=document.getElementById("dishHighlight");
+const receiptStatus=document.getElementById("receiptStatus");
 const qrBox=document.getElementById("qrBox");
 const btnShare=document.getElementById("btnShare");
 const newRegistrationLink=document.getElementById("newRegistrationLink");
@@ -403,7 +404,7 @@ async function load(){
 
   const {data:reg}=await supabase
     .from("registrations_checkin")
-    .select("id,event_id,couple_name,dish_id")
+    .select("id,event_id,couple_name,dish_id,payment_confirmed")
     .eq("id",rid)
     .maybeSingle();
 
@@ -431,8 +432,13 @@ async function load(){
   couple.textContent=reg.couple_name??"—";
   if (ev?.requires_dish === false) {
     dishHighlight.style.display = "none";
+    const pending = reg.payment_confirmed !== true;
+    receiptStatus.textContent = pending
+      ? "⏳ INSCRIÇÃO PENDENTE! Aguarde a confirmação de pagamento"
+      : "✅ INSCRIÇÃO CONFIRMADA! Apresente este QR no check-in";
   } else {
     dish.textContent=dishRes?.name??"—";
+    receiptStatus.textContent = "✅ INSCRIÇÃO CONFIRMADA! Apresente este QR no check-in";
   }
 
   await generateQR(reg.id);

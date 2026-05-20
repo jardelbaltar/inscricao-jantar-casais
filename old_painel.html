@@ -504,7 +504,7 @@
       try {
         const { data: eventData, error: eventError } = await supabase
           .from("events")
-          .select("id,title,event_at,max_couples")
+          .select("id,title,event_at,max_couples,requires_dish")
           .eq("id", eventId)
           .maybeSingle();
 
@@ -582,6 +582,7 @@
             id,
             couple_name,
             queue_pos,
+            payment_confirmed,
             created_at
           `)
           .eq("event_id", eventId)
@@ -595,13 +596,27 @@
 
         const limit = Number(eventData?.max_couples ?? 0);
         const hasFiniteLimit = limit > 0;
+
+        if (eventData) {
+          const requiresDish = eventData.requires_dish !== false;
+          const confirmados = requiresDish
+            ? (hasFiniteLimit ? Math.min((registrations ?? []).length, limit) : (registrations ?? []).length)
+            : (registrations ?? []).filter((r, idx) => {
+                const queuePos = Number(r.queue_pos ?? idx + 1);
+                const withinLimit = hasFiniteLimit ? queuePos <= limit : true;
+                return withinLimit && r.payment_confirmed === true;
+              }).length;
+          totalRegistered.textContent = String(confirmados);
+        }
         const rows = (registrations ?? []).map((r, idx) => {
           const queuePos = Number(r.queue_pos ?? idx + 1);
-          const isConfirmed = hasFiniteLimit ? queuePos <= limit : true;
+          const withinLimit = hasFiniteLimit ? queuePos <= limit : true;
+          const requiresDish = eventData?.requires_dish !== false;
+          const isConfirmed = requiresDish ? withinLimit : (withinLimit && r.payment_confirmed === true);
           const statusIcon = isConfirmed
             ? `<a class="receipt-shortcut" href="${escapeHtml(getReceiptUrl(r.id))}" title="Ver recibo de ${escapeHtml(r.couple_name)}" aria-label="Ver recibo de ${escapeHtml(r.couple_name)}">✅</a>`
             : "⏳";
-          const statusLabel = isConfirmed ? "Confirmado" : "Lista de espera";
+          const statusLabel = isConfirmed ? "Confirmado" : (withinLimit ? "Pendente" : "Lista de espera");
           return `
           <tr>
             <td title="${statusLabel}">${statusIcon}</td>
