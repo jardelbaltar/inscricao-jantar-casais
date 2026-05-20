@@ -402,11 +402,25 @@ async function generateQR(id){
 async function load(){
   if(!rid)return;
 
-  const {data:reg}=await supabase
-    .from("registrations_checkin")
+  let reg=null;
+
+  const {data:registrationData,error:registrationError}=await supabase
+    .from("registrations")
     .select("id,event_id,couple_name,dish_id,payment_confirmed")
     .eq("id",rid)
     .maybeSingle();
+
+  if(!registrationError){
+    reg=registrationData;
+  }else{
+    const {data:viewData}=await supabase
+      .from("registrations_checkin")
+      .select("id,event_id,couple_name,dish_id")
+      .eq("id",rid)
+      .maybeSingle();
+
+    reg=viewData ? {...viewData,payment_confirmed:false} : null;
+  }
 
   if(!reg)return;
 
