@@ -226,6 +226,14 @@
       border-color: #3b82f6;
     }
 
+    .pix-qr-code {
+      width: min(100%, 280px);
+      align-self: center;
+      border-radius: 12px;
+      border: 1px solid #bfdbfe;
+      background: #fff;
+    }
+
 
     @media (min-width: 680px) {
       body { padding: 30px 20px; }
@@ -350,6 +358,7 @@
     const WAITLIST_MESSAGE = "Não há mais vagas disponíveis. Incluímos você na lista de espera. Nossa equipe entrará em contato com você em caso de desistências.";
     const REGISTRATIONS_CLOSED_MESSAGE = "As inscrições ainda não estão abertas. Aguarde!";
     const PIX_KEY = "00020126380014br.gov.bcb.pix0116adm@ipbsb.org.br5204000053039865406290.025802BR5925IGREJA PRESBITERIANA DE B6008BRASILIA62070503***63046390";
+    const PIX_QR_CODE_URL = `https://api.qrserver.com/v1/create-qr-code/?size=360x360&data=${encodeURIComponent(PIX_KEY)}`;
     const WHATSAPP_CONTACT_PHONE = "5521994013009";
     const WHATSAPP_CONTACT_LABEL = "(21) 99401-3009 - Jefferson";
     const PIX_PAYMENT_INSTRUCTIONS_MESSAGE = "Cadastro realizado com sucesso!";
@@ -678,7 +687,13 @@
         await copyPixKey(copyPixButton);
       });
 
-      container.append(copyPixButton, pixInfo, whatsappInstruction);
+      const qrCodeImage = document.createElement("img");
+      qrCodeImage.src = PIX_QR_CODE_URL;
+      qrCodeImage.alt = "QR Code para pagamento via PIX";
+      qrCodeImage.className = "pix-qr-code";
+      qrCodeImage.loading = "lazy";
+
+      container.append(copyPixButton, pixInfo, whatsappInstruction, qrCodeImage);
     }
 
     function showSubmissionFeedback({ message }) {
