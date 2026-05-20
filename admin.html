@@ -475,7 +475,7 @@ async function refreshRegistrations() {
 
   const { data } = await supabase
     .from("registrations")
-    .select("id,couple_name,wedding_date,phone,queue_pos,created_at,dishes(name)")
+    .select("id,couple_name,wedding_date,phone,payment_confirmed,queue_pos,created_at,dishes(name)")
     .eq("event_id", currentEventId)
     .order("queue_pos", { ascending: true })
     .order("created_at", { ascending: true });
@@ -502,6 +502,12 @@ async function refreshRegistrations() {
     <input class="inline-input js-inline" data-id="${r.id}" data-field="wedding_date" type="date" value="${escapeHtml(r.wedding_date ?? "")}" />
   </td>
   <td>${escapeHtml(maskPhone(r.phone))}</td>
+  <td>
+    <select class="inline-input js-inline-payment" data-id="${r.id}">
+      <option value="false" ${r.payment_confirmed ? "" : "selected"}>Pendente</option>
+      <option value="true" ${r.payment_confirmed ? "selected" : ""}>Confirmado</option>
+    </select>
+  </td>
   <td>${escapeHtml(r.dishes?.name ?? "—")}</td>
   <td>
     <button data-id="${r.id}" class="danger inline-btn btnDelete">Excluir</button>
@@ -519,11 +525,12 @@ async function refreshRegistrations() {
         <th>Nome do casal</th>
         <th>Data de casamento</th>
         <th>Telefone (anonimizado)</th>
+        <th>Pagamento</th>
         <th>Prato escolhido</th>
         <th>Ações</th>
       </tr>
     </thead>
-    <tbody>${html || "<tr><td colspan='7' class='muted'>Nenhuma inscrição ainda.</td></tr>"}</tbody>
+    <tbody>${html || "<tr><td colspan='8' class='muted'>Nenhuma inscrição ainda.</td></tr>"}</tbody>
   </table>
 </div>`;
 
@@ -550,6 +557,14 @@ async function refreshRegistrations() {
     input.addEventListener("blur", async () => {
       if (input.value === input.dataset.lastValue) return;
       await commit();
+    });
+  });
+
+  document.querySelectorAll(".js-inline-payment").forEach((input) => {
+    input.addEventListener("change", async () => {
+      const id = input.dataset.id;
+      const value = input.value === "true";
+      await updateRegistrationField(id, { payment_confirmed: value });
     });
   });
 
