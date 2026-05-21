@@ -100,7 +100,7 @@ async function loadRegistrations(){
       ? "<span class='badge ok'>Pagamento confirmado</span>"
       : "<span class='badge pending'>Pendente de pagamento</span>";
     const action = confirmed
-      ? "—"
+      ? `<button type="button" onclick="window.open('recibo.html?rid=${encodeURIComponent(r.id)}','_blank','noopener')">Recibo</button>`
       : `<button onclick=\"confirmPayment('${r.id}')\">Confirmar</button>`;
 
     return `<tr><td>${escapeHtml(r.couple_name || "Sem nome")}</td><td>${badge}</td><td>${action}</td></tr>`;
@@ -145,7 +145,7 @@ async function loadRegistrations(){
   titleEl.textContent = `Confirmação de Pagamentos — ${eventData.title || "Evento"}`;
   subtitleEl.textContent = `${eventData.local || "Local não informado"} • ${formatDateTime(eventData.event_at)}`;
   document.title = `Pagamentos — ${eventData.title || "Evento"}`;
-  msgEl.textContent = "Toque em confirmar para marcar pagamentos pendentes.";
+  msgEl.textContent = "Toque em confirmar para marcar pendências ou em recibo para abrir comprovantes já confirmados.";
 
   await loadRegistrations();
 })();
