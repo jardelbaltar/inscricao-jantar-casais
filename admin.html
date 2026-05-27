@@ -740,9 +740,12 @@ function openGuestListForPrint() {
   const eventTitle = selectedEvent?.textContent?.trim() || "Evento";
   const eventLocalValue = eventLocal.value?.trim() || selectedEvent?.dataset.local || "Não informado";
   const eventMaxValue = Number(maxCouples.value || selectedEvent?.dataset.max || 0);
+  const eventRequiresDishValue = selectedEvent?.dataset.requiresDish !== "false";
 
   const rowsHtml = currentRegistrations.map((r, idx) => {
     const status = getRegistrationStatus(r, idx, eventMaxValue);
+    const isWaitingList = status.text === "Lista de espera";
+    const paymentText = isWaitingList ? "-" : (r.payment_confirmed ? "Confirmado" : "Pendente");
 
     return `
     <tr>
@@ -751,7 +754,9 @@ function openGuestListForPrint() {
       <td>${escapeHtml(r.couple_name || "—")}</td>
       <td>${escapeHtml(formatDate(r.wedding_date))}</td>
       <td>${escapeHtml(r.phone || "—")}</td>
-      <td>${escapeHtml(r.dishes?.name || "—")}</td>
+      ${eventRequiresDishValue
+        ? `<td>${escapeHtml(r.dishes?.name || "—")}</td>`
+        : `<td>${escapeHtml(paymentText)}</td>`}
     </tr>
   `;
   }).join("");
@@ -794,7 +799,7 @@ function openGuestListForPrint() {
         <th>Nome do casal</th>
         <th>Data de casamento</th>
         <th>Telefone</th>
-        <th>Prato escolhido</th>
+        ${eventRequiresDishValue ? "<th>Prato escolhido</th>" : "<th>Confirmação de pagamento</th>"}
       </tr>
     </thead>
     <tbody>${rowsHtml}</tbody>
