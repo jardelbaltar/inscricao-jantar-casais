@@ -467,6 +467,23 @@ async function updateRegistrationField(id, patch) {
   return true;
 }
 
+
+function getRegistrationStatus(registration, index, limit) {
+  const withinLimit = limit > 0 ? index < limit : true;
+  const requiresDish = registration.events?.requires_dish !== false;
+  const confirmed = requiresDish ? withinLimit : (withinLimit && registration.payment_confirmed === true);
+
+  if (confirmed) {
+    return { text: "Confirmado", icon: "✅", className: "confirmed" };
+  }
+
+  if (withinLimit) {
+    return { text: "Pendente", icon: "⏳", className: "waiting" };
+  }
+
+  return { text: "Lista de espera", icon: "🕒", className: "waiting" };
+}
+
 async function refreshRegistrations() {
   if (!currentEventId) {
     regsTableWrap.innerHTML = "<p class='muted'>Selecione um evento para carregar as inscrições.</p>";
@@ -487,15 +504,11 @@ async function refreshRegistrations() {
   const limit = Number(maxCouples.value || 0);
 
   const html = rows.map((r, idx) => {
-    const withinLimit = limit > 0 ? idx < limit : true;
-    const requiresDish = r.events?.requires_dish !== false;
-    const confirmed = requiresDish ? withinLimit : (withinLimit && r.payment_confirmed === true);
-    const statusText = confirmed ? "Confirmado" : (withinLimit ? "Pendente" : "Lista de espera");
-    const statusClass = confirmed ? "confirmed" : "waiting";
+    const status = getRegistrationStatus(r, idx, limit);
 
     return `
 <tr>
-  <td><span class="status ${statusClass}">${confirmed ? "✅" : "⏳"} ${statusText}</span></td>
+  <td><span class="status ${status.className}">${status.icon} ${status.text}</span></td>
   <td>${r.queue_pos ?? idx + 1}</td>
   <td>
     <input class="inline-input js-inline" data-id="${r.id}" data-field="couple_name" type="text" value="${escapeHtml(r.couple_name ?? "")}" />
@@ -728,15 +741,20 @@ function openGuestListForPrint() {
   const eventLocalValue = eventLocal.value?.trim() || selectedEvent?.dataset.local || "Não informado";
   const eventMaxValue = Number(maxCouples.value || selectedEvent?.dataset.max || 0);
 
-  const rowsHtml = currentRegistrations.map((r, idx) => `
+  const rowsHtml = currentRegistrations.map((r, idx) => {
+    const status = getRegistrationStatus(r, idx, eventMaxValue);
+
+    return `
     <tr>
       <td>${r.queue_pos ?? idx + 1}</td>
+      <td>${status.icon} ${status.text}</td>
       <td>${escapeHtml(r.couple_name || "—")}</td>
       <td>${escapeHtml(formatDate(r.wedding_date))}</td>
       <td>${escapeHtml(r.phone || "—")}</td>
       <td>${escapeHtml(r.dishes?.name || "—")}</td>
     </tr>
-  `).join("");
+  `;
+  }).join("");
 
   const printWindow = window.open("", "_blank");
   if (!printWindow) {
@@ -772,6 +790,7 @@ function openGuestListForPrint() {
     <thead>
       <tr>
         <th>Ordem</th>
+        <th>Status</th>
         <th>Nome do casal</th>
         <th>Data de casamento</th>
         <th>Telefone</th>
