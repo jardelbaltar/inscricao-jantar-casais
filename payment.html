@@ -146,7 +146,7 @@ async function loadRegistrations(){
       ? `<button type="button" onclick="window.open('recibo.html?rid=${encodeURIComponent(r.id)}','_blank','noopener')">Recibo</button>`
       : (waitingList ? "<span class='muted'>-</span>" : `<button onclick=\"confirmPayment('${r.id}')\">Confirmar</button>`);
 
-    return `<tr><td>${escapeHtml(r.couple_name || "Sem nome")}</td><td>${badge}</td><td>${action}</td></tr>`;
+    return `<tr><td>${escapeHtml(r.queue_pos ?? "-")}</td><td>${escapeHtml(r.couple_name || "Sem nome")}</td><td>${badge}</td><td>${action}</td></tr>`;
   }).join("");
 
   summaryWrap.innerHTML = `
@@ -158,8 +158,8 @@ async function loadRegistrations(){
 
   tableWrap.innerHTML = `
     <table>
-      <thead><tr><th>Casal</th><th>Status</th><th>Ação rápida</th></tr></thead>
-      <tbody>${rows || "<tr><td colspan='3' class='muted'>Nenhuma inscrição encontrada.</td></tr>"}</tbody>
+      <thead><tr><th>Fila</th><th>Casal</th><th>Status</th><th>Ação rápida</th></tr></thead>
+      <tbody>${rows || "<tr><td colspan='4' class='muted'>Nenhuma inscrição encontrada.</td></tr>"}</tbody>
     </table>
   `;
 }
