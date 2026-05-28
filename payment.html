@@ -11,6 +11,10 @@
     .wrap{max-width:980px;margin:0 auto;display:grid;gap:12px}
     .hero{color:#f8fafc;text-align:center}
     .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px}
+    .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+    .summary-item{border:1px solid var(--border);border-radius:10px;padding:10px;background:#f8fafc}
+    .summary-label{display:block;font-size:.82rem;color:#334155;font-weight:600}
+    .summary-value{display:block;font-size:1.5rem;font-weight:800;margin-top:4px}
     .muted{color:var(--muted)}
     .err{color:var(--danger);font-weight:700}
     table{width:100%;border-collapse:collapse}
@@ -31,6 +35,16 @@
     </section>
 
     <section class="card">
+      <h2 style="margin:0 0 10px">Resumo de status</h2>
+      <div id="summaryWrap" class="summary-grid">
+        <div class="summary-item"><span class="summary-label">Total</span><span class="summary-value">-</span></div>
+        <div class="summary-item"><span class="summary-label">Pagamento confirmado</span><span class="summary-value">-</span></div>
+        <div class="summary-item"><span class="summary-label">Pendente de pagamento</span><span class="summary-value">-</span></div>
+        <div class="summary-item"><span class="summary-label">Lista de Espera</span><span class="summary-value">-</span></div>
+      </div>
+    </section>
+
+    <section class="card">
       <p id="msg" class="muted">Carregando dados...</p>
       <div id="tableWrap"></div>
     </section>
@@ -47,6 +61,7 @@ const titleEl = document.getElementById("title");
 const subtitleEl = document.getElementById("subtitle");
 const msgEl = document.getElementById("msg");
 const tableWrap = document.getElementById("tableWrap");
+const summaryWrap = document.getElementById("summaryWrap");
 
 const params = new URLSearchParams(location.search);
 const eventSlug = params.get("event");
@@ -110,10 +125,22 @@ async function loadRegistrations(){
 
   const limit = Number(window.MAX_COUPLES || 0);
 
-  const rows = (data || []).map((r, idx)=>{
+  const registrations = data || [];
+  const counters = {
+    total: registrations.length,
+    confirmed: 0,
+    pending: 0,
+    waiting: 0,
+  };
+
+  const rows = registrations.map((r, idx)=>{
     const status = getRegistrationStatus(r, idx, limit);
     const confirmed = status.label === "Pagamento confirmado";
     const waitingList = status.label === "Lista de Espera";
+    if(status.label === "Pagamento confirmado") counters.confirmed += 1;
+    else if(status.label === "Pendente de pagamento") counters.pending += 1;
+    else if(status.label === "Lista de Espera") counters.waiting += 1;
+
     const badge = `<span class="badge ${status.className}">${status.label}</span>`;
     const action = confirmed
       ? `<button type="button" onclick="window.open('recibo.html?rid=${encodeURIComponent(r.id)}','_blank','noopener')">Recibo</button>`
@@ -121,6 +148,13 @@ async function loadRegistrations(){
 
     return `<tr><td>${escapeHtml(r.couple_name || "Sem nome")}</td><td>${badge}</td><td>${action}</td></tr>`;
   }).join("");
+
+  summaryWrap.innerHTML = `
+    <div class="summary-item"><span class="summary-label">Total</span><span class="summary-value">${counters.total}</span></div>
+    <div class="summary-item"><span class="summary-label">Pagamento confirmado</span><span class="summary-value">${counters.confirmed}</span></div>
+    <div class="summary-item"><span class="summary-label">Pendente de pagamento</span><span class="summary-value">${counters.pending}</span></div>
+    <div class="summary-item"><span class="summary-label">Lista de Espera</span><span class="summary-value">${counters.waiting}</span></div>
+  `;
 
   tableWrap.innerHTML = `
     <table>
