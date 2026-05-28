@@ -82,11 +82,25 @@ async function confirmPayment(registrationId){
 
 window.confirmPayment = confirmPayment;
 
+function getRegistrationStatus(registration, index, limit){
+  const withinLimit = limit > 0 ? index < limit : true;
+  if(!withinLimit){
+    return { label: "Lista de Espera", className: "pending" };
+  }
+
+  if(registration.payment_confirmed === true){
+    return { label: "Pagamento confirmado", className: "ok" };
+  }
+
+  return { label: "Pendente de pagamento", className: "pending" };
+}
+
 async function loadRegistrations(){
   const { data, error } = await supabase
     .from("registrations")
-    .select("id,couple_name,payment_confirmed,created_at")
+    .select("id,couple_name,payment_confirmed,queue_pos,created_at")
     .eq("event_id", window.EVENT_ID)
+    .order("queue_pos", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: true });
 
   if(error){
@@ -94,14 +108,16 @@ async function loadRegistrations(){
     return;
   }
 
-  const rows = (data || []).map((r)=>{
-    const confirmed = r.payment_confirmed === true;
-    const badge = confirmed
-      ? "<span class='badge ok'>Pagamento confirmado</span>"
-      : "<span class='badge pending'>Pendente de pagamento</span>";
+  const limit = Number(window.MAX_COUPLES || 0);
+
+  const rows = (data || []).map((r, idx)=>{
+    const status = getRegistrationStatus(r, idx, limit);
+    const confirmed = status.label === "Pagamento confirmado";
+    const waitingList = status.label === "Lista de Espera";
+    const badge = `<span class="badge ${status.className}">${status.label}</span>`;
     const action = confirmed
       ? `<button type="button" onclick="window.open('recibo.html?rid=${encodeURIComponent(r.id)}','_blank','noopener')">Recibo</button>`
-      : `<button onclick=\"confirmPayment('${r.id}')\">Confirmar</button>`;
+      : (waitingList ? "<span class='muted'>-</span>" : `<button onclick=\"confirmPayment('${r.id}')\">Confirmar</button>`);
 
     return `<tr><td>${escapeHtml(r.couple_name || "Sem nome")}</td><td>${badge}</td><td>${action}</td></tr>`;
   }).join("");
@@ -123,7 +139,7 @@ async function loadRegistrations(){
 
   const { data: eventData, error: eventError } = await supabase
     .from("events")
-    .select("id,title,event_at,local,requires_dish")
+    .select("id,title,event_at,local,requires_dish,max_couples")
     .eq("slug", eventSlug)
     .maybeSingle();
 
@@ -142,6 +158,7 @@ async function loadRegistrations(){
   }
 
   window.EVENT_ID = eventData.id;
+  window.MAX_COUPLES = Number(eventData.max_couples || 0);
   titleEl.textContent = `Confirmação de Pagamentos — ${eventData.title || "Evento"}`;
   subtitleEl.textContent = `${eventData.local || "Local não informado"} • ${formatDateTime(eventData.event_at)}`;
   document.title = `Pagamentos — ${eventData.title || "Evento"}`;
