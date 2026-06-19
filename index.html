@@ -300,11 +300,12 @@
         <label>Telefone</label>
         <input id="phone" required placeholder="Ex: (61) 99999-9999" inputmode="tel" maxlength="15" />
 
-        <label>Nome do casal</label>
+        <label id="nameLabel">Nome</label>
         <input id="couple_name" required placeholder="Ex: João e Maria" />
 
-        <label for="wedding_day">Data de casamento</label>
-        <div class="date-select-grid">
+        <div id="weddingDateField">
+          <label for="wedding_day">Data de casamento</label>
+          <div class="date-select-grid">
           <select id="wedding_day" required>
             <option value="">Dia</option>
           </select>
@@ -327,8 +328,9 @@
             <option value="">Ano</option>
           </select>
         </div>
-        <p id="weddingDateValidation" class="date-validation-panel" role="alert" aria-live="polite"></p>
-        <input id="wedding_date" type="hidden" required />
+          <p id="weddingDateValidation" class="date-validation-panel" role="alert" aria-live="polite"></p>
+          <input id="wedding_date" type="hidden" required />
+        </div>
 
         <div id="dishField">
           <label>Escolha o prato que irá trazer</label>
@@ -378,15 +380,16 @@
     const coupleNameInput = document.getElementById("couple_name");
     const weddingDateInput = document.getElementById("wedding_date");
     const weddingDateValidation = document.getElementById("weddingDateValidation");
+    const weddingDateField = document.getElementById("weddingDateField");
+    const nameLabel = document.getElementById("nameLabel");
     const weddingDaySelect = document.getElementById("wedding_day");
     const weddingMonthSelect = document.getElementById("wedding_month");
     const weddingYearSelect = document.getElementById("wedding_year");
     const WAITLIST_MESSAGE = "Não há mais vagas disponíveis. Incluímos você na lista de espera. Nossa equipe entrará em contato com você em caso de desistências.";
     const REGISTRATIONS_CLOSED_MESSAGE = "As inscrições ainda não estão abertas. Aguarde!";
-    const PIX_KEY = "00020126380014br.gov.bcb.pix0116adm@ipbsb.org.br5204000053039865406290.025802BR5925IGREJA PRESBITERIANA DE B6008BRASILIA62070503***63046390";
-    const PIX_QR_CODE_URL = `https://api.qrserver.com/v1/create-qr-code/?size=360x360&data=${encodeURIComponent(PIX_KEY)}`;
-    const WHATSAPP_CONTACT_PHONE = "5521994013009";
-    const WHATSAPP_CONTACT_LABEL = "(21) 99401-3009 - Jefferson";
+    let eventPixKey = "";
+    let eventPaymentWhatsapp = "";
+    let eventPaymentContactName = "";
     const PIX_PAYMENT_INSTRUCTIONS_MESSAGE = "Solicitação realizada com sucesso.";
     const PHONE_FULL_LENGTH = 15;
     let isEventOpen = true;
@@ -395,6 +398,8 @@
     let phoneLookupRequestId = 0;
     let eventRegistrationOpen = true;
     let eventRequiresDish = true;
+    let eventIsCouples = true;
+    let eventIsPaid = false;
     let duplicateRegistrationId = null;
     let eventDateLimit = null;
     let toBeDefinedDishId = null;
@@ -570,6 +575,10 @@
     }
 
     function validateWeddingDate() {
+      if (!eventIsCouples) {
+        setWeddingDateValidationMessage("");
+        return true;
+      }
       const weddingDate = weddingDateInput.value;
       if (!weddingDate) {
         setWeddingDateValidationMessage("Selecione dia, mês e ano da data de casamento.");
@@ -679,7 +688,8 @@
     }
 
     async function copyPixKey(button) {
-      await navigator.clipboard.writeText(PIX_KEY);
+      if (!eventPixKey) return;
+      await navigator.clipboard.writeText(eventPixKey);
       const originalLabel = button.textContent;
       button.textContent = "Chave PIX copiada!";
       button.disabled = true;
@@ -696,30 +706,30 @@
 
       const whatsappInstruction = document.createElement("span");
       whatsappInstruction.className = "pix-feedback-instruction";
-      whatsappInstruction.append("Pague pelo PIX e envie o comprovante para o Whatsapp ");
+      whatsappInstruction.append("Copie a chave PIX, realize o pagamento e envie o comprovante para o WhatsApp ");
 
-      const whatsappLink = document.createElement("a");
-      whatsappLink.href = `https://wa.me/${WHATSAPP_CONTACT_PHONE}`;
-      whatsappLink.target = "_blank";
-      whatsappLink.rel = "noopener noreferrer";
-      whatsappLink.textContent = WHATSAPP_CONTACT_LABEL;
-      whatsappInstruction.append(whatsappLink, ".");
+      const whatsappDigits = eventPaymentWhatsapp.replace(/\D/g, "");
+      if (whatsappDigits) {
+        const whatsappLink = document.createElement("a");
+        whatsappLink.href = `https://wa.me/${whatsappDigits}`;
+        whatsappLink.target = "_blank";
+        whatsappLink.rel = "noopener noreferrer";
+        whatsappLink.textContent = [eventPaymentWhatsapp, eventPaymentContactName].filter(Boolean).join(" - ");
+        whatsappInstruction.append(whatsappLink, ".");
+      } else {
+        whatsappInstruction.append("cadastrado pela organização.");
+      }
 
       const copyPixButton = document.createElement("button");
       copyPixButton.type = "button";
       copyPixButton.className = "info-receipt-btn";
-      copyPixButton.textContent = "Copiar chave pix";
+      copyPixButton.textContent = eventPixKey ? "Copiar chave pix" : "Chave PIX indisponível";
+      copyPixButton.disabled = !eventPixKey;
       copyPixButton.addEventListener("click", async () => {
         await copyPixKey(copyPixButton);
       });
 
-      const qrCodeImage = document.createElement("img");
-      qrCodeImage.src = PIX_QR_CODE_URL;
-      qrCodeImage.alt = "QR Code para pagamento via PIX";
-      qrCodeImage.className = "pix-qr-code";
-      qrCodeImage.loading = "lazy";
-
-      container.append(pixInfo, whatsappInstruction, copyPixButton, qrCodeImage);
+      container.append(pixInfo, whatsappInstruction, copyPixButton);
     }
 
     function showSubmissionFeedback({ message }) {
@@ -754,7 +764,7 @@
         return;
       }
 
-      if (!eventRequiresDish) {
+      if (eventIsPaid) {
         appendPixPaymentMessage(msg);
       }
     }
@@ -794,7 +804,7 @@
 
     async function loadEventSummary() {
       const [eventRes, countRes] = await Promise.all([
-        supabase.from("events").select("title,event_at,local,max_couples,is_open,requires_dish").eq("id", EVENT_ID).maybeSingle(),
+        supabase.from("events").select("title,event_at,local,max_couples,is_open,requires_dish,is_couples_event,is_paid,pix_key,payment_contact_name,payment_whatsapp").eq("id", EVENT_ID).maybeSingle(),
         supabase.from("registrations").select("id", { count: "exact", head: true }).eq("event_id", EVENT_ID)
       ]);
 
@@ -811,6 +821,11 @@
       const shouldOpenRegistrations = eventData.is_open !== false;
       isEventFull = totalSlots > 0 && availableSlots === 0;
       eventRequiresDish = eventData.requires_dish !== false;
+      eventIsCouples = eventData.is_couples_event !== false;
+      eventIsPaid = eventData.is_paid === true;
+      eventPixKey = eventData.pix_key || "";
+      eventPaymentContactName = eventData.payment_contact_name || "";
+      eventPaymentWhatsapp = eventData.payment_whatsapp || "";
 
       eventName.textContent = eventData.title || "Evento";
       document.title = eventData.title || "Inscrição";
@@ -823,6 +838,14 @@
 
       setRegistrationMode(shouldOpenRegistrations);
       setWaitlistMode(isEventFull);
+      nameLabel.textContent = eventIsCouples ? "Nome do casal" : "Nome";
+      coupleNameInput.placeholder = eventIsCouples ? "Ex: João e Maria" : "Ex: João da Silva";
+      weddingDateField.style.display = eventIsCouples ? "" : "none";
+      weddingDateInput.required = eventIsCouples;
+      weddingDaySelect.required = eventIsCouples;
+      weddingMonthSelect.required = eventIsCouples;
+      weddingYearSelect.required = eventIsCouples;
+      if (!eventIsCouples) setWeddingDateValue("");
       const dishField = document.getElementById("dishField");
       if (!eventRequiresDish) {
         dishField.style.display = "none";
@@ -1041,7 +1064,7 @@
       btn.disabled = true;
 
       const coupleName = document.getElementById("couple_name").value.trim();
-      const weddingDate = document.getElementById("wedding_date").value;
+      const weddingDate = eventIsCouples ? document.getElementById("wedding_date").value : null;
       const phone = document.getElementById("phone").value.trim();
 
       if (!validateWeddingDate()) {
@@ -1144,7 +1167,7 @@
         return;
       }
 
-      if (!eventRequiresDish) {
+      if (eventIsPaid) {
         showPixPaymentFeedback();
         e.target.reset();
         await loadDishes({ clearFeedback: false });
