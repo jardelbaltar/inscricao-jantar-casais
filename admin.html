@@ -224,7 +224,7 @@ th { color: #334155; font-size: 0.9rem; }
 <main class="app">
   <section class="hero">
     <h1>Administração de Inscrições</h1>
-    <p>Gerencie eventos, acompanhe a fila e edite dados dos casais.</p>
+    <p>Gerencie eventos, acompanhe a fila e edite dados dos participantes.</p>
   </section>
 
   <div id="msg"></div>
@@ -262,10 +262,30 @@ th { color: #334155; font-size: 0.9rem; }
             <input id="eventRequiresDish" type="checkbox" checked>
             <span>Exigir escolha de prato</span>
           </label>
+          <label class="event-open-toggle" for="eventIsCouples">
+            <input id="eventIsCouples" type="checkbox" checked>
+            <span>Evento para casais</span>
+          </label>
+          <label class="event-open-toggle" for="eventIsPaid">
+            <input id="eventIsPaid" type="checkbox">
+            <span>Evento pago</span>
+          </label>
           <label class="event-open-toggle" for="eventIsOpen">
             <input id="eventIsOpen" type="checkbox">
             <span>Inscrições abertas</span>
           </label>
+        </div>
+        <div>
+          <label>Chave PIX</label>
+          <input id="eventPixKey" placeholder="Informe a chave PIX do evento">
+        </div>
+        <div>
+          <label>Contato para comprovante</label>
+          <input id="eventPaymentContactName" placeholder="Ex.: Secretaria">
+        </div>
+        <div>
+          <label>WhatsApp do comprovante</label>
+          <input id="eventPaymentWhatsapp" placeholder="Ex.: 5561999999999">
         </div>
         <div style="align-self:flex-end">
           <button id="btnSaveEvent">Salvar</button>
@@ -312,7 +332,7 @@ th { color: #334155; font-size: 0.9rem; }
 
     <div class="card">
       <h2>Convidados</h2>
-      <p class="muted">Edite diretamente os campos <strong>Nome do casal</strong> e <strong>Data de casamento</strong>.</p>
+      <p class="muted">Edite diretamente os campos <strong>Nome</strong> e <strong>Data de casamento</strong> quando o evento for para casais.</p>
       <button class="secondary" id="btnPrintList">Imprimir lista de convidados</button>
       <div id="regsTableWrap"></div>
     </div>
@@ -338,6 +358,11 @@ const eventSelect = document.getElementById("eventSelect");
 const maxCouples = document.getElementById("maxCouples");
 const eventLocal = document.getElementById("eventLocal");
 const eventRequiresDish = document.getElementById("eventRequiresDish");
+const eventIsCouples = document.getElementById("eventIsCouples");
+const eventIsPaid = document.getElementById("eventIsPaid");
+const eventPixKey = document.getElementById("eventPixKey");
+const eventPaymentContactName = document.getElementById("eventPaymentContactName");
+const eventPaymentWhatsapp = document.getElementById("eventPaymentWhatsapp");
 const eventIsOpen = document.getElementById("eventIsOpen");
 const btnSaveEvent = document.getElementById("btnSaveEvent");
 const btnPrintList = document.getElementById("btnPrintList");
@@ -393,7 +418,7 @@ async function refreshEvents() {
 
   const { data } = await supabase
     .from("events")
-    .select("id,title,slug,event_at,max_couples,local,is_open,requires_dish,created_at")
+    .select("id,title,slug,event_at,max_couples,local,is_open,requires_dish,is_couples_event,is_paid,pix_key,payment_contact_name,payment_whatsapp,created_at")
     .order("created_at", { ascending: false });
 
   eventSelect.innerHTML = "";
@@ -406,6 +431,11 @@ async function refreshEvents() {
     opt.dataset.local = e.local || "";
     opt.dataset.isOpen = e.is_open === false ? "false" : "true";
     opt.dataset.requiresDish = e.requires_dish === false ? "false" : "true";
+    opt.dataset.isCouples = e.is_couples_event === false ? "false" : "true";
+    opt.dataset.isPaid = e.is_paid === true ? "true" : "false";
+    opt.dataset.pixKey = e.pix_key || "";
+    opt.dataset.paymentContactName = e.payment_contact_name || "";
+    opt.dataset.paymentWhatsapp = e.payment_whatsapp || "";
     eventSelect.appendChild(opt);
   });
 
@@ -420,6 +450,11 @@ async function refreshEvents() {
     eventLocal.value = "";
     eventIsOpen.checked = false;
     eventRequiresDish.checked = true;
+    eventIsCouples.checked = true;
+    eventIsPaid.checked = false;
+    eventPixKey.value = "";
+    eventPaymentContactName.value = "";
+    eventPaymentWhatsapp.value = "";
     regsTableWrap.innerHTML = "<p class='muted'>Nenhum evento cadastrado.</p>";
     return;
   }
@@ -429,6 +464,11 @@ async function refreshEvents() {
   eventLocal.value = selected.dataset.local;
   eventIsOpen.checked = selected.dataset.isOpen !== "false";
   eventRequiresDish.checked = selected.dataset.requiresDish !== "false";
+  eventIsCouples.checked = selected.dataset.isCouples !== "false";
+  eventIsPaid.checked = selected.dataset.isPaid === "true";
+  eventPixKey.value = selected.dataset.pixKey || "";
+  eventPaymentContactName.value = selected.dataset.paymentContactName || "";
+  eventPaymentWhatsapp.value = selected.dataset.paymentWhatsapp || "";
 }
 
 async function normalizeQueuePos(rows) {
@@ -470,8 +510,8 @@ async function updateRegistrationField(id, patch) {
 
 function getRegistrationStatus(registration, index, limit) {
   const withinLimit = limit > 0 ? index < limit : true;
-  const requiresDish = registration.events?.requires_dish !== false;
-  const confirmed = requiresDish ? withinLimit : (withinLimit && registration.payment_confirmed === true);
+  const paid = registration.events?.is_paid === true;
+  const confirmed = paid ? (withinLimit && registration.payment_confirmed === true) : withinLimit;
 
   if (confirmed) {
     return { text: "Confirmado", icon: "✅", className: "confirmed" };
@@ -492,13 +532,16 @@ async function refreshRegistrations() {
 
   const { data } = await supabase
     .from("registrations")
-    .select("id,couple_name,wedding_date,phone,payment_confirmed,queue_pos,created_at,dishes(name),events(requires_dish)")
+    .select("id,couple_name,wedding_date,phone,payment_confirmed,queue_pos,created_at,dishes(name),events(requires_dish,is_couples_event,is_paid)")
     .eq("event_id", currentEventId)
     .order("queue_pos", { ascending: true })
     .order("created_at", { ascending: true });
 
   const rows = data || [];
   currentRegistrations = rows;
+  const selectedEvent = eventSelect.selectedOptions[0];
+  const currentEventIsCouples = selectedEvent?.dataset.isCouples !== "false";
+  const currentEventIsPaid = selectedEvent?.dataset.isPaid === "true";
   await normalizeQueuePos(rows);
 
   const limit = Number(maxCouples.value || 0);
@@ -514,14 +557,18 @@ async function refreshRegistrations() {
     <input class="inline-input js-inline" data-id="${r.id}" data-field="couple_name" type="text" value="${escapeHtml(r.couple_name ?? "")}" />
   </td>
   <td>
-    <input class="inline-input js-inline" data-id="${r.id}" data-field="wedding_date" type="date" value="${escapeHtml(r.wedding_date ?? "")}" />
+    ${currentEventIsCouples
+      ? `<input class="inline-input js-inline" data-id="${r.id}" data-field="wedding_date" type="date" value="${escapeHtml(r.wedding_date ?? "")}" />`
+      : "—"}
   </td>
   <td>${escapeHtml(maskPhone(r.phone))}</td>
   <td>
-    <select class="inline-input js-inline-payment" data-id="${r.id}">
-      <option value="false" ${r.payment_confirmed ? "" : "selected"}>Pendente</option>
-      <option value="true" ${r.payment_confirmed ? "selected" : ""}>Confirmado</option>
-    </select>
+    ${currentEventIsPaid
+      ? `<select class="inline-input js-inline-payment" data-id="${r.id}">
+          <option value="false" ${r.payment_confirmed ? "" : "selected"}>Pendente</option>
+          <option value="true" ${r.payment_confirmed ? "selected" : ""}>Confirmado</option>
+        </select>`
+      : "—"}
   </td>
   <td>${escapeHtml(r.dishes?.name ?? "—")}</td>
   <td>
@@ -537,7 +584,7 @@ async function refreshRegistrations() {
       <tr>
         <th>Status da inscrição</th>
         <th>Ordem</th>
-        <th>Nome do casal</th>
+        <th>Nome</th>
         <th>Data de casamento</th>
         <th>Telefone (anonimizado)</th>
         <th>Pagamento</th>
@@ -741,18 +788,20 @@ function openGuestListForPrint() {
   const eventLocalValue = eventLocal.value?.trim() || selectedEvent?.dataset.local || "Não informado";
   const eventMaxValue = Number(maxCouples.value || selectedEvent?.dataset.max || 0);
   const eventRequiresDishValue = selectedEvent?.dataset.requiresDish !== "false";
+  const eventIsCouplesValue = selectedEvent?.dataset.isCouples !== "false";
+  const eventIsPaidValue = selectedEvent?.dataset.isPaid === "true";
 
   const rowsHtml = currentRegistrations.map((r, idx) => {
     const status = getRegistrationStatus(r, idx, eventMaxValue);
     const isWaitingList = status.text === "Lista de espera";
-    const paymentText = isWaitingList ? "-" : (r.payment_confirmed ? "Confirmado" : "Pendente");
+    const paymentText = !eventIsPaidValue || isWaitingList ? "-" : (r.payment_confirmed ? "Confirmado" : "Pendente");
 
     return `
     <tr>
       <td>${r.queue_pos ?? idx + 1}</td>
       <td>${status.icon} ${status.text}</td>
       <td>${escapeHtml(r.couple_name || "—")}</td>
-      <td>${escapeHtml(formatDate(r.wedding_date))}</td>
+      <td>${eventIsCouplesValue ? escapeHtml(formatDate(r.wedding_date)) : "—"}</td>
       <td>${escapeHtml(r.phone || "—")}</td>
       ${eventRequiresDishValue
         ? `<td>${escapeHtml(r.dishes?.name || "—")}</td>`
@@ -796,7 +845,7 @@ function openGuestListForPrint() {
       <tr>
         <th>Ordem</th>
         <th>Status</th>
-        <th>Nome do casal</th>
+        <th>Nome</th>
         <th>Data de casamento</th>
         <th>Telefone</th>
         ${eventRequiresDishValue ? "<th>Prato escolhido</th>" : "<th>Confirmação de pagamento</th>"}
@@ -915,6 +964,11 @@ eventSelect.addEventListener("change", async () => {
   eventLocal.value = eventSelect.selectedOptions[0].dataset.local;
   eventIsOpen.checked = eventSelect.selectedOptions[0].dataset.isOpen !== "false";
   eventRequiresDish.checked = eventSelect.selectedOptions[0].dataset.requiresDish !== "false";
+  eventIsCouples.checked = eventSelect.selectedOptions[0].dataset.isCouples !== "false";
+  eventIsPaid.checked = eventSelect.selectedOptions[0].dataset.isPaid === "true";
+  eventPixKey.value = eventSelect.selectedOptions[0].dataset.pixKey || "";
+  eventPaymentContactName.value = eventSelect.selectedOptions[0].dataset.paymentContactName || "";
+  eventPaymentWhatsapp.value = eventSelect.selectedOptions[0].dataset.paymentWhatsapp || "";
   await refreshDishes();
   refreshRegistrations();
 });
@@ -966,11 +1020,21 @@ btnAddDish.addEventListener("click", async () => {
 });
 
 btnSaveEvent.addEventListener("click", async () => {
+  if (eventIsPaid.checked && (!eventPixKey.value.trim() || !eventPaymentWhatsapp.value.trim())) {
+    setMsg("Informe a chave PIX e o WhatsApp para eventos pagos.", "err");
+    return;
+  }
+
   await supabase.from("events")
     .update({
       max_couples: Number(maxCouples.value || 0),
       local: eventLocal.value || null,
       requires_dish: eventRequiresDish.checked,
+      is_couples_event: eventIsCouples.checked,
+      is_paid: eventIsPaid.checked,
+      pix_key: eventIsPaid.checked ? (eventPixKey.value.trim() || null) : null,
+      payment_contact_name: eventIsPaid.checked ? (eventPaymentContactName.value.trim() || null) : null,
+      payment_whatsapp: eventIsPaid.checked ? (eventPaymentWhatsapp.value.trim() || null) : null,
       is_open: eventIsOpen.checked
     })
     .eq("id", currentEventId);
@@ -981,6 +1045,11 @@ btnSaveEvent.addEventListener("click", async () => {
     selected.dataset.local = eventLocal.value || "";
     selected.dataset.isOpen = eventIsOpen.checked ? "true" : "false";
     selected.dataset.requiresDish = eventRequiresDish.checked ? "true" : "false";
+    selected.dataset.isCouples = eventIsCouples.checked ? "true" : "false";
+    selected.dataset.isPaid = eventIsPaid.checked ? "true" : "false";
+    selected.dataset.pixKey = eventIsPaid.checked ? eventPixKey.value.trim() : "";
+    selected.dataset.paymentContactName = eventIsPaid.checked ? eventPaymentContactName.value.trim() : "";
+    selected.dataset.paymentWhatsapp = eventIsPaid.checked ? eventPaymentWhatsapp.value.trim() : "";
   }
 
   setMsg("Evento atualizado.", "ok");

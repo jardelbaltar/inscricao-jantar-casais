@@ -119,7 +119,7 @@ async function loadRegistrations(){
     .order("created_at", { ascending: true });
 
   if(error){
-    tableWrap.innerHTML = "<p class='err'>Erro ao carregar casais.</p>";
+    tableWrap.innerHTML = "<p class='err'>Erro ao carregar participantes.</p>";
     return;
   }
 
@@ -158,7 +158,7 @@ async function loadRegistrations(){
 
   tableWrap.innerHTML = `
     <table>
-      <thead><tr><th>Fila</th><th>Casal</th><th>Status</th><th>Ação rápida</th></tr></thead>
+      <thead><tr><th>Fila</th><th>Nome</th><th>Status</th><th>Ação rápida</th></tr></thead>
       <tbody>${rows || "<tr><td colspan='4' class='muted'>Nenhuma inscrição encontrada.</td></tr>"}</tbody>
     </table>
   `;
@@ -173,7 +173,7 @@ async function loadRegistrations(){
 
   const { data: eventData, error: eventError } = await supabase
     .from("events")
-    .select("id,title,event_at,local,requires_dish,max_couples")
+    .select("id,title,event_at,local,requires_dish,is_paid,max_couples")
     .eq("slug", eventSlug)
     .maybeSingle();
 
@@ -183,10 +183,10 @@ async function loadRegistrations(){
     return;
   }
 
-  if(eventData.requires_dish !== false){
+  if(eventData.is_paid !== true){
     titleEl.textContent = "Confirmação de Pagamentos indisponível";
     subtitleEl.textContent = eventData.title || "Evento";
-    msgEl.textContent = "Esta página só está disponível para eventos sem exigência de prato.";
+    msgEl.textContent = "Esta página só está disponível para eventos pagos.";
     msgEl.className = "err";
     return;
   }

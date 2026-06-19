@@ -426,7 +426,7 @@ async function load(){
 
   const {data:ev}=await supabase
     .from("events")
-    .select("title,event_at,local,slug,requires_dish")
+    .select("title,event_at,local,slug,requires_dish,is_paid")
     .eq("id",reg.event_id)
     .maybeSingle();
 
@@ -446,12 +446,13 @@ async function load(){
   couple.textContent=reg.couple_name??"—";
   if (ev?.requires_dish === false) {
     dishHighlight.style.display = "none";
-    const pending = reg.payment_confirmed !== true;
-    receiptStatus.textContent = pending
-      ? "⏳ INSCRIÇÃO PENDENTE! Aguarde a confirmação de pagamento"
-      : "✅ INSCRIÇÃO CONFIRMADA! Apresente este QR no check-in";
   } else {
     dish.textContent=dishRes?.name??"—";
+  }
+
+  if (ev?.is_paid === true && reg.payment_confirmed !== true) {
+    receiptStatus.textContent = "⏳ INSCRIÇÃO PENDENTE! Aguarde a confirmação de pagamento";
+  } else {
     receiptStatus.textContent = "✅ INSCRIÇÃO CONFIRMADA! Apresente este QR no check-in";
   }
 
