@@ -110,6 +110,17 @@ button.inline-btn {
 
 .row { display: flex; gap: 10px; flex-wrap: wrap; }
 .row > div { flex: 1; min-width: 180px; }
+.row > div.wide { flex-basis: 320px; }
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.card-header p { margin: 4px 0 0; }
 
 .panel-toggle {
   width: auto;
@@ -246,6 +257,70 @@ th { color: #334155; font-size: 0.9rem; }
 
   <div id="app" style="display:none">
     <div class="card">
+      <div class="card-header">
+        <div>
+          <h2>Criar novo evento</h2>
+          <p class="muted">Cadastre os dados básicos iniciais para liberar o evento nas páginas públicas.</p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="wide">
+          <label>Nome do evento</label>
+          <input id="newEventTitle" type="text" placeholder="Ex.: Jantar de Casais 2026">
+        </div>
+        <div>
+          <label>Slug do link</label>
+          <input id="newEventSlug" type="text" placeholder="jantar-casais-2026">
+        </div>
+        <div>
+          <label>Data e horário</label>
+          <input id="newEventAt" type="datetime-local">
+        </div>
+        <div>
+          <label>Vagas</label>
+          <input id="newEventMaxCouples" type="number" min="0" placeholder="0 = sem limite">
+        </div>
+        <div class="wide">
+          <label>Local</label>
+          <input id="newEventLocal" type="text" placeholder="Ex.: Salão social">
+        </div>
+        <div>
+          <label class="event-open-toggle" for="newEventRequiresDish">
+            <input id="newEventRequiresDish" type="checkbox" checked>
+            <span>Exigir escolha de prato</span>
+          </label>
+          <label class="event-open-toggle" for="newEventIsCouples">
+            <input id="newEventIsCouples" type="checkbox" checked>
+            <span>Evento para casais</span>
+          </label>
+          <label class="event-open-toggle" for="newEventIsPaid">
+            <input id="newEventIsPaid" type="checkbox">
+            <span>Evento pago</span>
+          </label>
+          <label class="event-open-toggle" for="newEventIsOpen">
+            <input id="newEventIsOpen" type="checkbox" checked>
+            <span>Inscrições abertas</span>
+          </label>
+        </div>
+        <div>
+          <label>Chave PIX</label>
+          <input id="newEventPixKey" placeholder="Obrigatório se for pago">
+        </div>
+        <div>
+          <label>Contato para comprovante</label>
+          <input id="newEventPaymentContactName" placeholder="Ex.: Secretaria">
+        </div>
+        <div>
+          <label>WhatsApp do comprovante</label>
+          <input id="newEventPaymentWhatsapp" placeholder="Obrigatório se for pago">
+        </div>
+        <div style="align-self:flex-end">
+          <button id="btnCreateEvent">Criar evento</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
       <div class="row">
         <div>
           <h2>Evento</h2>
@@ -375,6 +450,19 @@ const newDishOrder = document.getElementById("newDishOrder");
 const newDishQty = document.getElementById("newDishQty");
 const btnAddDish = document.getElementById("btnAddDish");
 const dishesTableWrap = document.getElementById("dishesTableWrap");
+const newEventTitle = document.getElementById("newEventTitle");
+const newEventSlug = document.getElementById("newEventSlug");
+const newEventAt = document.getElementById("newEventAt");
+const newEventMaxCouples = document.getElementById("newEventMaxCouples");
+const newEventLocal = document.getElementById("newEventLocal");
+const newEventRequiresDish = document.getElementById("newEventRequiresDish");
+const newEventIsCouples = document.getElementById("newEventIsCouples");
+const newEventIsPaid = document.getElementById("newEventIsPaid");
+const newEventIsOpen = document.getElementById("newEventIsOpen");
+const newEventPixKey = document.getElementById("newEventPixKey");
+const newEventPaymentContactName = document.getElementById("newEventPaymentContactName");
+const newEventPaymentWhatsapp = document.getElementById("newEventPaymentWhatsapp");
+const btnCreateEvent = document.getElementById("btnCreateEvent");
 
 let currentEventId = null;
 let currentRegistrations = [];
@@ -402,6 +490,38 @@ function formatDate(value) {
   return `${d}/${m}/${y}`;
 }
 
+function slugify(value) {
+  return (value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
+
+function getDateTimeLocalAsIso(value) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+function resetNewEventForm() {
+  newEventTitle.value = "";
+  newEventSlug.value = "";
+  newEventSlug.dataset.edited = "false";
+  newEventAt.value = "";
+  newEventMaxCouples.value = "";
+  newEventLocal.value = "";
+  newEventRequiresDish.checked = true;
+  newEventIsCouples.checked = true;
+  newEventIsPaid.checked = false;
+  newEventIsOpen.checked = true;
+  newEventPixKey.value = "";
+  newEventPaymentContactName.value = "";
+  newEventPaymentWhatsapp.value = "";
+}
+
 async function requireAdmin(session) {
   const { data } = await supabase
     .from("admins")
@@ -412,9 +532,9 @@ async function requireAdmin(session) {
   if (!data) throw new Error("NOT_ADMIN");
 }
 
-async function refreshEvents() {
+async function refreshEvents(preferredSlug = null) {
   const params = new URLSearchParams(location.search);
-  const urlEventSlug = params.get("event");
+  const urlEventSlug = preferredSlug || params.get("event");
 
   const { data } = await supabase
     .from("events")
@@ -971,6 +1091,74 @@ eventSelect.addEventListener("change", async () => {
   eventPaymentWhatsapp.value = eventSelect.selectedOptions[0].dataset.paymentWhatsapp || "";
   await refreshDishes();
   refreshRegistrations();
+});
+
+newEventTitle.addEventListener("input", () => {
+  if (newEventSlug.dataset.edited === "true") return;
+  newEventSlug.value = slugify(newEventTitle.value);
+});
+
+newEventSlug.addEventListener("input", () => {
+  newEventSlug.dataset.edited = "true";
+  newEventSlug.value = slugify(newEventSlug.value);
+});
+
+btnCreateEvent.addEventListener("click", async () => {
+  const title = newEventTitle.value.trim();
+  const slug = slugify(newEventSlug.value || title);
+  const eventAt = getDateTimeLocalAsIso(newEventAt.value);
+  const isPaid = newEventIsPaid.checked;
+
+  if (!title) {
+    setMsg("Informe o nome do evento.", "err");
+    return;
+  }
+
+  if (!slug) {
+    setMsg("Informe um slug válido para o link do evento.", "err");
+    return;
+  }
+
+  if (!eventAt) {
+    setMsg("Informe a data e o horário do evento.", "err");
+    return;
+  }
+
+  if (isPaid && (!newEventPixKey.value.trim() || !newEventPaymentWhatsapp.value.trim())) {
+    setMsg("Informe a chave PIX e o WhatsApp para eventos pagos.", "err");
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("events")
+    .insert({
+      title,
+      slug,
+      event_at: eventAt,
+      max_couples: Number(newEventMaxCouples.value || 0),
+      local: newEventLocal.value.trim() || null,
+      requires_dish: newEventRequiresDish.checked,
+      is_couples_event: newEventIsCouples.checked,
+      is_paid: isPaid,
+      pix_key: isPaid ? (newEventPixKey.value.trim() || null) : null,
+      payment_contact_name: isPaid ? (newEventPaymentContactName.value.trim() || null) : null,
+      payment_whatsapp: isPaid ? (newEventPaymentWhatsapp.value.trim() || null) : null,
+      is_open: newEventIsOpen.checked
+    })
+    .select("slug")
+    .single();
+
+  if (error) {
+    const alreadyExists = error.code === "23505" || /duplicate|unique/i.test(error.message || "");
+    setMsg(alreadyExists ? "Já existe um evento com este slug." : "Erro ao criar evento.", "err");
+    return;
+  }
+
+  resetNewEventForm();
+  setMsg("Evento criado com sucesso.", "ok");
+  await refreshEvents(data?.slug || slug);
+  await refreshDishes();
+  await refreshRegistrations();
 });
 
 btnToggleDishPanel.addEventListener("click", () => {
