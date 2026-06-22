@@ -327,6 +327,10 @@ th { color: #334155; font-size: 0.9rem; }
           <select id="eventSelect"></select>
         </div>
         <div>
+          <label>Data e horário</label>
+          <input id="eventAt" type="datetime-local">
+        </div>
+        <div>
           <label>Vagas</label>
           <input id="maxCouples" type="number" min="0">
         </div>
@@ -430,6 +434,7 @@ const app = document.getElementById("app");
 const btnLogin = document.getElementById("btnLogin");
 const btnLogout = document.getElementById("btnLogout");
 const eventSelect = document.getElementById("eventSelect");
+const eventAt = document.getElementById("eventAt");
 const maxCouples = document.getElementById("maxCouples");
 const eventLocal = document.getElementById("eventLocal");
 const eventRequiresDish = document.getElementById("eventRequiresDish");
@@ -506,6 +511,15 @@ function getDateTimeLocalAsIso(value) {
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
+function getIsoAsDateTimeLocal(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const pad = (part) => String(part).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 function resetNewEventForm() {
   newEventTitle.value = "";
   newEventSlug.value = "";
@@ -547,6 +561,7 @@ async function refreshEvents(preferredSlug = null) {
     opt.value = e.slug;
     opt.dataset.id = e.id;
     opt.textContent = e.title;
+    opt.dataset.eventAt = e.event_at || "";
     opt.dataset.max = e.max_couples || 0;
     opt.dataset.local = e.local || "";
     opt.dataset.isOpen = e.is_open === false ? "false" : "true";
@@ -566,6 +581,7 @@ async function refreshEvents(preferredSlug = null) {
   const selected = eventSelect.selectedOptions[0];
   if (!selected) {
     currentEventId = null;
+    eventAt.value = "";
     maxCouples.value = "";
     eventLocal.value = "";
     eventIsOpen.checked = false;
@@ -580,6 +596,7 @@ async function refreshEvents(preferredSlug = null) {
   }
 
   currentEventId = eventSelect.selectedOptions[0]?.dataset.id || null;
+  eventAt.value = getIsoAsDateTimeLocal(selected.dataset.eventAt);
   maxCouples.value = selected.dataset.max;
   eventLocal.value = selected.dataset.local;
   eventIsOpen.checked = selected.dataset.isOpen !== "false";
@@ -1080,6 +1097,7 @@ btnLogout.addEventListener("click", async () => {
 
 eventSelect.addEventListener("change", async () => {
   currentEventId = eventSelect.selectedOptions[0]?.dataset.id || null;
+  eventAt.value = getIsoAsDateTimeLocal(eventSelect.selectedOptions[0].dataset.eventAt);
   maxCouples.value = eventSelect.selectedOptions[0].dataset.max;
   eventLocal.value = eventSelect.selectedOptions[0].dataset.local;
   eventIsOpen.checked = eventSelect.selectedOptions[0].dataset.isOpen !== "false";
@@ -1208,6 +1226,13 @@ btnAddDish.addEventListener("click", async () => {
 });
 
 btnSaveEvent.addEventListener("click", async () => {
+  const updatedEventAt = getDateTimeLocalAsIso(eventAt.value);
+
+  if (!updatedEventAt) {
+    setMsg("Informe a data e o horário do evento.", "err");
+    return;
+  }
+
   if (eventIsPaid.checked && (!eventPixKey.value.trim() || !eventPaymentWhatsapp.value.trim())) {
     setMsg("Informe a chave PIX e o WhatsApp para eventos pagos.", "err");
     return;
@@ -1215,6 +1240,7 @@ btnSaveEvent.addEventListener("click", async () => {
 
   await supabase.from("events")
     .update({
+      event_at: updatedEventAt,
       max_couples: Number(maxCouples.value || 0),
       local: eventLocal.value || null,
       requires_dish: eventRequiresDish.checked,
@@ -1229,6 +1255,7 @@ btnSaveEvent.addEventListener("click", async () => {
 
   const selected = eventSelect.selectedOptions[0];
   if (selected) {
+    selected.dataset.eventAt = updatedEventAt;
     selected.dataset.max = maxCouples.value || 0;
     selected.dataset.local = eventLocal.value || "";
     selected.dataset.isOpen = eventIsOpen.checked ? "true" : "false";
