@@ -66,11 +66,13 @@ const summaryWrap = document.getElementById("summaryWrap");
 const params = new URLSearchParams(location.search);
 const eventSlug = params.get("event");
 
+const BRASILIA_TIME_ZONE = "America/Sao_Paulo";
+
 function formatDateTime(value){
   if(!value) return "Data não informada";
   const d = new Date(value);
   if(Number.isNaN(d.getTime())) return "Data inválida";
-  return d.toLocaleString("pt-BR", { dateStyle:"full", timeStyle:"short" });
+  return d.toLocaleString("pt-BR", { timeZone: BRASILIA_TIME_ZONE, dateStyle:"full", timeStyle:"short" });
 }
 
 function escapeHtml(value){
