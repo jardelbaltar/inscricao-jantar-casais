@@ -410,28 +410,15 @@
     function escapeHtml(s) {
       return (s ?? "").toString().replace(/[&<>"']/g, (c) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
     }
-    const BRASILIA_TIME_ZONE = "America/Sao_Paulo";
-
-    function getBrasiliaDateTimeParts(value) {
+    function getEventDateTimeParts(value) {
       if (!value) return null;
-      const d = new Date(value);
-      if (Number.isNaN(d.getTime())) return null;
-      return new Intl.DateTimeFormat("pt-BR", {
-        timeZone: BRASILIA_TIME_ZONE,
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      }).formatToParts(d).reduce((acc, part) => {
-        if (part.type !== "literal") acc[part.type] = part.value;
-        return acc;
-      }, {});
+      const match = String(value).trim().match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/);
+      if (!match) return null;
+      return { year: match[1], month: match[2], day: match[3], hour: match[4], minute: match[5] };
     }
 
     function formatDateTime(value) {
-      const parts = getBrasiliaDateTimeParts(value);
+      const parts = getEventDateTimeParts(value);
       if (!parts) return "—";
       const timeLabel = parts.minute === "00"
         ? `${parts.hour}h`
