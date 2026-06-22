@@ -505,19 +505,36 @@ function slugify(value) {
     .slice(0, 80);
 }
 
-function getDateTimeLocalAsIso(value) {
+const BRASILIA_TIME_ZONE = "America/Sao_Paulo";
+
+function getBrasiliaDateTimeParts(value) {
   if (!value) return null;
   const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: BRASILIA_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(date).reduce((acc, part) => {
+    if (part.type !== "literal") acc[part.type] = part.value;
+    return acc;
+  }, {});
+}
+
+function getDateTimeLocalAsIso(value) {
+  if (!value) return null;
+  const date = new Date(`${value}:00-03:00`);
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
 function getIsoAsDateTimeLocal(value) {
-  if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-
-  const pad = (part) => String(part).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  const parts = getBrasiliaDateTimeParts(value);
+  if (!parts) return "";
+  return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}`;
 }
 
 function resetNewEventForm() {
