@@ -7,7 +7,14 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>Inscrição - Jantar de Casais</title>
+  <title>Inscrição de Evento</title>
+  <meta name="description" content="Faça sua inscrição para o evento." />
+  <meta property="og:title" content="Inscrição de Evento" />
+  <meta property="og:description" content="Faça sua inscrição para o evento." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Inscrição de Evento" />
+  <meta name="twitter:description" content="Faça sua inscrição para o evento." />
   <style>
     :root {
       --bg: #0f172a;
@@ -823,8 +830,17 @@
       eventPaymentContactName = eventData.payment_contact_name || "";
       eventPaymentWhatsapp = eventData.payment_whatsapp || "";
 
-      eventName.textContent = eventData.title || "Evento";
-      document.title = eventData.title || "Inscrição";
+      const currentEventTitle = eventData.title || "Evento";
+      const pageTitle = `Inscrição - ${currentEventTitle}`;
+      const pageDescription = `Faça sua inscrição para ${currentEventTitle}.`;
+
+      eventName.textContent = currentEventTitle;
+      document.title = pageTitle;
+      document.querySelector('meta[name="description"]')?.setAttribute("content", pageDescription);
+      document.querySelector('meta[property="og:title"]')?.setAttribute("content", pageTitle);
+      document.querySelector('meta[property="og:description"]')?.setAttribute("content", pageDescription);
+      document.querySelector('meta[name="twitter:title"]')?.setAttribute("content", pageTitle);
+      document.querySelector('meta[name="twitter:description"]')?.setAttribute("content", pageDescription);
       const eventLocal = (eventData.local ?? "").trim();
       const localText = eventLocal ? ` • ${eventLocal}` : "";
       eventDate.textContent = `${formatDateTime(eventData.event_at)}${localText}`;
